@@ -1,0 +1,25 @@
+<a class="lab-card" href="{{ include.url | relative_url }}">
+  <div class="lab-card-head">
+    {% if include.title %}
+      <h3 class="lab-card-title">
+        {{ include.number | default: include.index }}.
+        {{ include.title
+           | markdownify
+           | strip_newlines
+           | replace: '<p>', ''
+           | replace: '</p>', '' }}
+      </h3>
+    {% endif %}
+    {% if include.duration %}<span class="lab-chip">{{ include.duration }}</span>{% endif %}
+  </div>
+
+  {% if include.desc %}
+    <div class="lab-card-desc">
+      {{ include.desc
+         | markdownify
+         | strip_newlines
+         | replace: '<p>', ''
+         | replace: '</p>', '' }}
+    </div>
+  {% endif %}
+</a>

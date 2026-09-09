@@ -1,0 +1,61 @@
+{%- comment -%}
+Include: task-result.html
+
+Opciones de uso:
+
+1) Texto directo
+   {% include task-result.html title="Validación" content="**OK:** RG creado en `main.tf`." %}
+
+2) Desde front matter
+   ---
+   task_result: "**OK:** RG creado en `main.tf`."
+   ---
+   {% include task-result.html %}
+
+3) Desde archivo en _data/task_results/<slug>.yml
+   (el .md debe tener slug en el front matter, ej. slug: lab3)
+
+   a) Mostrar todos:
+      {% include task-result.html all=true title="Tareas finalizadas" %}
+
+   b) Mostrar uno por índice:
+      {% include task-result.html index=0 title="RG creado" %}
+{%- endcomment -%}
+
+{%- assign _title = include.title | default: "Tarea finalizada" -%}
+
+{%- if include.content and include.content != '' -%}
+  <div class="task-result">
+    <h3>{{ _title }}</h3>
+    {{ include.content | strip | markdownify }}
+  </div>
+{%- elsif page.task_result -%}
+  <div class="task-result">
+    <h3>{{ _title }}</h3>
+    {{ page.task_result | strip | markdownify }}
+  </div>
+{%- else -%}
+  {%- assign _slug = page.slug | default: include.slug -%}
+  {%- if _slug -%}
+    {%- assign _dataset = site.data.task_results | default: site.data['task-results'] -%}
+    {%- assign _data = _dataset[_slug] -%}
+    {%- if _data and _data.results -%}
+      {%- if include.all -%}
+        {%- for r in _data.results -%}
+          <div class="task-result">
+            <h3>{{ _title }}</h3>
+            {{ r | strip | markdownify }}
+          </div>
+        {%- endfor -%}
+      {%- elsif include.index != nil -%}
+        {%- assign r = _data.results[include.index] -%}
+        {%- if r and r != '' -%}
+          <div class="task-result">
+            <h3>{{ _title }}</h3>
+            {{ r | strip | markdownify }}
+          </div>
+        {%- endif -%}
+      {%- endif -%}
+    {%- endif -%}
+  {%- endif -%}
+{%- endif -%}

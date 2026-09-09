@@ -1,0 +1,91 @@
+/* ===== Minimal tokens ===== */
+:root{
+  --c-ink:#0f172a;          /* texto */
+  --c-muted:#64748b;        /* texto secundario */
+  --c-line:#e5e7eb;         /* líneas suaves */
+  --c-accent:#1f6feb;       /* acento sobrio */
+  --c-accent-weak:#e7efff;  /* acento sutil */
+  --c-bg-soft:#f9fbff;      /* fondo suave de cajas */
+  --brand-blue-rgb: 59, 165, 224;   /* #3ba5e0 */
+  --brand-indigo-rgb: 31, 111, 235; /* #1f6feb */
+  --radius:10px;
+}
+
+/* Tipografía y layout base */
+body{
+  margin:0;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial,sans-serif;
+  color:var(--c-ink);
+}
+.container{max-width:1000px;margin:0 auto;padding:0 16px}
+
+/* Navbar global */
+.navbar{border-bottom:1px solid var(--c-line);background:#fff}
+.navbar .brand{display:flex;align-items:center;gap:10px;text-decoration:none;color:inherit;padding:14px 0;font-weight:800}
+.navbar .brand img{height: clamp(75px, 6vw, 82px)}
+.navbar .brand span {
+  font-size: 1.05rem;   /* un poco más pequeño que antes */
+  font-weight: 600;     /* semi-bold, no tan pesado */
+  color: var(--c-muted); /* gris sobrio, en vez de negro fuerte */
+  letter-spacing: 0.5px; /* sutil separación */
+}
+.nav ul{list-style:none;margin:0;padding:0;display:flex;gap:18px}
+.nav a{display:block;padding:16px 0;color:var(--c-muted);text-decoration:none}
+.nav a:hover{color:var(--c-accent)}
+.nav a.active{color:var(--c-accent);font-weight:700;border-bottom:2px solid var(--c-accent)}
+@media (max-width:700px){ .nav ul{flex-wrap:wrap;gap:12px} }
+
+/* Contenedor del lab */
+.lab{
+  background:#fff;
+  border:1px solid var(--c-line);
+  border-radius:14px;
+  padding:18px;
+  margin:18px 0;
+}
+.lab-head{border-bottom:1px solid var(--c-line);padding-bottom:12px;margin-bottom:16px}
+.lab-title{
+  font-size:clamp(1.4rem,3.2vw,1.7rem);
+  font-weight:800;
+  line-height:1.2;
+  margin:.2rem 0 .25rem;
+}
+.lab-subtitle{color:var(--c-muted);font-size:.95rem;margin:.2rem 0}
+
+.lab-meta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:6px}
+.badge{background:#eef4ff;border:1px solid #dbeafe;border-radius:999px;padding:.2rem .6rem;font-size:.9rem}
+.tag{background:#f1f5f9;border:1px solid #e2e8f0;border-radius:999px;padding:.15rem .5rem;font-size:.85rem}
+.lead,.minor{color:var(--c-muted)}
+.minor{font-size:.9rem}
+.lab h2{margin-top:1.25rem}
+.lab code,kbd{background:#f8fafc;border:1px solid #e2e8f0;border-radius:6px;padding:.05rem .35rem}
+
+/* Separadores y espacios genéricos */
+.section-space{margin-top:1.5rem}
+.hr-soft{height:1px;background:var(--c-line);border:0;margin:1.25rem 0}
+
+/* Headings sobrios */
+h2{margin-top:2rem;color:var(--c-ink)}
+h3{margin-top:1.25rem;color:var(--c-ink)}
+strong{color:#000}
+
+
+/* -------- Curso: tipografía principal -------- */
+.course { padding: 10px 0; }
+.course-title{
+  font-size: clamp(1.5rem, 2.0vw + .4rem, 1.7rem);
+  line-height: 1.15;
+  margin: 0 0 .35rem;
+}
+.course-subtitle { color: var(--c-muted); margin: 0 0 .35rem; }
+.course-intro { color: var(--c-ink); margin: .25rem 0 1.25rem; }
+.course .emoji { margin-right: .35rem; }
+
+/* --------EXTRAS------- */
+.extra-card {
+  border-left: 4px solid #3ba5e0; /* azul corporativo */
+  background: #f9fcff;
+}
+.lab-card-desc pre{
+  background:#0b0f14;color:#eee;padding:.75rem;border-radius:8px;overflow-x:auto;margin:.5rem 0 0;font-size:.9rem;
+}

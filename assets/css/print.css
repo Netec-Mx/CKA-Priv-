@@ -1,0 +1,101 @@
+/* ===== Botón “ghost” consistente con el tema ===== */
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+  font-size: .9rem;
+  padding: .3rem .7rem;
+  margin-left: 1rem;          /* 🔹 Lo separa del título */
+  border: 1px solid #e5e7eb;
+  border-radius: .4rem;
+  background: transparent;
+  color: #111;                /* Texto oscuro como el título */
+  text-decoration: none;
+  cursor: pointer;            /* 🔹 Mano al pasar */
+  user-select: none;          /* 🔹 No seleccionable */
+  transition: background 0.2s ease;
+}
+
+.btn-ghost:hover {
+  background: rgba(0, 0, 0, 0.05); /* Hover minimalista */
+}
+
+
+/* ===== Estilos SOLO para imprimir/PDF ===== */
+@media print {
+  /* 1) Canvas y contenedores a ancho completo: evita cortes laterales y “columnas” */
+  html, body { height:auto !important; background:#fff !important; }
+  .site, .container, .content, .lab { width:auto !important; max-width:none !important; }
+  main, article, section { width:auto !important; max-width:none !important; }
+
+  /* 2) Oculta lo que no debe salir */
+  nav,
+  header,
+  footer,
+  .no-print,
+  .lab-actions,
+  .lab-progress {
+    display: none !important;
+  }
+
+  /* 3) Quita gradientes y sombras (fuente del recorte) */
+  .lab * {
+    background-image: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+  }
+  /* Si tus tarjetas/paneles usan fondo con degradado, fuerza blanco plano */
+  .card, .panel, .lab-section, .callout, .note, .lab-intro {
+    background:#ffffff !important; border:1px solid #e5e7eb !important; border-radius:6px !important;
+  }
+
+  /* 4) Tipografía y ajuste de contenidos anchos */
+  img { max-width:100% !important; height:auto !important; }
+  pre, code { white-space:pre-wrap !important; word-break:break-word !important; }
+  table { table-layout:fixed !important; width:100% !important; word-break:break-word !important; }
+
+  /* 5) Control de saltos para evitar huecos grandes */
+  h1, h2, h3 { page-break-after:avoid !important; margin-bottom:6pt !important; }
+  h1 + *, h2 + *, h3 + * { margin-top:0 !important; }
+  /* ✨ Deja que los paneles se partan si son largos (evita “hoyos” de media página) */
+  .card, .panel, .lab-section, .callout, .note { page-break-inside:auto !important; break-inside:auto !important; }
+  /* Pero evita partir justo en medio de piezas delicadas */
+  pre, img, table, blockquote { page-break-inside:avoid !important; break-inside:avoid !important; }
+
+  /* 6) Márgenes y tamaño de página */
+  body { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+
+  /* 7) Eliminar estados visuales interactivos del progreso */
+  .step-label {
+    cursor: default !important;
+    background: transparent !important;
+    color: inherit !important;
+    box-shadow: none !important;
+    outline: none !important;
+    padding: 0 !important;
+  }
+
+  .step-label.step-label-completed {
+    background: transparent !important;
+    color: inherit !important;
+  }
+
+  .step-label.step-label-completed::before {
+    display: none !important;
+    content: none !important;
+  }
+
+  .lab-instructions li.step-completed::before {
+    display: none !important;
+    content: none !important;
+  }
+}
+
+/* Define A4 y márgenes (coherente con el navegador) */
+@page { size: A4; margin: 12mm; }
+
+/* Utilidades manuales (si necesitas) */
+.pb-before  { break-before: page !important; page-break-before: always !important; }
+.pb-after   { break-after:  page !important; page-break-after:  always !important; }
+.pb-avoid   { break-inside: avoid !important; page-break-inside: avoid !important; }
+

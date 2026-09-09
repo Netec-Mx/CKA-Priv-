@@ -1,0 +1,48 @@
+# --- Jekyll build ---
+_site/
+.jekyll-cache/
+.jekyll-metadata
+.sass-cache/
+
+# Bundler / Ruby
+.bundle/
+vendor/
+vendor/bundle/
+vendor/cache/
+vendor/gems/
+vendor/ruby/
+
+# Node (si llegas a usar herramientas front)
+node_modules/
+dist/
+build/
+
+# SO y editores
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# Archivos temporales
+tmp/
+log/
+coverage/
+
+# Otros posibles artefactos
+*.log
+*.tmp
+
+# OneDrive/Windows varios
+Desktop.ini
+ehthumbs.db
+*.lnk
+
+# Archivos de entorno locales
+.env
+.env.*
+instrucciones/GitHubPush-Instructores.md
+instrucciones/Instalacion-Instructores.md
+instrucciones/Instrucciones-Instructores.md
+instrucciones/EquipoDC.md

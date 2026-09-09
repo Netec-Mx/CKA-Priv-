@@ -1,0 +1,84 @@
+---
+layout: default
+---
+
+<article class="course">
+
+  {% include course-hero.html 
+     title=page.title 
+     subtitle=page.subtitle 
+     emoji=page.emoji 
+     intro=page.intro %}
+
+  {%- assign course_key = page.course_id | default: "CAMBIAR_AQUI" -%}
+  {%- assign course = site.data.courses[course_key] -%}
+
+  {% if course %}
+    {% assign main = 0 %}
+
+    <!-- Lista de prácticas -->
+    <div class="lab-grid">
+      {%- for lab in course.labs -%}
+        {%- if lab.number -%}
+          {%- assign display_num = lab.number -%}
+          {%- comment -%}
+            "7" -> main = 7
+            "7.1" -> main = 7
+          {%- endcomment -%}
+          {%- assign major = lab.number | split: '.' | first -%}
+          {%- assign main  = major | plus: 0 -%}
+        {%- else -%}
+          {%- assign main = main | plus: 1 -%}
+          {%- assign display_num = main -%}
+        {%- endif -%}
+
+        {% include lab-card.html
+          number=display_num
+          title=lab.title
+          url=lab.url
+          duration=lab.duration
+          desc=lab.desc %}
+      {%- endfor -%}
+    </div>
+
+    <!-- Tarjetas extra opcionales (no numeradas) -->
+    {% if course.extras %}
+      <div class="lab-grid extras">
+        {% for extra in course.extras %}
+          {% include lab-card.html
+             title=extra.title
+             desc=extra.desc
+             url=extra.url %}
+        {% endfor %}
+      </div>
+    {% endif %}
+
+  {% else %}
+    {%- comment -%}
+      No se encontró el curso {{ course_key }} en _data/courses.yml
+    {%- endcomment -%}
+  {% endif %}
+
+  {% if page.footer_note %}
+    <div class="card thank-card">
+      <div class="thank-emoji">✨</div>
+      <div>
+        <h2 class="contact-title">{{ page.footer_title }}</h2>
+        {{ page.footer_note | markdownify }}
+      </div>
+    </div>
+  {% endif %}
+
+  {% if page.contact_title and page.contact_note %}
+    <div class="card contact-card">
+      <div class="contact-emoji">📬</div>
+      <div>
+        <h2 class="contact-title">{{ page.contact_title }}</h2>
+        <div class="contact-text">
+          {{ page.contact_note | markdownify }}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+</article>

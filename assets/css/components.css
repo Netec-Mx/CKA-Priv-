@@ -1,0 +1,1471 @@
+/* ===== Navegación del lab ===== */
+.lab-nav-wrap{
+  background:#fff;border:1px solid var(--c-line);border-radius:8px;
+  padding:.6rem 1rem;margin-bottom:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.05);
+}
+.lab-nav{display:flex;justify-content:space-between;gap:10px;margin:12px 0}
+.lab-nav.top{justify-content:space-between;margin:0}
+.lab-nav a.btn{
+  background:#cce2f9;border:1px solid #e2e8f0;border-radius:6px;
+  padding:6px 12px;text-decoration:none;color:#1f2937;font-weight:600;
+}
+.lab-nav a.btn:hover{background:#e2e8f0}
+.lab-nav.top{margin-bottom:1rem}
+.lab-nav.bottom{margin-top:2rem}
+
+.lab-nav-wrap-bottom{
+  background:#fff;border:1px solid var(--c-line);border-radius:8px;
+  padding:0rem 1rem;margin-top:1.5rem;box-shadow:0 1px 3px rgba(0,0,0,.05);
+}
+/* ===== Intro minimal ===== */
+.lab-intro{position: relative;background:#fff;border:1px solid var(--c-line);border-radius: var(--radius);padding:1rem 1.1rem;margin:1rem 0 1.4rem;overflow:hidden;}
+
+/* Velo MUY sutil con colores del logo INTRODUCCION PRACTICAS */
+.lab-intro::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(800px 220px at 10% -10%,rgba(var(--brand-blue-rgb), .30), transparent 60%),radial-gradient(800px 220px at 90% 110%,rgba(var(--brand-indigo-rgb), .30), transparent 60%);}
+.lab-intro h2{font-size:1.05rem;margin:.4rem 0 .35rem;color:var(--c-ink)}
+.lab-intro p,.lab-intro ul{margin-top:0;margin-bottom:1rem}
+.lab-duration{
+  display:inline-block;padding:.28rem .6rem;border-radius:999px;
+  background:var(--c-accent-weak);color:var(--c-ink);font-weight:700;border:1px solid var(--c-line);
+}
+
+/* ===== Sección “caja” reutilizable (Instrucciones, etc.) ===== */
+.lab-section{
+  background:#fff;border:1px solid var(--c-line);border-radius:10px;
+  padding:1.25rem 1.5rem;margin:2rem 0;box-shadow:0 2px 6px rgba(0,0,0,.05);
+}
+.lab-section h2{font-size:1.2rem;font-weight:700;color:var(--c-ink);margin:0 0 1rem}
+.lab-section-body{font-size:1rem;line-height:1.6}
+
+/* Listas de pasos simples */
+.lab-section ol{list-style:decimal;margin:1rem 0;padding-left:1.5rem}
+.lab-section ol li{margin-bottom:.75rem;font-size:1rem;line-height:1.5}
+
+/* ===== Bloques de código con botón Copiar ===== */
+.code-wrap{
+  position:relative;border-radius:12px;overflow:hidden;background:#0b1325;margin:1.25rem 0;
+}
+.code-wrap pre{
+  background:transparent !important;color:#e6eaf2;padding:1rem 1.25rem 1.25rem;margin:0;
+  font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  font-size:.95rem;line-height:1.5;overflow:auto;
+}
+.copy-btn{
+  position:absolute;top:.5rem;right:.5rem;display:inline-flex;align-items:center;gap:.5rem;
+  padding:.32rem .55rem;border:1px solid rgba(255,255,255,.22);background:transparent;
+  color:#dfe7ff;border-radius:.45rem;cursor:pointer;font-size:.85rem;
+}
+.copy-btn:hover{background:rgba(255,255,255,.06)}
+.copy-btn:active{transform:translateY(1px)}
+.copy-btn svg{width:16px;height:16px}
+.copy-btn.copied{color:#d1f7d6;background:rgba(16,185,129,.16);border-color:rgba(16,185,129,.35)}
+pre.nocopy + .copy-btn{display:none}
+
+/* ===== Bloques de resultado / resumen ===== */
+.task-result{
+  border-left:4px solid #22c55e;background:#f6fff8;padding:.3rem .6rem;margin:2rem 0;border-radius:6px;
+}
+.task-result h3{margin-top:0;color:#14532d}
+
+/* ---- Resumen final con fondo sutil de marca ---- */
+.lab-summary{
+  position: relative;               /* para el ::before */
+  background:#fff;
+  border:1px solid var(--c-line);
+  border-radius:10px;
+  padding:1.25rem;
+  margin-top:2rem;
+  overflow:hidden;                  /* respeta el borde redondeado */
+}
+
+/* Velo MUY suave usando los colores del logo RESULTADO FINAL*/
+.lab-summary::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:
+    radial-gradient(900px 260px at 10% -10%,
+      rgba(var(--brand-blue-rgb), .20), transparent 60%),
+    radial-gradient(900px 260px at 95% 120%,
+      rgba(var(--brand-indigo-rgb), .20), transparent 60%);
+}
+.lab-summary h2{margin:0 0 .6rem 0;color:var(--c-ink);font-size:1.25rem;font-weight:800}
+.lab-summary h3{margin-top:1rem;margin-bottom:.35rem;color:var(--c-ink);font-size:1.05rem}
+.lab-summary p{margin:.25rem 0 .75rem}
+.lab-summary ul{margin:.25rem 0 .75rem 1.2rem}
+.lab-cta{margin-top:1rem;display:flex;gap:.5rem}
+.btn-primary{
+  background:var(--c-accent);color:#fff;border:1px solid #1c5fd1;
+  padding:.52rem .85rem;border-radius:.55rem;text-decoration:none;
+}
+.btn-primary:hover{background:#1c5fd1;border-color:#184fb2}
+
+/* ===== Imágenes en contenido ===== */
+.lab img, article.lab img, .section-space img{
+  max-width:100%;height:auto;display:block;margin:.75rem auto;border-radius:6px;border:1px solid var(--c-line);
+}
+
+
+/* -------- Hero del curso INDEX-------- */
+.course-hero{
+  position: relative;              /* necesario para el ::before */
+  background: #fff;                /* mantiene fondo blanco base */
+  border: 1px solid var(--c-line);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  overflow: hidden;                /* para que el velo respete el borde redondeado */
+}
+
+/* Velo de color MUY sutil usando colores del logo PLATAFORMA DE LABORATORIOS*/
+.course-hero::before{
+  content:"";
+  position:absolute;
+  inset:0;                         /* cubre toda la tarjeta */
+  pointer-events:none;
+  background:
+    radial-gradient(900px 260px at 12% -10%,
+      rgba(var(--brand-blue-rgb), .28), transparent 60%),
+    radial-gradient(900px 260px at 92% 120%,
+      rgba(var(--brand-indigo-rgb), .18), transparent 60%);
+}
+
+
+/* -------- Grid de laboratorios -------- */
+/* .lab-grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+} */
+
+/* @media (min-width: 720px) {
+  .lab-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1040px) {
+  .lab-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+} */
+
+/* Sustituye .lab-grid por: */
+.lab-grid { display: block; }
+.lab-grid .lab-card { margin-bottom: 10px; }
+
+
+
+/* -------- Tarjeta de laboratorio -------- */
+.lab-card {
+  display: block;
+  background: #fff;
+  border: 1px solid var(--c-line);
+  border-radius: 10px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1rem;
+  text-decoration: none;
+  color: var(--c-ink);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+/* Efecto hover con azul Netec */
+.lab-card:hover {
+  background: #f0f7ff; /* azul muy claro */
+  border-color: #3ba5e0; /* azul tomado del logo */
+  transform: translateY(-2px); /* pequeño lift */
+  box-shadow: 0 4px 10px rgba(59, 165, 224, 0.15); /* glow azul */
+}
+/* Título dentro de la tarjeta */
+.lab-card h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--c-ink);
+}
+/* Duración */
+.lab-duration {
+  font-size: .85rem;
+  font-weight: 600;
+  color: #3ba5e0; /* azul corporativo */
+}
+.lab-card-head {
+  display:flex; align-items:center; justify-content:space-between; gap:.5rem;
+}
+.lab-card-title {
+  font-size: 1.02rem; line-height: 1.35; margin: 0;
+  font-weight: 700; color: var(--c-ink);
+}
+.lab-chip {
+  background: var(--c-accent-weak);
+  border: 1px solid var(--c-line);
+  color: var(--c-ink);
+  font-weight: 700;
+  border-radius: 999px;
+  padding: .18rem .5rem;
+  font-size: .82rem;
+  white-space: nowrap;
+}
+.lab-card-desc {
+  margin: .45rem 0 0;
+  color: var(--c-muted);
+  font-size: .95rem;
+}
+
+/* -------- Nota final del curso -------- */
+.course-footnote {
+  margin-top: 1.25rem;
+  padding: .75rem 1rem;
+  background: #fff;
+  border: 1px solid var(--c-line);
+  border-radius: 10px;
+  color: var(--c-ink);
+}
+
+/* ------------------------------
+   Tarjeta de agradecimiento
+   ------------------------------ */
+.card.thank-card{
+  display:flex;
+  gap:1rem;
+  align-items:center;
+  border-left:6px solid transparent;
+  border-image: linear-gradient(180deg,#7c3aed,#22d3ee) 1; /* morado->cyan */
+  background: linear-gradient(0deg,#ffffff, #ffffff),
+              radial-gradient(1200px 400px at 0% 0%, #f5f3ff 0, transparent 60%);
+  padding: 0rem 1rem 0.5rem;
+  border-radius:12px;
+  margin:1rem 0;
+  box-shadow:0 1px 2px rgba(0,0,0,.05);
+}
+
+.thank-emoji{
+  font-size:1.8rem;
+  line-height:1;
+  background:#f8fafc;
+  border:1px solid #e5e7eb;
+  width:2.2rem;
+  height:2.2rem;
+  border-radius:50%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 4px 10px rgba(124,58,237,.12);
+}
+
+.thank-title{
+  margin: 0 0 .3rem;
+  font-weight:600;
+  letter-spacing:.2px;
+}
+
+.thank-text{
+  margin:0;
+  color:#334155;
+}
+
+/* ------------------------------
+   Tarjeta de contacto
+   ------------------------------ */
+.card.contact-card {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  border-left: 6px solid transparent;
+  border-image: linear-gradient(180deg,#0ea5e9,#6366f1) 1; /* azul->indigo */
+  background: linear-gradient(0deg,#ffffff, #ffffff),
+              radial-gradient(1200px 400px at 0% 0%, #eff6ff 0, transparent 60%);
+  padding: 0rem 1rem 0.5rem;
+  border-radius: 12px;
+  margin: 1rem 0;
+  box-shadow: 0 1px 2px rgba(0,0,0,.05);
+}
+
+.contact-emoji {
+  font-size: 1.8rem;
+  line-height: 1;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(14,165,233,.15);
+}
+
+.contact-title {
+  margin: 0 0 .3rem;
+  font-weight: 600;
+  letter-spacing: .2px;
+}
+
+.contact-text p {
+  margin: 0;
+  color: #334155;
+}
+
+.course-subtitle{
+  display:inline-flex;
+  align-items:center;
+  gap:.45rem;
+  font-weight: 800;
+  font-size: 1rem;
+  padding: .25rem .6rem;
+  border-radius: 999px;
+  background:#eef2ff;        /* fondo indigo suave */
+  color:#3730a3;             /* texto indigo */
+  border:1px solid #e0e7ff;  /* borde sutil */
+  margin:.3rem 0 .75rem;
+}
+
+/* ===== Notas dentro de prácticas ===== */
+/* Nota reutilizable */
+.lab-note{
+  border-left:4px solid var(--c-accent);
+  background:#f9fbff;
+  padding:.10rem 1rem;
+  margin:1.2rem 0;
+  border-radius:6px;
+  font-size:.95rem;
+  line-height:1.55;
+}
+
+.lab-note strong{ color:var(--c-ink); }
+
+/* Variantes (opcional) */
+/* .lab-note.info{  } */
+.lab-note.important{ border-left-color:#e11d48; background:#fff5f5; }
+.lab-note.warning{ border-left-color:#f59e0b; background:#fffbeb; }
+.lab-note.success{ border-left-color:#22c55e; background:#f0fdf4; }
+.lab-note.output{ border-left-color:#7c3aed; background:#f5f3ff; }
+
+/* Compacta (menos margen/padding) */
+.lab-note.compact{ padding:.55rem .8rem; margin:.8rem 0; }
+
+/* Contenedor del bloque de código + botón */
+.code-wrap {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #0b1325;
+  margin: 1.25rem 0;
+}
+
+/* PRE: reserva espacio para que el botón no se monte encima */
+.code-wrap pre {
+  background: transparent !important;
+  color: #e6eaf2;
+  padding: 1rem 3.75rem 1.25rem 1.25rem; /* <-- padding-right extra */
+  margin: 0;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: .95rem;
+  line-height: 1.5;
+  overflow: auto;
+  white-space: pre;
+}
+
+/* Botón copiar */
+.copy-btn {
+  position: absolute;
+  top: .5rem;
+  right: .5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .35rem .6rem;
+  border: 1px solid rgba(255,255,255,.1);
+  background: rgba(255,255,255,.06);
+  color: #dbe2ff;
+  border-radius: .5rem;
+  cursor: pointer;
+  backdrop-filter: blur(3px);
+  font-size: .85rem;
+  z-index: 2; /* asegura que quede encima */
+}
+
+.copy-btn:hover { background: rgba(255,255,255,.12); }
+.copy-btn:active { transform: translateY(1px); }
+
+/* Responsive: botón solo icono en móviles */
+@media (max-width: 560px) {
+  .copy-btn span { display: none; }
+  .code-wrap pre { padding-right: 2.25rem; }
+}
+
+/* ESTILOS PARA TABLAS */
+.lab-table{
+  width:100%; border-collapse:collapse; margin: .75rem 0;
+  font-size:.95rem;
+}
+.lab-table th,.lab-table td{
+  border:1px solid var(--c-line, #dfe3e8);
+  padding:.5rem .75rem; text-align:left;
+}
+.lab-table th{ background:#f5f7fa; font-weight:700; }
+.lab-table tr:nth-child(even){ background:#fafafa; }
+
+/* RECORDATORIO IMAGEN */
+/* Base */
+.img-missing{
+  font-weight:600;
+  font-style:italic;
+}
+
+/* Cada aviso en su propia línea con sombreado suave */
+.img-missing--block{
+  display:block;
+  background:#fff4f4;     /* sombreado sutil */
+  color:#c62828;
+  padding:.35rem .55rem;
+  margin:.35rem 0;        /* separa cada aviso */
+  border-radius:6px;
+}
+
+/* Variante inline (por si la usas en algún lado) */
+.img-missing--inline{
+  display:inline;
+  color:#c62828;
+  margin-left:.35rem;
+}
+
+/* Modo oscuro */
+@media (prefers-color-scheme: dark){
+  .img-missing--block{ background:#2a1515; color:#ff8a80; }
+  .img-missing--inline{ color:#ff8a80; }
+}
+
+/* Ocultar al imprimir */
+@media print{
+  .img-missing{ display:none !important; }
+}
+
+/* =========================================================
+   Lab tables - estilo centralizado para prácticas
+   ========================================================= */
+
+.lab-table-wrap {
+  width: 100%;
+  overflow-x: auto;
+  margin: 1rem 0 1.75rem 0;
+  border: 1px solid #d0d7de;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.lab-table-wrap table {
+  width: 100%;
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  margin: 0 !important;
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.lab-table-wrap th,
+.lab-table-wrap td {
+  border: 1px solid #d0d7de !important;
+  padding: 10px 12px !important;
+  vertical-align: top !important;
+  text-align: left;
+}
+
+.lab-table-wrap th {
+  background: #f6f8fa !important;
+  color: #111827;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.lab-table-wrap tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.lab-table-wrap tbody tr:hover {
+  background: #f3f6fb;
+}
+
+.lab-table-wrap td:empty::after {
+  content: "\00a0";
+}
+
+.lab-table-wrap td.lab-empty-cell {
+  min-width: 120px;
+  background: #fcfcfd;
+}
+
+.lab-table-wrap td.lab-empty-cell::after {
+  content: "";
+  display: block;
+  min-height: 1.4rem;
+  border-bottom: 1px dashed #b8c0cc;
+}
+
+.lab-table-wrap td.lab-check-cell,
+.lab-table-wrap th.lab-check-cell {
+  text-align: center !important;
+  width: 120px;
+}
+
+.lab-table-wrap input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: #2563eb;
+}
+
+/* Evita que las tablas dentro de bloques de código se vean afectadas */
+.highlight table,
+pre table,
+code table {
+  border: 0 !important;
+}
+
+.highlight table th,
+.highlight table td,
+pre table th,
+pre table td,
+code table th,
+code table td {
+  border: 0 !important;
+  padding: 0 !important;
+}
+
+/* =========================================================
+   Prompt de apoyo
+   ========================================================= */
+
+.support-prompt {
+  margin: 1.25rem 0 1.75rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid #d0d7de;
+  border-left: 4px solid #2563eb;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.support-prompt h3 {
+  margin: 0 0 0.75rem;
+  font-size: 1rem;
+}
+
+.support-prompt-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.65rem 0.9rem;
+  border-radius: 6px;
+  background: #ffffff;
+  border: 1px solid #b8c2d1;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.support-prompt-link::before {
+  content: "↗";
+  font-size: 0.95rem;
+}
+
+.support-prompt-link:hover {
+  background: #eef4ff;
+  border-color: #2563eb;
+  text-decoration: none;
+}
+
+/* =========================================================
+   Progreso interactivo por pasos
+   ========================================================= */
+
+/* ---------------------------------------------------------
+   Marcador "Paso N."
+   --------------------------------------------------------- */
+
+.step-label {
+  display: inline-flex;
+  align-items: center;
+  gap: .35rem;
+
+  cursor: pointer;
+  user-select: none;
+
+  border-radius: 6px;
+  padding: .08rem .22rem;
+
+  transition:
+    color .18s ease,
+    background-color .18s ease,
+    box-shadow .18s ease;
+}
+
+.step-label:hover {
+  background: #eef4ff;
+}
+
+.step-label:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, .22);
+  outline-offset: 2px;
+}
+
+
+/* ---------------------------------------------------------
+   Check visual del paso completado
+   --------------------------------------------------------- */
+
+.step-label.step-label-completed {
+  color: #166534;
+  background: #f0fdf4;
+}
+
+.step-label.step-label-completed::before {
+  content: "✓";
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 1.05rem;
+  height: 1.05rem;
+
+  border-radius: 50%;
+
+  background: #22c55e;
+  color: #ffffff;
+
+  font-size: .72rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* ---------------------------------------------------------
+   Panel flotante de progreso
+   --------------------------------------------------------- */
+
+.lab-progress {
+  position: fixed;
+
+  right: 18px;
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  width: 210px;
+
+  height: auto;
+  min-height: 0;
+  max-height: none;
+  box-sizing: border-box;
+
+  z-index: 900;
+
+  padding: 1rem;
+
+  border: 1px solid #d0d7de;
+  border-left: 4px solid #2563eb;
+
+  border-radius: 10px;
+
+  background: rgba(255, 255, 255, .97);
+
+  box-shadow:
+    0 8px 24px rgba(15, 23, 42, .10),
+    0 2px 6px rgba(15, 23, 42, .06);
+
+  backdrop-filter: blur(8px);
+}
+
+
+/* ---------------------------------------------------------
+   Encabezado
+   --------------------------------------------------------- */
+
+.lab-progress-header {
+  margin-bottom: .55rem;
+
+  color: #0f172a;
+
+  font-size: .95rem;
+  line-height: 1.3;
+}
+
+.lab-progress-header strong {
+  font-weight: 800;
+}
+
+
+/* ---------------------------------------------------------
+   Contador
+   --------------------------------------------------------- */
+
+.lab-progress-count {
+  margin-bottom: .65rem;
+
+  color: #475569;
+
+  font-size: .88rem;
+}
+
+
+/* ---------------------------------------------------------
+   Barra
+   --------------------------------------------------------- */
+
+.lab-progress-bar {
+  position: relative;
+
+  width: 100%;
+  height: 8px;
+
+  overflow: hidden;
+
+  border-radius: 999px;
+
+  background: #e2e8f0;
+}
+
+.lab-progress-bar-fill {
+  width: 0%;
+  height: 100%;
+
+  border-radius: inherit;
+
+  background: #2563eb;
+
+  transition: width .25s ease;
+}
+
+
+/* ---------------------------------------------------------
+   Porcentaje
+   --------------------------------------------------------- */
+
+.lab-progress-percent {
+  margin-top: .45rem;
+
+  text-align: right;
+
+  color: #334155;
+
+  font-size: .82rem;
+  font-weight: 700;
+}
+
+
+/* ---------------------------------------------------------
+   Acciones
+   --------------------------------------------------------- */
+
+.lab-progress-actions {
+  display: flex;
+  flex-direction: column;
+
+  gap: .5rem;
+
+  margin-top: .8rem;
+}
+
+
+/* Botón Continuar */
+
+.lab-progress-continue {
+  width: 100%;
+
+  padding: .55rem .7rem;
+
+  border: 1px solid #1d4ed8;
+  border-radius: 7px;
+
+  background: #2563eb;
+  color: #ffffff;
+
+  font: inherit;
+  font-size: .86rem;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  transition:
+    background-color .18s ease,
+    border-color .18s ease,
+    transform .12s ease;
+}
+
+.lab-progress-continue:hover:not(:disabled) {
+  background: #1d4ed8;
+  border-color: #1e40af;
+}
+
+.lab-progress-continue:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.lab-progress-continue:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, .24);
+  outline-offset: 2px;
+}
+
+
+/* Completado */
+
+.lab-progress-continue:disabled {
+  border-color: #86efac;
+
+  background: #f0fdf4;
+  color: #166534;
+
+  cursor: default;
+}
+
+
+/* Botón Reiniciar */
+
+.lab-progress-reset {
+  width: 100%;
+
+  padding: .45rem .7rem;
+
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+
+  background: #ffffff;
+  color: #475569;
+
+  font: inherit;
+  font-size: .82rem;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background-color .18s ease,
+    border-color .18s ease,
+    color .18s ease;
+}
+
+.lab-progress-reset:hover {
+  border-color: #94a3b8;
+
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.lab-progress-reset:focus-visible {
+  outline: 3px solid rgba(100, 116, 139, .2);
+  outline-offset: 2px;
+}
+
+
+/* ---------------------------------------------------------
+   Estado de práctica terminada
+   --------------------------------------------------------- */
+
+.lab-progress.is-complete {
+  border-left-color: #22c55e;
+}
+
+.lab-progress.is-complete .lab-progress-bar-fill {
+  background: #22c55e;
+}
+
+
+/* =========================================================
+   Progreso responsive minimalista y compacto
+   ========================================================= */
+
+@media (max-width: 1180px) {
+
+  .lab-progress {
+    top: auto;
+    left: auto;
+    right: 12px;
+    bottom: 12px;
+
+    width: 270px;
+    transform: none;
+
+    padding: .42rem .55rem;
+
+    border: 1px solid #d0d7de;
+    border-left: 3px solid #2563eb;
+    border-radius: 8px;
+
+    background: rgba(255, 255, 255, .98);
+    box-shadow: 0 4px 14px rgba(15, 23, 42, .10);
+    backdrop-filter: blur(6px);
+  }
+
+  .lab-progress.is-complete {
+    border-left-color: #22c55e;
+  }
+
+  .lab-progress-header {
+    display: none;
+  }
+
+  .lab-progress-count {
+    margin: 0 0 .18rem;
+    padding-right: 34px;
+
+    font-size: .7rem;
+    line-height: 1.1;
+    color: #64748b;
+  }
+
+  .lab-progress-percent {
+    position: absolute;
+    top: .38rem;
+    right: .55rem;
+
+    margin: 0;
+
+    font-size: .68rem;
+    font-weight: 700;
+    color: #475569;
+  }
+
+  .lab-progress-bar {
+    height: 4px;
+    background: #e2e8f0;
+  }
+
+  .lab-progress-bar-fill {
+    background: #2563eb;
+  }
+
+  /* Acciones del panel compacto */
+  .lab-progress-actions {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: .3rem;
+
+    width: 100%;
+    margin-top: .32rem;
+  }
+
+  /* Ambos botones quedan contenidos dentro del panel */
+  .lab-progress-continue,
+  .lab-progress-reset {
+    width: 100%;
+    min-width: 0;
+    min-height: 24px;
+
+    box-sizing: border-box;
+
+    padding: .22rem .4rem;
+
+    border-radius: 6px;
+
+    font-size: .99rem;
+    line-height: 1;
+
+    white-space: nowrap;
+  }
+
+  /* Acción principal */
+  .lab-progress-continue {
+    border: 1px solid #93c5fd;
+
+    background: #eff6ff;
+    color: #1d4ed8;
+
+    font-weight: 700;
+  }
+
+  .lab-progress-continue:hover:not(:disabled) {
+    background: #dbeafe;
+    border-color: #60a5fa;
+    color: #1e40af;
+  }
+
+  /* Acción secundaria */
+  .lab-progress-reset {
+    border: 1px solid #d1d5db;
+
+    background: #ffffff;
+    color: #64748b;
+
+    font-weight: 600;
+  }
+
+  .lab-progress-reset:hover {
+    background: #f8fafc;
+    border-color: #94a3b8;
+    color: #334155;
+  }
+}
+
+
+/* ---------------------------------------------------------
+   Móvil
+   --------------------------------------------------------- */
+
+@media (max-width: 560px) {
+
+  .lab-progress {
+    right: 6px;
+    bottom: 6px;
+
+    width: 240px;
+    padding: .38rem .45rem;
+
+    border-left-width: 3px;
+  }
+
+  .lab-progress-count {
+    margin-bottom: .15rem;
+    padding-right: 30px;
+
+    font-size: .66rem;
+  }
+
+  .lab-progress-percent {
+    top: .34rem;
+    right: .45rem;
+
+    font-size: .64rem;
+  }
+
+  .lab-progress-bar {
+    height: 3px;
+  }
+
+  .lab-progress-actions {
+    gap: .25rem;
+    margin-top: .28rem;
+  }
+
+  .lab-progress-continue,
+  .lab-progress-reset {
+    min-height: 24px;
+    padding: .18rem .35rem;
+    font-size: .78rem;
+  }
+}
+
+/* =========================================================
+   Progreso - escritorio vertical compacto
+   ========================================================= */
+
+@media (min-width: 1181px) {
+
+  .lab-progress {
+    top: 50%;
+    right: max(12px, calc((100vw - 1120px) / 2 - 58px));
+    bottom: auto;
+
+    width: 62px;
+
+    transform: translateY(-50%);
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    padding: .55rem .35rem;
+
+    border: 1px solid #d0d7de;
+    border-left: 3px solid #2563eb;
+
+    border-radius: 9px;
+
+    background: rgba(255, 255, 255, .98);
+
+    box-shadow: 0 4px 14px rgba(15, 23, 42, .10);
+
+    backdrop-filter: blur(6px);
+
+    box-sizing: border-box;
+  }
+
+  .lab-progress.is-complete {
+    border-left-color: #22c55e;
+  }
+
+  .lab-progress-header {
+    display: none;
+  }
+
+  .lab-progress-count {
+    margin: 0 0 .25rem;
+    padding: 0;
+
+    font-size: .65rem;
+    line-height: 1.05;
+
+    text-align: center;
+    color: #64748b;
+  }
+
+  .lab-progress-count [data-progress-completed],
+  .lab-progress-count [data-progress-total] {
+    font-weight: 700;
+  }
+
+  .lab-progress-percent {
+    position: static;
+
+    margin: .2rem 0 0;
+
+    font-size: .64rem;
+    line-height: 1;
+
+    color: #475569;
+    font-weight: 700;
+  }
+
+  /* Barra vertical */
+  .lab-progress-bar {
+    width: 5px;
+    height: 120px;
+
+    margin: .35rem 0;
+
+    border-radius: 999px;
+
+    background: #e2e8f0;
+
+    overflow: hidden;
+
+    display: flex;
+    align-items: flex-end;
+  }
+
+  .lab-progress-bar-fill {
+    width: 100% !important;
+    height: 0%;
+
+    border-radius: inherit;
+
+    background: #2563eb;
+
+    transition: height .25s ease;
+  }
+
+  .lab-progress.is-complete .lab-progress-bar-fill {
+    background: #22c55e;
+  }
+
+  .lab-progress-actions {
+    display: flex;
+    flex-direction: column;
+
+    gap: .28rem;
+
+    width: 100%;
+
+    margin-top: .25rem;
+  }
+
+  .lab-progress-continue,
+  .lab-progress-reset {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 100%;
+
+    min-width: 0;
+    min-height: 30px;
+
+    box-sizing: border-box;
+
+    padding: .28rem 0;
+
+    border-radius: 6px;
+
+    font-size: 1.05rem;
+    line-height: 1;
+
+    white-space: nowrap;
+  }
+
+  .lab-progress-continue {
+    border: 1px solid #93c5fd;
+
+    background: #eff6ff;
+    color: #1d4ed8;
+
+    font-weight: 800;
+  }
+
+  .lab-progress-continue:hover:not(:disabled) {
+    background: #dbeafe;
+    border-color: #60a5fa;
+  }
+
+  .lab-progress-reset {
+    border: 1px solid #cbd5e1;
+
+    background: #ffffff;
+    color: #64748b;
+
+    font-weight: 700;
+    font-size: 1rem;
+  }
+
+  .lab-progress-reset:hover {
+    border-color: #94a3b8;
+
+    background: #f8fafc;
+    color: #334155;
+  }
+
+  .lab-progress-reset:hover {
+    background: #f8fafc;
+    color: #334155;
+  }
+
+  .lab-progress-continue:disabled {
+    border-color: #86efac;
+
+    background: #f0fdf4;
+    color: #166534;
+
+    cursor: default;
+  }
+}
+
+/* =========================================================
+   Notificación ligera de progreso
+   ========================================================= */
+
+.lab-progress-notice {
+  position: fixed;
+
+  left: 50%;
+  bottom: 24px;
+
+  z-index: 1200;
+
+  transform:
+    translateX(-50%)
+    translateY(8px);
+
+  max-width: min(90vw, 360px);
+
+  padding: .45rem .75rem;
+
+  border: 1px solid #d0d7de;
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, .97);
+
+  box-shadow:
+    0 4px 14px rgba(15, 23, 42, .10);
+
+  color: #475569;
+
+  font-size: .76rem;
+  font-weight: 600;
+  line-height: 1.2;
+
+  text-align: center;
+
+  opacity: 0;
+  visibility: hidden;
+
+  pointer-events: none;
+
+  transition:
+    opacity .18s ease,
+    transform .18s ease,
+    visibility .18s ease;
+}
+
+
+/* Visible */
+
+.lab-progress-notice.is-visible {
+  opacity: 1;
+  visibility: visible;
+
+  transform:
+    translateX(-50%)
+    translateY(0);
+}
+
+
+/* Avance */
+
+.lab-progress-notice.is-forward {
+  border-color: #bbf7d0;
+
+  background: #f0fdf4;
+  color: #166534;
+}
+
+
+/* Retroceso */
+
+.lab-progress-notice.is-backward {
+  border-color: #fde68a;
+
+  background: #fffbeb;
+  color: #92400e;
+}
+
+
+/* Responsive */
+
+@media (max-width: 560px) {
+
+  .lab-progress-notice {
+    bottom: 78px;
+
+    max-width: calc(100vw - 28px);
+
+    padding: .4rem .65rem;
+
+    font-size: .7rem;
+  }
+}
+
+/* =========================================================
+   Timeline secuencial de pasos
+   ========================================================= */
+
+/* =========================================================
+   Timeline secuencial de pasos
+   Mantiene el bullet original del markdown
+   y dibuja la línea de progreso más a la izquierda
+   ========================================================= */
+
+/* Asegura que el margen izquierdo tenga espacio visual */
+.lab-instructions ul,
+.lab-instructions ol {
+  overflow: visible;
+}
+
+/* No movemos el contenido del paso */
+.lab-instructions li:has(.step-label) {
+  position: relative;
+  padding-left: 0 !important;
+  overflow: visible;
+}
+
+/* Línea vertical de progreso: va a la izquierda del bullet original */
+.lab-instructions li:has(.step-label)::before {
+  content: "";
+  position: absolute;
+
+  left: -1.88rem;
+  top: 1.34rem;
+  bottom: -1.05rem;
+
+  width: 2px;
+
+  background: #dbe2ea;
+  border-radius: 999px;
+}
+
+/* Punto de progreso: también a la izquierda del bullet original */
+.lab-instructions li:has(.step-label)::after {
+  content: "";
+  position: absolute;
+
+  left: -2.14rem;
+  top: .56rem;
+
+  width: .54rem;
+  height: .54rem;
+
+  border-radius: 50%;
+
+  border: 2px solid #cbd5e1;
+  background: #ffffff;
+
+  box-sizing: border-box;
+  z-index: 2;
+
+  transition:
+    background-color .18s ease,
+    border-color .18s ease,
+    box-shadow .18s ease;
+}
+
+
+/* =========================================================
+   Paso completado
+   ========================================================= */
+
+.lab-instructions li.step-completed::before {
+  background: #86efac;
+}
+
+.lab-instructions li.step-completed::after {
+  border-color: #22c55e;
+  background: #22c55e;
+}
+
+.lab-instructions li.step-completed .step-label {
+  color: #166534;
+}
+
+
+/* =========================================================
+   Paso actual / siguiente
+   ========================================================= */
+
+.lab-instructions li.step-current::before {
+  background: #dbe2ea;
+}
+
+.lab-instructions li.step-current::after {
+  border-color: #2563eb;
+  background: #ffffff;
+
+  box-shadow:
+    0 0 0 3px rgba(37, 99, 235, .14);
+}
+
+.lab-instructions li.step-current .step-label {
+  color: #1d4ed8;
+}
+
+
+/* =========================================================
+   Paso pendiente
+   ========================================================= */
+
+.lab-instructions li.step-pending::before {
+  background: #e2e8f0;
+}
+
+.lab-instructions li.step-pending::after {
+  border-color: #cbd5e1;
+  background: #ffffff;
+}
+
+
+/* =========================================================
+   Último paso
+   Evita que la línea continúe indefinidamente
+   ========================================================= */
+
+.lab-instructions li:has(.step-label):last-child::before {
+  bottom: .45rem;
+}
+
+
+/* =========================================================
+   Ajuste visual del label
+   ========================================================= */
+
+.step-label {
+  position: relative;
+  z-index: 3;
+}
+
+
+/* =========================================================
+   Responsive
+   ========================================================= */
+
+@media (max-width: 560px) {
+
+  .lab-instructions li:has(.step-label)::before {
+    left: -1.68rem;
+    top: 1.31rem;
+  }
+
+  .lab-instructions li:has(.step-label)::after {
+    left: -1.94rem;
+    top: .54rem;
+  }
+}

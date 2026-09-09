@@ -1,0 +1,61 @@
+# _data/courses.yml
+ckapriv:
+  title: "Administración, despliegue y preparación para CKA" # COLOCAR EL NOMBRE DEL CURSO
+  intro: "DESCRIPCIÓN_DEL_CURSO_AQUI"
+  labs:
+
+    - id: lab1 
+      title: "NOMBRE_DE_LA_PRACTICA_1" # NOMBRE DE LA PRACTICA
+      url:  "/lab1/lab1/"
+      duration: "## min" # AJUSTAR TIEMPO DE LA PRACTICA
+      desc: "DESCRIPCION_CORTA_DE_LA_PRACTICA" # DESCRIPCION BREVE DE LA PRACTICA 100-120 CARACTERES
+
+    - id: lab2 
+      title: "NOMBRE_DE_LA_PRACTICA_2" # NOMBRE DE LA PRACTICA
+      url:  "/lab2/lab2/"
+      duration: "## min" # AJUSTAR TIEMPO DE LA PRACTICA
+      desc: "DESCRIPCION_CORTA_DE_LA_PRACTICA" # DESCRIPCION BREVE DE LA PRACTICA 100-120 CARACTERES
+
+    - id: lab3 
+      title: "NOMBRE_DE_LA_PRACTICA_3" # NOMBRE DE LA PRACTICA
+      url:  "/lab3/lab3/"
+      duration: "## min" # AJUSTAR TIEMPO DE LA PRACTICA
+      desc: "DESCRIPCION_CORTA_DE_LA_PRACTICA" # DESCRIPCION BREVE DE LA PRACTICA 100-120 CARACTERES
+
+    - id: lab4 
+      title: "NOMBRE_DE_LA_PRACTICA_4" # NOMBRE DE LA PRACTICA
+      url:  "/lab4/lab4/"
+      duration: "## min" # AJUSTAR TIEMPO DE LA PRACTICA
+      desc: "DESCRIPCION_CORTA_DE_LA_PRACTICA" # DESCRIPCION BREVE DE LA PRACTICA 100-120 CARACTERES
+
+    - id: lab5 
+      title: "NOMBRE_DE_LA_PRACTICA_5" # NOMBRE DE LA PRACTICA
+      url:  "/lab5/lab5/"
+      duration: "## min" # AJUSTAR TIEMPO DE LA PRACTICA
+      desc: "DESCRIPCION_CORTA_DE_LA_PRACTICA" # DESCRIPCION BREVE DE LA PRACTICA 100-120 CARACTERES
+
+    - id: lab6 
+      title: "NOMBRE_DE_LA_PRACTICA_6" # NOMBRE DE LA PRACTICA
+      url:  "/lab6/lab6/"
+      duration: "## min" # AJUSTAR TIEMPO DE LA PRACTICA
+      desc: "DESCRIPCION_CORTA_DE_LA_PRACTICA" # DESCRIPCION BREVE DE LA PRACTICA 100-120 CARACTERES
+
+    - id: lab7 
+      title: "NOMBRE_DE_LA_PRACTICA_7" # NOMBRE DE LA PRACTICA
+      url:  "/lab7/lab7/"
+      duration: "## min" # AJUSTAR TIEMPO DE LA PRACTICA
+      desc: "DESCRIPCION_CORTA_DE_LA_PRACTICA" # DESCRIPCION BREVE DE LA PRACTICA 100-120 CARACTERES
+
+    - id: lab8 
+      title: "NOMBRE_DE_LA_PRACTICA_8" # NOMBRE DE LA PRACTICA
+      url:  "/lab8/lab8/"
+      duration: "## min" # AJUSTAR TIEMPO DE LA PRACTICA
+      desc: "DESCRIPCION_CORTA_DE_LA_PRACTICA" # DESCRIPCION BREVE DE LA PRACTICA 100-120 CARACTERES
+
+    # ESTRUCTURA DE SUB-PRACTICA OCUPAR SI ES NECESARIO SINO BORRAR
+    # - id: lab61
+    #   number: "6.1"
+    #   title: "Despliegue de servicios en Docker Swarm"
+    #   url:  "/capitulo6/lab61/"
+    #   duration: "60 min"
+    #   desc: "DESCRIPCION_CORTA_DE_LA_PRACTICA" # DESCRIPCION BREVE DE LA PRACTICA 100-120 CARACTERES

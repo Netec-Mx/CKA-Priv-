@@ -1,0 +1,16 @@
+/* Syntax: quitar fondos en tokens */
+pre code, pre code span, pre code kbd{
+  background:none !important; border:none !important; box-shadow:none !important;
+}
+
+/* Color base del código */
+pre code{color:#f8f8f2}
+
+/* Paleta simple (estilo Dracula) */
+pre code .k{color:#ff79c6}         /* keywords */
+pre code .s{color:#f1fa8c}         /* strings  */
+pre code .m{color:#bd93f9}         /* numbers  */
+pre code .n, pre code .nf{color:#50fa7b}  /* names/functions */
+pre code .c{color:#6272a4; font-style:italic} /* comments */
+pre code .nv{color:#8be9fd}        /* variables */
+pre code .o{color:#ffb86c}         /* operators */

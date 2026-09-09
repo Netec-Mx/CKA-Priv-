@@ -1,0 +1,32 @@
+---
+layout: default
+---
+
+<article class="lab">
+
+  {% include nav.html %}
+
+  {% include lab-title.html %}
+
+  {% include lab-intro.html %}
+
+  {%- comment -%} Modal del zoom (una sola vez por página) {%- endcomment -%}
+  {% include image-zoom.html %}
+
+  {%- comment -%}
+  Capturamos el contenido del markdown del lab y lo pasamos al include
+  como un parámetro llamado "content".
+  {%- endcomment -%}
+  {% capture instrucciones_md %}
+    {{ content }}
+  {% endcapture %}
+  {% include lab-section.html title="Instrucciones" content=instrucciones_md class="lab-instructions" %}
+
+  {% include task-result.html %}
+  {% include lab-footer.html %}
+
+  {% include nav-footer.html %}
+</article>
+
+{% include image-zoom.html %}
+{% include scripts-copybtn.html %}

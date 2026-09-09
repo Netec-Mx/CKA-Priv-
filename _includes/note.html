@@ -1,0 +1,14 @@
+{%- assign _text = include.text | default: '' -%}
+{%- assign _type = include.type | default: 'info' -%}
+{%- assign _title = include.title -%}
+{%- assign _compact = include.compact -%}
+
+{%- capture _clean -%}
+{{ _text | markdownify | strip | replace: '<p>', '' | replace: '</p>', '' }}
+{%- endcapture -%}
+
+<div class="lab-note {{ _type }}{% if _compact %} compact{% endif %}">
+  {%- if _title -%}<strong>{{ _title }}</strong>{%- endif -%}
+  {{ _clean }}
+</div>
+

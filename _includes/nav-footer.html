@@ -1,0 +1,7 @@
+<div class="lab-nav-wrap-bottom">
+  <nav class="lab-nav bottom">
+    {% if page.prev %}<a class="btn" href="{{ page.prev | relative_url }}">⬅ Atrás</a>{% endif %}
+    <a class="btn" href="{{ '/' | relative_url }}">Lista General</a>
+    {% if page.next %}<a class="btn" href="{{ page.next | relative_url }}">Siguiente ➡</a>{% endif %}
+  </nav>
+</div>

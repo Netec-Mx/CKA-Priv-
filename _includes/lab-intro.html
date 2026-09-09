@@ -1,0 +1,34 @@
+<div class="lab-intro">
+  {% if page.objective %}
+    <section>
+      <h2>Objetivo</h2>
+      <p>{{ page.objective | join: " " | markdownify }}</p>
+    </section>
+  {% endif %}
+
+  {% if page.prerequisites %}
+  <section>
+    <h2>Requisitos previos</h2>
+    <ul>
+      {% for r in page.prerequisites %}
+        <li>{{ r | markdownify | replace: '<p>', '' | replace: '</p>', '' | strip }}</li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+
+  {% assign _dur = page.duracion_estimada | default: page.duration %}
+  {% if _dur %}
+    <section>
+      <h2>Duración estimada</h2>
+      <p class="lab-duration">{{ _dur }}</p>
+    </section>
+  {% endif %}
+
+  {% if page.introduction %}
+    <section>
+      <h2>Introducción</h2>
+      <p>{{ page.introduction | join: " " | markdownify }}</p>
+    </section>
+  {% endif %}
+</div>

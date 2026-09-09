@@ -1,0 +1,46 @@
+{% comment %}
+Parámetros (usa page.* o include.*):
+- lab_number
+- final_result (string)
+- notes (array)
+- references (array de strings o {text,url})
+- show_cta_next (bool) -> muestra botón a page.next si existe
+{% endcomment %}
+
+<div class="lab-summary">
+  <h2>¡Felicidades! Has completado el Laboratorio {{ include.lab_number | default: page.lab_number }}.</h2>
+
+  {% assign _final = include.final_result | default: page.final_result %}
+  {% if _final %}
+    <h3>Resultado final</h3>
+    <p>{{ _final | markdownify }}</p>
+  {% endif %}
+
+  {% assign _notes = include.notes | default: page.notes %}
+  {% if _notes and _notes.size > 0 %}
+    <h3>Notas y consideraciones</h3>
+    <ul>
+      {% for n in _notes %}
+        {% assign item = n | markdownify | strip %}
+        {% if item contains '<p>' %}
+          {% assign item = item | remove: '<p>' | remove: '</p>' %}
+        {% endif %}
+        <li>{{ item }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+
+  {% assign _refs = include.references | default: page.references %}
+  {% if _refs and _refs.size > 0 %}
+    <h3>URL de referencia</h3>
+    <ul>
+      {% for r in _refs %}
+        {% if r.url and r.text %}
+          <li><a href="{{ r.url }}" target="_blank" rel="noopener">{{ r.text }}</a></li>
+        {% else %}
+          <li>{{ r }}</li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>

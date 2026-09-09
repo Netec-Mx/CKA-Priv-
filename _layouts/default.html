@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>{{ page.title | default: site.title }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- <link rel="stylesheet" href="{{ '../assets/css/base.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '../assets/css/components.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ '../assets/css/syntax.css' | relative_url }}"> -->
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/base.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/components.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/syntax.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/zoom.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/print.css">
+  
+
+    <!-- SEO & Favicon -->
+  {% seo %}
+
+  <!-- Favicons (provisional mientras generas los PNG móviles) -->
+  <link rel="icon" href="{{ '/assets/img/favicon.ico?v=2' | relative_url }}" type="image/x-icon">
+  <link rel="shortcut icon" href="{{ '/assets/img/favicon.ico?v=2' | relative_url }}" type="image/x-icon">
+
+  <!-- Favicon Standard -->
+  <!-- <link rel="icon" type="image/png" href="{{ '/assets/img/favicon.ico' | relative_url }}"> -->
+
+  <!-- Favicons extendidos -->
+  <!-- <link rel="apple-touch-icon" sizes="180x180" href="{{ '/assets/img/apple-touch-icon.png' | relative_url }}">
+  <link rel="icon" sizes="192x192" href="{{ '/assets/img/android-chrome-192x192.png' | relative_url }}">
+  <link rel="icon" sizes="512x512" href="{{ '/assets/img/android-chrome-512x512.png' | relative_url }}"> -->
+
+</head>
+<body>
+  {% include header.html %}
+  <main class="container">
+    {{ content }}
+  </main>
+  {% include scripts-copybtn.html %}
+  <script src="{{ site.baseurl }}/assets/js/lab-tables.js"></script>
+  <script src="{{ site.baseurl }}/assets/js/lab-progress.js"></script>
+</body>
+</html>

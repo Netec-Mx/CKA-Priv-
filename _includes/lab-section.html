@@ -1,0 +1,13 @@
+{%- comment -%}
+Uso:
+{% include lab-section.html title="Instrucciones" %}
+  (contenido markdown aquí)
+{% endinclude %}
+{%- endcomment -%}
+
+<div class="lab-section {{ include.class }}">
+  {% if include.title %}<h2>{{ include.title }}</h2>{% endif %}
+  <div class="lab-section-body">
+    {{ include.content }}
+  </div>
+</div>

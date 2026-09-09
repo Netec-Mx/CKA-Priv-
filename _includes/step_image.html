@@ -1,0 +1,70 @@
+{%- comment -%}
+Muestra UNA imagen por paso desde un directorio base.
+Autoincrementa si no pasas step/num.
+
+Parámetros:
+  step / num   : número de imagen (opcional)
+  dir          : base (default: page.images_base)
+  ext          : extensión (default: png)
+  alt          : ALT/figcaption (default: "Paso N")
+  figure       : "true" para <figure>/<figcaption>
+  start_at     : primer número cuando autoincrementa (default: 1)
+  missing_text : texto si falta (default: "Falta imagen")
+{%- endcomment -%}
+
+{%- assign dir = include.dir | default: page.images_base -%}
+{%- assign ext = include.ext | default: "png" -%}
+{%- assign fig = include.figure | default: "false" -%}
+{%- assign missing_text = include.missing_text | default: "Falta imagen" -%}
+
+{%- comment -%}
+Cálculo del número de imagen (n)
+- Si pasas step/num, se usa ese valor.
+- Si no, se autoincrementa usando una variable global POR PÁGINA
+  llamada step_image_counter (NO usamos {% increment %}).
+{%- endcomment -%}
+
+{%- if include.step or include.num -%}
+  {%- assign n = include.step | default: include.num | plus: 0 -%}
+{%- else -%}
+  {%- assign start = include.start_at | default: 1 | plus: 0 -%}
+  {%- if step_image_counter -%}
+    {%- assign step_image_counter = step_image_counter | plus: 1 -%}
+  {%- else -%}
+    {%- assign step_image_counter = start -%}
+  {%- endif -%}
+  {%- assign n = step_image_counter -%}
+{%- endif -%}
+
+{%- capture p1 -%}{{ dir }}/{{ n }}.{{ ext }}{%- endcapture -%}
+{%- capture p2 -%}{{ dir }}/img{{ n }}.{{ ext }}{%- endcapture -%}
+
+{%- assign file = site.static_files | where: "path", p1 | first -%}
+{%- if file == nil -%}
+  {%- assign file = site.static_files | where: "path", p2 | first -%}
+{%- endif -%}
+
+{%- assign alt = include.alt | default: "Imagen " | append: n -%}
+
+{%- if file -%}
+  {%- assign src = file.path | relative_url -%}
+  {%- if fig == "true" -%}
+<figure class="step-figure">
+  <img src="{{ src }}" alt="{{ alt }}" class="step-media">
+  <figcaption>{{ alt }}</figcaption>
+</figure>
+  {%- else -%}
+<img src="{{ src }}" alt="{{ alt }}" class="step-media">
+  {%- endif -%}
+{%- else -%}
+  {%- assign mode = include.mode | default: "block" -%}
+  {%- if mode == "inline" -%}
+<span class="img-missing img-missing--inline" aria-live="polite">
+  <strong>{{ missing_text }}:</strong> {{ alt }}
+</span>
+  {%- else -%}
+<span class="img-missing img-missing--block" aria-live="polite">
+  <strong>{{ missing_text }}:</strong> {{ alt }}
+</span>
+  {%- endif -%}
+{%- endif -%}

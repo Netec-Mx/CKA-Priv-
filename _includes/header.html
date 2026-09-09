@@ -1,0 +1,39 @@
+<header class="navbar">
+  <div class="container">
+    <a class="brand" href="{{ '/' | relative_url }}">
+      {% if site.logo %}
+        <img src="{{ site.logo | relative_url }}" alt="Logo" onerror="this.style.display='none'">
+      {% endif %}
+      <span>{{ site.title }}</span>
+    </a>
+
+    <nav class="nav">
+      <ul>
+        {% assign here = page.url | relative_url %}
+        {% for item in site.data.menu %}
+          {% assign raw = item.url | default:'' %}
+          {% if raw == '' %}
+            {% assign href = '' %}
+          {% elsif item.external %}
+            {% assign href = raw %}
+          {% else %}
+            {% assign href = raw | relative_url %}
+          {% endif %}
+
+          {% assign active = '' %}
+          {% if href != '' and item.external != true and here == href %}
+            {% assign active = 'active' %}
+          {% endif %}
+
+          <li>
+            {% if href != '' %}
+              <a href="{{ href }}" {% if item.external %}target="_blank" rel="noopener"{% endif %} class="{{ active }}">{{ item.title }}</a>
+            {% else %}
+              <span class="disabled">{{ item.title }}</span>
+            {% endif %}
+          </li>
+        {% endfor %}
+      </ul>
+    </nav>
+  </div>
+</header>

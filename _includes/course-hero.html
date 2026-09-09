@@ -1,0 +1,12 @@
+<section class="course-hero">
+  <h1 class="course-title">
+    {{ include.title }}
+  </h1>
+  {% if include.subtitle %}<p class="course-subtitle">{{ include.subtitle }}</p>{% endif %}
+
+  {% if include.intro %}
+    <div class="course-intro">
+      {{ include.intro | markdownify }}
+    </div>
+  {% endif %}
+</section>

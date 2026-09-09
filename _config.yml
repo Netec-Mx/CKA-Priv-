@@ -1,0 +1,34 @@
+title: Netec Learning Labs
+description: Plataforma de Laboratorios
+# Para project site:
+url: "https://netec-mx.github.io"
+baseurl: "/CKA-Priv-"   # DEFINIR EL NOMBRE DEL REPOSITORIO PARA LAS PRACTICAS
+
+# Nombre completo del repo (owner/repo)
+repository: netec-mx/CKA-Priv- # MISMO NOMBRE QUE EL DE LA LINEA 5
+
+plugins:
+  - jekyll-include-cache
+  - jekyll-remote-theme
+  - jekyll-feed
+  - jekyll-seo-tag
+  - jekyll-github-metadata 
+
+exclude:
+  - .bundle
+  - vendor
+  - node_modules
+  - .github
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - scripts/
+
+logo: /assets/img/neteclogo.png
+favicon: /assets/img/favicon.ico
+
+# =====================================================================
+# CONFIGURACIÓN LOCAL (DESCOMENTAR SI TRABAJAS EN MÚLTIPLES LABS A LA VEZ)
+# =====================================================================
+# port: 4001             # Puerto predeterminado: 4000. Rango sugerido: 4001 al 4999
+# livereload_port: 35730 # Puerto predeterminado: 35729. Rango sugerido: 35730 al 35799

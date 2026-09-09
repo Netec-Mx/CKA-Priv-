@@ -1,0 +1,76 @@
+{%- comment -%}
+Include: step_label.html
+
+Emite "Paso N." autoincremental POR PÁGINA.
+También incorpora atributos HTML para que lab-progress.js
+pueda identificar y guardar el progreso de cada paso.
+
+Uso típico:
+
+  - {% include step_label.html %} Texto del paso...
+
+Parámetros:
+  step      : número fijo opcional
+  start_at  : primer número del autoincremento (default: 1)
+  prefix    : texto antes del número (default: "Paso")
+  suffix    : texto después del número (default: ".")
+  bold      : "true"/"false" (default: "true")
+  series    : secuencia independiente "a", "b", "c" o "d"
+              (default: "a")
+
+ID lógico utilizado por progreso:
+  a:1
+  a:2
+  b:1
+  etc.
+{%- endcomment -%}
+
+{%- assign prefix = include.prefix | default: "Paso" -%}
+{%- assign suffix = include.suffix | default: "." -%}
+{%- assign bold = include.bold | default: "true" -%}
+{%- assign start = include.start_at | default: 1 | plus: 0 -%}
+{%- assign series = include.series | default: "a" -%}
+{%- assign start_minus_1 = start | minus: 1 -%}
+
+{%- if include.step -%}
+
+  {%- assign n = include.step | plus: 0 -%}
+
+{%- else -%}
+
+  {%- if series == "a" -%}
+
+    {%- assign __cnt = step_text_counter_a | default: start_minus_1 | plus: 0 -%}
+    {%- assign __cnt = __cnt | plus: 1 -%}
+    {%- assign step_text_counter_a = __cnt -%}
+    {%- assign n = __cnt -%}
+
+  {%- elsif series == "b" -%}
+
+    {%- assign __cnt = step_text_counter_b | default: start_minus_1 | plus: 0 -%}
+    {%- assign __cnt = __cnt | plus: 1 -%}
+    {%- assign step_text_counter_b = __cnt -%}
+    {%- assign n = __cnt -%}
+
+  {%- elsif series == "c" -%}
+
+    {%- assign __cnt = step_text_counter_c | default: start_minus_1 | plus: 0 -%}
+    {%- assign __cnt = __cnt | plus: 1 -%}
+    {%- assign step_text_counter_c = __cnt -%}
+    {%- assign n = __cnt -%}
+
+  {%- else -%}
+
+    {%- assign __cnt = step_text_counter_d | default: start_minus_1 | plus: 0 -%}
+    {%- assign __cnt = __cnt | plus: 1 -%}
+    {%- assign step_text_counter_d = __cnt -%}
+    {%- assign n = __cnt -%}
+
+  {%- endif -%}
+
+{%- endif -%}
+
+{%- capture label -%}{{ prefix }} {{ n }}{{ suffix }}{%- endcapture -%}
+{%- capture step_id -%}{{ series }}:{{ n }}{%- endcapture -%}
+
+{%- if bold == "true" -%}<span class="step-label" data-step-id="{{ step_id | strip }}" data-step-number="{{ n }}" data-step-series="{{ series }}" role="button" tabindex="0" aria-pressed="false" title="Marcar este paso como completado"><strong>{{ label | strip }}</strong></span>{%- else -%}<span class="step-label" data-step-id="{{ step_id | strip }}" data-step-number="{{ n }}" data-step-series="{{ series }}" role="button" tabindex="0" aria-pressed="false" title="Marcar este paso como completado">{{ label | strip }}</span>{%- endif -%}

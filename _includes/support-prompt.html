@@ -1,0 +1,36 @@
+{%- assign lab_key = page.slug | strip -%}
+{%- assign task_key = include.task | strip -%}
+{%- assign lab_prompts = site.data.support_prompts[lab_key] -%}
+{%- assign prompt_data = lab_prompts[task_key] -%}
+
+{%- if prompt_data and prompt_data.prompt -%}
+
+  {%- assign prompt_text = prompt_data.prompt | strip -%}
+  {%- assign encoded_prompt = prompt_text | uri_escape -%}
+  {%- assign link_title = prompt_data.title | default: "Explicar la tarea en ChatGPT" -%}
+
+<div class="support-prompt">
+  <h3>Prompt de apoyo para explicar lo realizado</h3>
+
+  <a
+    class="support-prompt-link"
+    href="https://chatgpt.com/?q={{ encoded_prompt }}"
+    target="_blank"
+    rel="noopener noreferrer">
+    {{ link_title }}
+  </a>
+</div>
+
+{%- else -%}
+
+<div class="lab-note important compact">
+  No se encontró el prompt
+  <code>{{ task_key }}</code>
+  para
+  <code>{{ lab_key }}</code>.
+
+  Ruta esperada:
+  <code>_data/support_prompts/{{ lab_key }}.yml</code>
+</div>
+
+{%- endif -%}
