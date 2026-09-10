@@ -35,7 +35,7 @@ references:
   - text: Static Pods
     url: https://kubernetes.io/docs/concepts/workloads/pods/static-pods/
 prev: /lab7/lab7/
-next: /lab9/lab9/
+next: /lab1/lab1/
 ---
 
 ---
@@ -131,13 +131,10 @@ next: /lab9/lab9/
 
 ### Tarea 2.1. Preparar el escenario
 
-- {% include step_label.html %} Desde `cka-control`, conéctate por SSH a `cka-worker2` para ejecutar únicamente el archivo neutral que prepara este escenario.
-
-  > **Importante:** No abras ni inspecciones `task2.sh`; el objetivo es descubrir el problema utilizando el estado resultante del nodo.
-  {: .lab-note .important .compact}
+- {% include step_label.html %} Abre una nueva ventana de **Terminal**, conéctate por SSH a `cka-worker2` para ejecutar únicamente el archivo neutral que prepara este escenario.
 
   ```bash
-  ssh control@cka-worker2
+  ssh worker2@192.168.10.102
   ```
 
   > **Salida esperada:** El prompt cambia a `control@cka-worker2`.
@@ -191,7 +188,7 @@ next: /lab9/lab9/
 
 - {% include step_label.html %} Desde `cka-control`, verifica el estado final del nodo y no continúes hasta que Kubernetes confirme su recuperación completa.
 
-  > **Importante:** La tarea no termina porque un servicio local arranque; el nodo debe volver a reportar `Ready` al control plane.
+  > **Importante:** La tarea no termina; el nodo debe volver a reportar `Ready` al control plane.
   {: .lab-note .important .compact}
 
   ```bash
@@ -225,9 +222,6 @@ next: /lab9/lab9/
 
 - {% include step_label.html %} Desde `cka-control`, aplica directamente `task3.yaml` desde GitHub Raw para crear el escenario de scheduling sin inspeccionarlo.
 
-  > **Importante:** No descargues ni abras el YAML antes del reto; debes deducir la causa a partir del estado y los eventos del workload.
-  {: .lab-note .important .compact}
-
   ```bash
   kubectl apply -f https://raw.githubusercontent.com/Netec-Mx/CKA-Priv-/main/labs/lab8/scripts/task3.yaml
   ```
@@ -250,9 +244,6 @@ next: /lab9/lab9/
 ### Tarea 3.2. Diagnosticar y recuperar
 
 - {% include step_label.html %} Diagnostica por qué las dos réplicas de `reports` no pueden programarse y localiza la restricción exacta que impide el scheduling.
-
-  > **Importante:** No elimines el namespace ni cambies la imagen del contenedor; corrige solamente la condición responsable del incidente.
-  {: .lab-note .important .compact}
 
   > **Salida esperada:** Identificas mediante evidencia del clúster qué requisito del workload no puede ser satisfecho por los nodos disponibles.
   {: .lab-note .output .compact}
@@ -281,9 +272,6 @@ next: /lab9/lab9/
 
 - {% include step_label.html %} Desde `cka-control`, confirma que las dos réplicas requeridas están ejecutándose y listas después de la corrección aplicada.
 
-  > **Importante:** Reducir el Deployment a una réplica no resuelve el reto; deben conservarse las dos réplicas definidas originalmente.
-  {: .lab-note .important .compact}
-
   ```bash
   kubectl get deployment reports -n exam-scheduling
   ```
@@ -302,9 +290,6 @@ next: /lab9/lab9/
 ### Tarea 4.1. Preparar el escenario
 
 - {% include step_label.html %} Desde `cka-control`, aplica `task4.yaml` directamente desde GitHub Raw para crear la aplicación y su Service defectuoso.
-
-  > **Importante:** No inspecciones el manifiesto antes de resolver el reto; el diagnóstico debe realizarse únicamente sobre los objetos creados.
-  {: .lab-note .important .compact}
 
   ```bash
   kubectl apply -f https://raw.githubusercontent.com/Netec-Mx/CKA-Priv-/main/labs/lab8/scripts/task4.yaml
@@ -328,9 +313,6 @@ next: /lab9/lab9/
 ### Tarea 4.2. Diagnosticar y recuperar
 
 - {% include step_label.html %} Diagnostica por qué `payments-svc` no entrega tráfico hacia la aplicación aunque los Pods del Deployment estén saludables.
-
-  > **Importante:** No reinicies CoreDNS, kube-proxy ni el CNI sin evidencia; identifica primero dónde se rompe la relación del Service.
-  {: .lab-note .important .compact}
 
   > **Salida esperada:** Demuestras qué propiedad impide que `payments-svc` disponga de backends válidos.
   {: .lab-note .output .compact}
@@ -381,9 +363,6 @@ next: /lab9/lab9/
 
 - {% include step_label.html %} Desde `cka-control`, aplica `task5.yaml` desde GitHub Raw para crear el escenario completo de almacenamiento sin inspeccionarlo.
 
-  > **Importante:** No abras el YAML antes del diagnóstico; revisa posteriormente PV, PVC, StorageClass, Pod y eventos como en un escenario CKA.
-  {: .lab-note .important .compact}
-
   ```bash
   kubectl apply -f https://raw.githubusercontent.com/Netec-Mx/CKA-Priv-/main/labs/lab8/scripts/task5.yaml
   ```
@@ -406,9 +385,6 @@ next: /lab9/lab9/
 ### Tarea 5.2. Diagnosticar y recuperar
 
 - {% include step_label.html %} Diagnostica por qué el claim `app-data` no puede utilizar el PersistentVolume preparado para este escenario de almacenamiento.
-
-  > **Importante:** No elimines `lab8-pv` ni cambies su capacidad; identifica exactamente qué requisito del claim impide el binding.
-  {: .lab-note .important .compact}
 
   > **Salida esperada:** Obtienes evidencia que explica la incompatibilidad entre el PVC y el almacenamiento disponible.
   {: .lab-note .output .compact}
@@ -436,9 +412,6 @@ next: /lab9/lab9/
   {: .lab-note .output .compact}
 
 - {% include step_label.html %} Desde `cka-control`, espera que `storage-api` quede listo y comprueba el contenido escrito dentro del volumen montado.
-
-  > **Importante:** Un PVC `Bound` sin un Pod funcional no completa el escenario; debes demostrar uso real del volumen.
-  {: .lab-note .important .compact}
 
   ```bash
   kubectl wait --for=condition=Ready pod/storage-api -n exam-storage --timeout=90s
