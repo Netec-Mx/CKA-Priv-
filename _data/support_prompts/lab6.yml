@@ -5,9 +5,11 @@ tarea1:
   title: "Explicar la Tarea 1 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 1 de la
-    Práctica 6 de Couchbase Server.
+    Práctica 6 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_1_AQUI.
+    Establecí una línea base de networking revisando nodos, condiciones,
+    direcciones internas, CNI, kube-proxy y CoreDNS. También identifiqué el
+    modo de kube-proxy y comprobé el Service kube-dns y sus EndpointSlices.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -17,9 +19,12 @@ tarea2:
   title: "Explicar la Tarea 2 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 2 de la
-    Práctica 6 de Couchbase Server.
+    Práctica 6 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_2_AQUI.
+    Creé una aplicación con dos réplicas, un Service ClusterIP y un Pod
+    cliente. Comparé tráfico directo hacia la IP de un Pod con tráfico
+    dirigido mediante web-svc para distinguir conectividad proporcionada
+    por el CNI del acceso a través de Services.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -29,9 +34,12 @@ tarea3:
   title: "Explicar la Tarea 3 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 3 de la
-    Práctica 6 de Couchbase Server.
+    Práctica 6 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_3_AQUI.
+    Creé un Pod de diagnóstico DNS, revisé su /etc/resolv.conf y utilicé
+    nslookup para resolver kubernetes.default, web-svc y su FQDN. También
+    relacioné la ClusterIP de kube-dns con los EndpointSlices y logs de
+    CoreDNS.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -41,9 +49,12 @@ tarea4:
   title: "Explicar la Tarea 4 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 4 de la
-    Práctica 6 de Couchbase Server.
+    Práctica 6 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_4_AQUI.
+    Construí un flujo de diagnóstico revisando labels de Pods, selectors de
+    Services, EndpointSlices y estado de kube-proxy. Comparé conectividad
+    directa por Pod IP, conectividad mediante Service y resolución DNS para
+    poder aislar la capa responsable de una falla.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -53,11 +64,58 @@ tarea5:
   title: "Explicar la Tarea 5 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 5 de la
-    Práctica 6 de Couchbase Server.
+    Práctica 6 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_5_AQUI.
+    Trabajé con una falla controlada de resolución DNS. Observé el síntoma,
+    revisé kube-dns, CoreDNS y sus EndpointSlices, identifiqué la causa de
+    que las consultas DNS no alcanzaran correctamente los backends y
+    restauré la configuración funcional.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
     completó correctamente y qué errores comunes podrían presentarse.
 
+tarea6:
+  title: "Explicar la Tarea 6 con IA"
+  prompt: >-
+    Explícame expertamente qué hice en la Tarea 6 de la
+    Práctica 6 de Kubernetes CKA.
+
+    Diagnostiqué un Service que existía pero no tenía backends válidos.
+    Comparé sus selectors con los labels de los Pods, revisé EndpointSlices,
+    corregí la relación entre Service y workloads y comprobé nuevamente el
+    acceso a la aplicación.
+
+    Explica el propósito de cada comando, configuración o procedimiento,
+    cómo interpretar las salidas esperadas, cómo validar que la tarea se
+    completó correctamente y qué errores comunes podrían presentarse.
+
+tarea7:
+  title: "Explicar la Tarea 7 con IA"
+  prompt: >-
+    Explícame expertamente qué hice en la Tarea 7 de la
+    Práctica 6 de Kubernetes CKA.
+
+    Apliqué una NetworkPolicy que restringió el tráfico hacia los Pods web,
+    observé que Service y EndpointSlices seguían correctos pero tanto el
+    acceso por Service como por Pod IP fallaba, identifiqué la política como
+    causa y restauré la conectividad mediante el CNI.
+
+    Explica el propósito de cada comando, configuración o procedimiento,
+    cómo interpretar las salidas esperadas, cómo validar que la tarea se
+    completó correctamente y qué errores comunes podrían presentarse.
+
+tarea8:
+  title: "Explicar la Tarea 8 con IA"
+  prompt: >-
+    Explícame expertamente qué hice en la Tarea 8 de la
+    Práctica 6 de Kubernetes CKA.
+
+    Realicé la validación final del entorno de red comprobando nuevamente
+    conectividad Pod-to-Pod, acceso mediante Service, EndpointSlices y
+    resolución DNS. Confirmé que CNI, kube-proxy y CoreDNS regresaron al
+    estado funcional esperado y limpié los recursos temporales.
+
+    Explica el propósito de cada comando, configuración o procedimiento,
+    cómo interpretar las salidas esperadas, cómo validar que la tarea se
+    completó correctamente y qué errores comunes podrían presentarse.

@@ -5,9 +5,12 @@ tarea1:
   title: "Explicar la Tarea 1 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 1 de la
-    Práctica 3 de Couchbase Server.
+    Práctica 3 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_1_AQUI.
+    Validé el estado del clúster antes de incorporar cka-worker2 y comprobé
+    en el nuevo worker requisitos como swap deshabilitado, parámetros del
+    kernel, containerd, kubeadm y kubelet. También observé el comportamiento
+    esperado de kubelet antes de ejecutar kubeadm join.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -17,9 +20,12 @@ tarea2:
   title: "Explicar la Tarea 2 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 2 de la
-    Práctica 3 de Couchbase Server.
+    Práctica 3 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_2_AQUI.
+    Revisé los bootstrap tokens de kubeadm, generé un nuevo comando
+    kubeadm join y analicé su endpoint, token y
+    discovery-token-ca-cert-hash. Después validé desde cka-worker2 la
+    conectividad con la IP y el puerto 6443 del API Server.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -29,9 +35,12 @@ tarea3:
   title: "Explicar la Tarea 3 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 3 de la
-    Práctica 3 de Couchbase Server.
+    Práctica 3 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_3_AQUI.
+    Ejecuté kubeadm join en cka-worker2 y observé el proceso de bootstrap.
+    Después comprobé la creación de kubelet.conf, config.yaml y
+    kubeadm-flags.env, validé que kubelet quedó activo y confirmé desde el
+    control plane que el nuevo nodo apareció y alcanzó Ready.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -41,9 +50,12 @@ tarea4:
   title: "Explicar la Tarea 4 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 4 de la
-    Práctica 3 de Couchbase Server.
+    Práctica 3 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_4_AQUI.
+    Verifiqué kubelet y sus logs después del bootstrap, confirmé el
+    funcionamiento de containerd y crictl y comprobé que los DaemonSets de
+    Calico y kube-proxy desplegaron automáticamente sus componentes en
+    cka-worker2.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -53,11 +65,13 @@ tarea5:
   title: "Explicar la Tarea 5 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 5 de la
-    Práctica 3 de Couchbase Server.
+    Práctica 3 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_5_AQUI.
+    Realicé una validación funcional del nuevo worker programando una carga
+    específicamente en cka-worker2 y comprobando que scheduler, kubelet,
+    containerd, CNI y CoreDNS permiten ejecutar workloads y utilizar
+    networking y resolución DNS correctamente.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
     completó correctamente y qué errores comunes podrían presentarse.
-

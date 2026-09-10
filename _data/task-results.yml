@@ -1,39 +1,78 @@
 lab1:
   results:
-    - "**Resultado esperado:** MODIFICAR AQUI EL TEXTO DE LA DESCRIPCION DEL RESULTADO ESPERADO"
-    - "**Resultado esperado:** MODIFICAR AQUI EL TEXTO DE LA DESCRIPCION DEL RESULTADO ESPERADO"
+    - "**Resultado esperado:** Confirmaste el acceso administrativo, el contexto activo y las versiones principales del entorno Kubernetes."
+    - "**Resultado esperado:** Identificaste los nodos del clúster y analizaste sus roles, condiciones, capacidad, labels y taints."
+    - "**Resultado esperado:** Inspeccionaste los componentes del control plane y relacionaste los static Pods con sus manifiestos y contenedores."
+    - "**Resultado esperado:** Verificaste en el worker el funcionamiento de kubelet, containerd, CRI y los archivos administrativos del nodo."
+    - "**Resultado esperado:** Validaste CNI, kube-proxy, CoreDNS, almacenamiento y la salud general del clúster y del API Server."
 
 lab2:
   results:
-    - "**Resultado esperado:** MODIFICAR AQUI EL TEXTO DE LA DESCRIPCION DEL RESULTADO ESPERADO"
-    - "**Resultado esperado:** MODIFICAR AQUI EL TEXTO DE LA DESCRIPCION DEL RESULTADO ESPERADO"
+    - "**Resultado esperado:** Preparaste el escenario de mantenimiento con una carga administrada y confirmaste el estado inicial saludable del clúster."
+    - "**Resultado esperado:** Aplicaste cordon a cka-worker1 y comprobaste que bloquea nuevas asignaciones sin evacuar los Pods existentes."
+    - "**Resultado esperado:** Drenaste cka-worker1 y verificaste la reprogramación de las cargas administradas mientras los DaemonSets permanecieron activos."
+    - "**Resultado esperado:** Devolviste cka-worker1 al scheduling mediante uncordon y comprobaste nuevamente la programación de cargas en el worker."
+    - "**Resultado esperado:** Completaste el ciclo de mantenimiento, validaste la disponibilidad de la aplicación y restauraste el clúster a su estado operativo."
 
 lab3:
   results:
-    - "**Resultado esperado:** MODIFICAR AQUI EL TEXTO DE LA DESCRIPCION DEL RESULTADO ESPERADO"
-    - "**Resultado esperado:** MODIFICAR AQUI EL TEXTO DE LA DESCRIPCION DEL RESULTADO ESPERADO"
+    - "**Resultado esperado:** Validaste el estado previo del clúster y comprobaste que cka-worker2 cumple los requisitos necesarios antes del join."
+    - "**Resultado esperado:** Generaste un nuevo comando kubeadm join y verificaste el token, endpoint y conectividad con el API Server."
+    - "**Resultado esperado:** Incorporaste cka-worker2 al clúster y confirmaste la creación de la configuración requerida por kubelet."
+    - "**Resultado esperado:** Verificaste kubelet, containerd, Calico y kube-proxy en cka-worker2 después de completar su bootstrap."
+    - "**Resultado esperado:** Confirmaste que cka-worker2 recibe workloads, obtiene conectividad CNI y utiliza correctamente el DNS interno del clúster."
 
 lab4:
   results:
-    - "**Resultado esperado:** MODIFICAR AQUI EL TEXTO DE LA DESCRIPCION DEL RESULTADO ESPERADO"
-    - "**Resultado esperado:** MODIFICAR AQUI EL TEXTO DE LA DESCRIPCION DEL RESULTADO ESPERADO"
+    - "**Resultado esperado:** Preparaste el escenario RBAC y reconociste la diferencia entre recursos namespaced y recursos de alcance de clúster."
+    - "**Resultado esperado:** Creaste una identidad técnica mediante ServiceAccount y verificaste que inicialmente no dispone de permisos adicionales."
+    - "**Resultado esperado:** Definiste un Role de solo lectura para Pods y Deployments aplicando permisos limitados dentro del namespace lab4."
+    - "**Resultado esperado:** Asociastes el Role con el ServiceAccount mediante RoleBinding y validaste las acciones permitidas y rechazadas."
+    - "**Resultado esperado:** Construiste un kubeconfig temporal y comprobaste el acceso real utilizando el token de corta duración del ServiceAccount."
+    - "**Resultado esperado:** Concediste lectura de nodos mediante ClusterRole y ClusterRoleBinding sin ampliar innecesariamente los privilegios de la identidad."
+    - "**Resultado esperado:** Diagnosticastes y corregiste una asignación RBAC incorrecta manteniendo los permisos originales de privilegio mínimo."
+    - "**Resultado esperado:** Construiste y validaste una política RBAC de privilegio mínimo que permite únicamente las operaciones requeridas por el auditor."
 
 lab5:
   results:
-    - "**Resultado esperado:** MODIFICAR AQUI EL TEXTO DE LA DESCRIPCION DEL RESULTADO ESPERADO"
-    - "**Resultado esperado:** MODIFICAR AQUI EL TEXTO DE LA DESCRIPCION DEL RESULTADO ESPERADO"
+    - "**Resultado esperado:** Identificaste cómo se ejecuta etcd y creaste un estado de referencia que deberá conservarse dentro del snapshot."
+    - "**Resultado esperado:** Verificaste etcdctl, etcdutl, certificados TLS y preparaste una ubicación segura para almacenar el respaldo."
+    - "**Resultado esperado:** Creaste correctamente un snapshot de etcd y conservaste una copia adicional cuya integridad fue comprobada mediante hash."
+    - "**Resultado esperado:** Validaste la metadata del snapshot y confirmaste que el punto de recuperación contiene el estado previo esperado."
+    - "**Resultado esperado:** Creaste un estado posterior al snapshot para disponer de evidencia que permita comprobar posteriormente el retroceso del clúster."
+    - "**Resultado esperado:** Preparaste los parámetros, respaldos y directorios necesarios para realizar de forma controlada la restauración de etcd."
+    - "**Resultado esperado:** Restauraste el snapshot y reconfiguraste el static Pod para iniciar etcd utilizando el nuevo directorio de datos recuperado."
+    - "**Resultado esperado:** Confirmaste que etcd y el API Server regresaron a estado saludable y que el clúster recuperó exactamente los datos del snapshot."
+    - "**Resultado esperado:** Verificaste la consistencia final del estado restaurado y conservaste la evidencia necesaria del procedimiento de recuperación."
 
 lab6:
   results:
-    - "**Resultado esperado:** MODIFICAR AQUI EL TEXTO DE LA DESCRIPCION DEL RESULTADO ESPERADO"
-    - "**Resultado esperado:** MODIFICAR AQUI EL TEXTO DE LA DESCRIPCION DEL RESULTADO ESPERADO"
+    - "**Resultado esperado:** Estableciste una línea base saludable de nodos, CNI, kube-proxy, CoreDNS, Service DNS y EndpointSlices."
+    - "**Resultado esperado:** Validaste conectividad Pod-to-Pod y Pod-to-Service mediante una aplicación, sus backends y un cliente dentro del clúster."
+    - "**Resultado esperado:** Comprobaste la resolución DNS desde un Pod y relacionaste CoreDNS con el Service kube-dns y sus EndpointSlices."
+    - "**Resultado esperado:** Construiste un flujo de diagnóstico que permite diferenciar problemas de CNI, Services, EndpointSlices, kube-proxy y DNS."
+    - "**Resultado esperado:** Diagnosticastes una falla de resolución DNS causada por la asociación incorrecta del Service y recuperaste el funcionamiento de CoreDNS."
+    - "**Resultado esperado:** Diagnosticastes un Service sin backends, corregiste su selector y recuperaste el acceso a la aplicación mediante la ClusterIP."
+    - "**Resultado esperado:** Identificaste una restricción aplicada mediante NetworkPolicy y restauraste el acceso autorizado a través del CNI."
+    - "**Resultado esperado:** Validaste nuevamente conectividad directa, acceso mediante Service y resolución DNS, dejando la red del laboratorio completamente recuperada."
 
 lab7:
   results:
-    - "**Resultado esperado:** MODIFICAR AQUI EL TEXTO DE LA DESCRIPCION DEL RESULTADO ESPERADO"
-    - "**Resultado esperado:** MODIFICAR AQUI EL TEXTO DE LA DESCRIPCION DEL RESULTADO ESPERADO"
+    - "**Resultado esperado:** Estableciste la línea base de almacenamiento e identificaste StorageClasses, PV, PVC y el worker que alojará los volúmenes locales."
+    - "**Resultado esperado:** Creaste una StorageClass, un PersistentVolume, un PersistentVolumeClaim y un Pod consumidor con almacenamiento funcional."
+    - "**Resultado esperado:** Construiste un flujo de diagnóstico para analizar binding, capacidad, access modes, StorageClass, node affinity y persistencia."
+    - "**Resultado esperado:** Diagnosticastes una incompatibilidad de StorageClass y recreaste el claim utilizando una clase compatible con el almacenamiento disponible."
+    - "**Resultado esperado:** Identificaste una solicitud de capacidad superior al PV disponible y corregiste el claim utilizando un tamaño compatible."
+    - "**Resultado esperado:** Diagnosticastes una incompatibilidad de access mode y ajustaste la solicitud para utilizar un modo soportado por los PersistentVolumes."
+    - "**Resultado esperado:** Identificaste un conflicto de scheduling causado por la node affinity del volumen local y recuperaste el Pod en el nodo compatible."
+    - "**Resultado esperado:** Confirmaste la persistencia de los datos, revisaste los estados finales de PV y PVC y eliminaste correctamente los recursos del laboratorio."
 
 lab8:
   results:
-    - "**Resultado esperado:** MODIFICAR AQUI EL TEXTO DE LA DESCRIPCION DEL RESULTADO ESPERADO"
-    - "**Resultado esperado:** MODIFICAR AQUI EL TEXTO DE LA DESCRIPCION DEL RESULTADO ESPERADO"
+    - "**Resultado esperado:** Estableciste una línea base saludable del clúster y verificaste nodos, componentes críticos, API Server y herramientas de diagnóstico."
+    - "**Resultado esperado:** Diagnosticastes y recuperaste cka-worker2 después de quedar NotReady, corrigiendo únicamente la causa responsable del incidente."
+    - "**Resultado esperado:** Identificaste la restricción que impedía el scheduling del Deployment reports y recuperaste sus dos réplicas disponibles."
+    - "**Resultado esperado:** Diagnosticastes por qué payments-svc no tenía backends y restauraste el acceso a la aplicación mediante el Service."
+    - "**Resultado esperado:** Corregiste la incompatibilidad del PVC app-data y confirmaste su binding con lab8-pv y el funcionamiento de storage-api."
+    - "**Resultado esperado:** Diagnosticastes y recuperaste kube-scheduler, confirmando que los nuevos Pods vuelven a ser asignados correctamente a los nodos."
+    - "**Resultado esperado:** Validaste la recuperación integral de todos los escenarios y dejaste nodos, control plane, workloads y almacenamiento en estado saludable."

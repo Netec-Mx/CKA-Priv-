@@ -5,9 +5,12 @@ tarea1:
   title: "Explicar la Tarea 1 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 1 de la
-    Práctica 1 de Couchbase Server.
+    Práctica 1 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_1_AQUI.
+    Accedí al nodo cka-control mediante SSH, confirmé el hostname y las
+    interfaces de red, revisé el contexto activo de kubectl, los contextos
+    disponibles, la conectividad con el API Server y las versiones de
+    kubectl, kubeadm y kubelet.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -17,9 +20,12 @@ tarea2:
   title: "Explicar la Tarea 2 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 2 de la
-    Práctica 1 de Couchbase Server.
+    Práctica 1 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_2_AQUI.
+    Inspeccioné los nodos registrados en el clúster, sus roles, direcciones,
+    versiones, runtime, labels, taints, condiciones, Capacity y Allocatable.
+    También comparé las características administrativas de cka-control y
+    cka-worker1.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -29,9 +35,13 @@ tarea3:
   title: "Explicar la Tarea 3 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 3 de la
-    Práctica 1 de Couchbase Server.
+    Práctica 1 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_3_AQUI.
+    Inspeccioné los componentes del control plane dentro de kube-system,
+    relacioné kube-apiserver, kube-controller-manager, kube-scheduler y etcd
+    con sus static Pods, manifiestos en /etc/kubernetes/manifests y
+    contenedores administrados por containerd mediante crictl. También
+    validé el endpoint /readyz del API Server.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -41,9 +51,12 @@ tarea4:
   title: "Explicar la Tarea 4 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 4 de la
-    Práctica 1 de Couchbase Server.
+    Práctica 1 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_4_AQUI.
+    Accedí a cka-worker1 y revisé el estado y los logs de kubelet, el servicio
+    containerd, los contenedores y Pod sandboxes mediante crictl y los
+    principales archivos administrativos existentes en /etc/kubernetes y
+    /var/lib/kubelet.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -53,11 +66,13 @@ tarea5:
   title: "Explicar la Tarea 5 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 5 de la
-    Práctica 1 de Couchbase Server.
+    Práctica 1 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_5_AQUI.
+    Validé los componentes de networking y servicios internos del clúster,
+    incluyendo Calico, kube-proxy y CoreDNS. También inspeccioné la
+    StorageClass, PV, PVC, eventos recientes, estado de los nodos y readiness
+    final del API Server.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
     completó correctamente y qué errores comunes podrían presentarse.
-

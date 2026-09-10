@@ -5,9 +5,12 @@ tarea1:
   title: "Explicar la Tarea 1 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 1 de la
-    Práctica 4 de Couchbase Server.
+    Práctica 4 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_1_AQUI.
+    Preparé el escenario RBAC creando el namespace lab4 y un Deployment de
+    referencia. También confirmé el contexto administrativo y comparé
+    recursos namespaced, como Pods, con recursos cluster-scoped, como Nodes,
+    para comprender el alcance de Role y ClusterRole.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -17,9 +20,11 @@ tarea2:
   title: "Explicar la Tarea 2 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 2 de la
-    Práctica 4 de Couchbase Server.
+    Práctica 4 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_2_AQUI.
+    Creé el ServiceAccount lab4-operator y utilicé kubectl auth can-i con
+    impersonación para comprobar que una identidad recién creada no obtiene
+    automáticamente permisos sobre Pods ni Nodes.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -29,9 +34,11 @@ tarea3:
   title: "Explicar la Tarea 3 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 3 de la
-    Práctica 4 de Couchbase Server.
+    Práctica 4 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_3_AQUI.
+    Creé un Role namespaced llamado workload-reader con permisos get, list
+    y watch sobre Pods y Deployments. Validé el manifiesto, lo apliqué y
+    revisé sus reglas para comprobar que no concede operaciones de escritura.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -41,9 +48,12 @@ tarea4:
   title: "Explicar la Tarea 4 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 4 de la
-    Práctica 4 de Couchbase Server.
+    Práctica 4 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_4_AQUI.
+    Creé un RoleBinding para asociar lab4-operator con workload-reader y
+    utilicé kubectl auth can-i para demostrar qué operaciones quedaron
+    permitidas y cuáles permanecieron denegadas dentro y fuera del
+    namespace lab4.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -53,11 +63,59 @@ tarea5:
   title: "Explicar la Tarea 5 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 5 de la
-    Práctica 4 de Couchbase Server.
+    Práctica 4 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_5_AQUI.
+    Generé un token temporal para lab4-operator y construí un kubeconfig
+    aislado con una nueva credencial y contexto. Después ejecuté solicitudes
+    autenticadas realmente con el ServiceAccount para comprobar sus permisos
+    namespaced y la denegación inicial sobre Nodes.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
     completó correctamente y qué errores comunes podrían presentarse.
 
+tarea6:
+  title: "Explicar la Tarea 6 con IA"
+  prompt: >-
+    Explícame expertamente qué hice en la Tarea 6 de la
+    Práctica 4 de Kubernetes CKA.
+
+    Creé un ClusterRole limitado a get y list sobre Nodes y lo asocié con
+    lab4-operator mediante ClusterRoleBinding. Después validé el nuevo
+    permiso tanto con kubectl auth can-i como mediante el kubeconfig
+    temporal de la identidad.
+
+    Explica el propósito de cada comando, configuración o procedimiento,
+    cómo interpretar las salidas esperadas, cómo validar que la tarea se
+    completó correctamente y qué errores comunes podrían presentarse.
+
+tarea7:
+  title: "Explicar la Tarea 7 con IA"
+  prompt: >-
+    Explícame expertamente qué hice en la Tarea 7 de la
+    Práctica 4 de Kubernetes CKA.
+
+    Diagnostiqué un escenario RBAC donde un Role correcto estaba asociado
+    mediante RoleBinding al ServiceAccount equivocado. Identifiqué por qué
+    support-agent no recibía permisos, corregí únicamente la asignación y
+    comprobé que podía leer ConfigMaps sin obtener permisos de eliminación.
+
+    Explica el propósito de cada comando, configuración o procedimiento,
+    cómo interpretar las salidas esperadas, cómo validar que la tarea se
+    completó correctamente y qué errores comunes podrían presentarse.
+
+tarea8:
+  title: "Explicar la Tarea 8 con IA"
+  prompt: >-
+    Explícame expertamente qué hice en la Tarea 8 de la
+    Práctica 4 de Kubernetes CKA.
+
+    Construí una política RBAC de privilegio mínimo para una identidad de
+    auditoría. Validé que pudiera consultar únicamente los recursos
+    requeridos dentro de lab4 y que continuaran denegadas operaciones como
+    eliminar Pods, consultar Secrets o acceder a otros namespaces. Finalmente
+    limpié los recursos de la práctica.
+
+    Explica el propósito de cada comando, configuración o procedimiento,
+    cómo interpretar las salidas esperadas, cómo validar que la tarea se
+    completó correctamente y qué errores comunes podrían presentarse.

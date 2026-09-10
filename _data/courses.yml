@@ -4,58 +4,50 @@ ckapriv:
   intro: "DESCRIPCIÓN_DEL_CURSO_AQUI"
   labs:
 
-    - id: lab1 
-      title: "NOMBRE_DE_LA_PRACTICA_1" # NOMBRE DE LA PRACTICA
-      url:  "/lab1/lab1/"
-      duration: "## min" # AJUSTAR TIEMPO DE LA PRACTICA
-      desc: "DESCRIPCION_CORTA_DE_LA_PRACTICA" # DESCRIPCION BREVE DE LA PRACTICA 100-120 CARACTERES
+    - id: lab1
+      title: "Práctica 1: Inspección completa de un clúster Kubernetes"
+      url: "/lab1/lab1/"
+      duration: "50 min"
+      desc: "Inspecciona nodos, control plane, runtime, networking, DNS, almacenamiento y salud general de Kubernetes."
 
-    - id: lab2 
-      title: "NOMBRE_DE_LA_PRACTICA_2" # NOMBRE DE LA PRACTICA
-      url:  "/lab2/lab2/"
-      duration: "## min" # AJUSTAR TIEMPO DE LA PRACTICA
-      desc: "DESCRIPCION_CORTA_DE_LA_PRACTICA" # DESCRIPCION BREVE DE LA PRACTICA 100-120 CARACTERES
+    - id: lab2
+      title: "Práctica 2: Mantenimiento de nodos y reprogramación de cargas"
+      url: "/lab2/lab2/"
+      duration: "60 min"
+      desc: "Aplica cordon, drain y uncordon para realizar mantenimiento y validar la reprogramación de cargas Kubernetes."
 
-    - id: lab3 
-      title: "NOMBRE_DE_LA_PRACTICA_3" # NOMBRE DE LA PRACTICA
-      url:  "/lab3/lab3/"
-      duration: "## min" # AJUSTAR TIEMPO DE LA PRACTICA
-      desc: "DESCRIPCION_CORTA_DE_LA_PRACTICA" # DESCRIPCION BREVE DE LA PRACTICA 100-120 CARACTERES
+    - id: lab3
+      title: "Práctica 3: Crear y validar un clúster con kubeadm y preparar nodos"
+      url: "/lab3/lab3/"
+      duration: "60 min"
+      desc: "Incorpora un nuevo worker con kubeadm y valida kubelet, containerd, CNI, kube-proxy y operación del nodo."
 
-    - id: lab4 
-      title: "NOMBRE_DE_LA_PRACTICA_4" # NOMBRE DE LA PRACTICA
-      url:  "/lab4/lab4/"
-      duration: "## min" # AJUSTAR TIEMPO DE LA PRACTICA
-      desc: "DESCRIPCION_CORTA_DE_LA_PRACTICA" # DESCRIPCION BREVE DE LA PRACTICA 100-120 CARACTERES
+    - id: lab4
+      title: "Práctica 4: Configurar acceso administrativo controlado con RBAC"
+      url: "/lab4/lab4/"
+      duration: "40 min"
+      desc: "Configura acceso con RBAC usando ServiceAccounts, Roles, Bindings y kubeconfig con privilegios mínimos."
 
-    - id: lab5 
-      title: "NOMBRE_DE_LA_PRACTICA_5" # NOMBRE DE LA PRACTICA
-      url:  "/lab5/lab5/"
-      duration: "## min" # AJUSTAR TIEMPO DE LA PRACTICA
-      desc: "DESCRIPCION_CORTA_DE_LA_PRACTICA" # DESCRIPCION BREVE DE LA PRACTICA 100-120 CARACTERES
+    - id: lab5
+      title: "Práctica 5: Backup y restore de etcd"
+      url: "/lab5/lab5/"
+      duration: "60 min"
+      desc: "Crea, valida y restaura snapshots de etcd para recuperar el estado persistente de un clúster Kubernetes."
 
-    - id: lab6 
-      title: "NOMBRE_DE_LA_PRACTICA_6" # NOMBRE DE LA PRACTICA
-      url:  "/lab6/lab6/"
-      duration: "## min" # AJUSTAR TIEMPO DE LA PRACTICA
-      desc: "DESCRIPCION_CORTA_DE_LA_PRACTICA" # DESCRIPCION BREVE DE LA PRACTICA 100-120 CARACTERES
+    - id: lab6
+      title: "Práctica 6: Diagnóstico de CNI, kube-proxy y CoreDNS"
+      url: "/lab6/lab6/"
+      duration: "55 min"
+      desc: "Diagnostica conectividad Pod-to-Pod, Services y DNS relacionando CNI, kube-proxy, EndpointSlices y CoreDNS."
 
-    - id: lab7 
-      title: "NOMBRE_DE_LA_PRACTICA_7" # NOMBRE DE LA PRACTICA
-      url:  "/lab7/lab7/"
-      duration: "## min" # AJUSTAR TIEMPO DE LA PRACTICA
-      desc: "DESCRIPCION_CORTA_DE_LA_PRACTICA" # DESCRIPCION BREVE DE LA PRACTICA 100-120 CARACTERES
+    - id: lab7
+      title: "Práctica 7: Diagnóstico de almacenamiento persistente y StorageClass"
+      url: "/lab7/lab7/"
+      duration: "50 min"
+      desc: "Diagnostica PV, PVC y StorageClass resolviendo fallas de capacidad, access modes, binding y node affinity."
 
-    - id: lab8 
-      title: "NOMBRE_DE_LA_PRACTICA_8" # NOMBRE DE LA PRACTICA
-      url:  "/lab8/lab8/"
-      duration: "## min" # AJUSTAR TIEMPO DE LA PRACTICA
-      desc: "DESCRIPCION_CORTA_DE_LA_PRACTICA" # DESCRIPCION BREVE DE LA PRACTICA 100-120 CARACTERES
-
-    # ESTRUCTURA DE SUB-PRACTICA OCUPAR SI ES NECESARIO SINO BORRAR
-    # - id: lab61
-    #   number: "6.1"
-    #   title: "Despliegue de servicios en Docker Swarm"
-    #   url:  "/capitulo6/lab61/"
-    #   duration: "60 min"
-    #   desc: "DESCRIPCION_CORTA_DE_LA_PRACTICA" # DESCRIPCION BREVE DE LA PRACTICA 100-120 CARACTERES
+    - id: lab8
+      title: "Práctica 8: Troubleshooting integral tipo CKA"
+      url: "/lab8/lab8/"
+      duration: "75 min"
+      desc: "Resuelve incidentes tipo CKA sobre nodos, scheduling, Services, almacenamiento y componentes del control plane."

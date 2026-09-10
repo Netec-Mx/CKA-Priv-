@@ -5,9 +5,13 @@ tarea1:
   title: "Explicar la Tarea 1 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 1 de la
-    Práctica 2 de Couchbase Server.
+    Práctica 2 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_1_AQUI.
+    Preparé un escenario de mantenimiento sobre cka-worker1, confirmé el
+    contexto administrativo y el estado inicial de los nodos y desplegué
+    maintenance-app con tres réplicas, node affinity preferida hacia el
+    worker y una toleration para permitir reprogramación temporal en el
+    control plane.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -17,9 +21,12 @@ tarea2:
   title: "Explicar la Tarea 2 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 2 de la
-    Práctica 2 de Couchbase Server.
+    Práctica 2 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_2_AQUI.
+    Apliqué cordon sobre cka-worker1, comprobé el estado
+    Ready,SchedulingDisabled y creé un Pod nuevo para demostrar que el
+    scheduler ya no asigna nuevas cargas al nodo cordoned, mientras los
+    Pods existentes permanecen ejecutándose.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -29,9 +36,12 @@ tarea3:
   title: "Explicar la Tarea 3 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 3 de la
-    Práctica 2 de Couchbase Server.
+    Práctica 2 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_3_AQUI.
+    Ejecuté drain sobre cka-worker1 con --ignore-daemonsets, observé la
+    eviction de Pods administrados y su recreación por el Deployment en
+    otro nodo. También comprobé que los Pods de DaemonSets como kube-proxy
+    y Calico permanecen asociados al worker.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -41,9 +51,12 @@ tarea4:
   title: "Explicar la Tarea 4 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 4 de la
-    Práctica 2 de Couchbase Server.
+    Práctica 2 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_4_AQUI.
+    Ejecuté uncordon para devolver cka-worker1 al scheduling, confirmé que
+    volvió a estar disponible y provoqué un nuevo rollout de maintenance-app
+    para observar nuevas decisiones de scheduling y comprobar nuevamente
+    la preferencia por el worker.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -53,11 +66,13 @@ tarea5:
   title: "Explicar la Tarea 5 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 5 de la
-    Práctica 2 de Couchbase Server.
+    Práctica 2 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_5_AQUI.
+    Cerré el ciclo de mantenimiento verificando que cka-worker1 volvió a
+    estar Ready y schedulable, que la aplicación recuperó su disponibilidad
+    y que el clúster regresó a un estado operativo después de las
+    operaciones cordon, drain y uncordon.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
     completó correctamente y qué errores comunes podrían presentarse.
-

@@ -5,9 +5,12 @@ tarea1:
   title: "Explicar la Tarea 1 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 1 de la
-    Práctica 8 de Couchbase Server.
+    Práctica 8 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_1_AQUI.
+    Establecí una línea base del clúster antes de iniciar los incidentes.
+    Revisé nodos, Pods de kube-system y readiness del API Server, confirmé
+    las versiones del entorno y verifiqué la disponibilidad de crictl y el
+    acceso a los archivos de preparación de los escenarios.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -17,9 +20,12 @@ tarea2:
   title: "Explicar la Tarea 2 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 2 de la
-    Práctica 8 de Couchbase Server.
+    Práctica 8 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_2_AQUI.
+    Trabajé con un incidente donde cka-worker2 quedó NotReady. Diagnostiqué
+    el nodo utilizando evidencia de Kubernetes y del sistema, identifiqué el
+    componente que impedía reportar correctamente al control plane, corregí
+    únicamente la causa y confirmé que el nodo regresara a Ready.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -29,9 +35,12 @@ tarea3:
   title: "Explicar la Tarea 3 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 3 de la
-    Práctica 8 de Couchbase Server.
+    Práctica 8 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_3_AQUI.
+    Diagnostiqué un Deployment llamado reports cuyos Pods no podían ser
+    programados. Analicé la restricción de scheduling que los mantenía
+    pendientes, corregí únicamente el requisito incompatible y comprobé que
+    las dos réplicas alcanzaran disponibilidad completa.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -41,9 +50,12 @@ tarea4:
   title: "Explicar la Tarea 4 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 4 de la
-    Práctica 8 de Couchbase Server.
+    Práctica 8 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_4_AQUI.
+    Diagnostiqué por qué payments-svc no podía entregar tráfico aunque los
+    Pods del Deployment payments estuvieran saludables. Identifiqué la
+    propiedad que impedía generar backends válidos, corregí únicamente el
+    Service y confirmé los EndpointSlices y el acceso real mediante su nombre.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -53,11 +65,46 @@ tarea5:
   title: "Explicar la Tarea 5 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 5 de la
-    Práctica 8 de Couchbase Server.
+    Práctica 8 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_5_AQUI.
+    Diagnostiqué por qué el PVC app-data permanecía Pending y el Pod
+    storage-api no podía iniciar. Identifiqué la incompatibilidad entre el
+    claim y el almacenamiento disponible, corregí el PVC conservando sus
+    requisitos y confirmé que quedara Bound específicamente con lab8-pv y
+    que el archivo montado contuviera storage-ready.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
     completó correctamente y qué errores comunes podrían presentarse.
 
+tarea6:
+  title: "Explicar la Tarea 6 con IA"
+  prompt: >-
+    Explícame expertamente qué hice en la Tarea 6 de la
+    Práctica 8 de Kubernetes CKA.
+
+    Trabajé con un incidente del control plane donde los nuevos Pods no
+    podían ser asignados a nodos. Diagnostiqué kube-scheduler como componente
+    afectado, revisé su static Pod y evidencia local mediante herramientas
+    del nodo, corregí únicamente la configuración responsable y confirmé que
+    scheduler-check pudiera alcanzar Ready.
+
+    Explica el propósito de cada comando, configuración o procedimiento,
+    cómo interpretar las salidas esperadas, cómo validar que la tarea se
+    completó correctamente y qué errores comunes podrían presentarse.
+
+tarea7:
+  title: "Explicar la Tarea 7 con IA"
+  prompt: >-
+    Explícame expertamente qué hice en la Tarea 7 de la
+    Práctica 8 de Kubernetes CKA.
+
+    Realicé la validación integral de todos los incidentes comprobando nodos,
+    componentes de kube-system, Deployments, PVC y Pods. Después eliminé los
+    namespaces, Pods, PersistentVolumes y StorageClasses temporales y confirmé
+    que el clúster terminara nuevamente con nodos Ready, componentes
+    esenciales Running y el API Server respondiendo ok.
+
+    Explica el propósito de cada comando, configuración o procedimiento,
+    cómo interpretar las salidas esperadas, cómo validar que la tarea se
+    completó correctamente y qué errores comunes podrían presentarse.

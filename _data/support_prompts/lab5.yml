@@ -5,9 +5,11 @@ tarea1:
   title: "Explicar la Tarea 1 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 1 de la
-    Práctica 5 de Couchbase Server.
+    Práctica 5 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_1_AQUI.
+    Identifiqué el nodo control plane y cómo etcd se ejecuta como static Pod.
+    Revisé su manifiesto y parámetros principales y creé un namespace y
+    ConfigMap que representan el estado que debe existir dentro del snapshot.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -17,9 +19,12 @@ tarea2:
   title: "Explicar la Tarea 2 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 2 de la
-    Práctica 5 de Couchbase Server.
+    Práctica 5 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_2_AQUI.
+    Verifiqué la disponibilidad de etcdctl y etcdutl, definí el endpoint y
+    certificados TLS necesarios para conectarme directamente con etcd,
+    comprobé su salud y preparé una ubicación separada y segura para guardar
+    el snapshot.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -29,9 +34,12 @@ tarea3:
   title: "Explicar la Tarea 3 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 3 de la
-    Práctica 5 de Couchbase Server.
+    Práctica 5 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_3_AQUI.
+    Registré el momento del respaldo, confirmé la salud de etcd y generé
+    un snapshot mediante etcdctl snapshot save. Después comprobé el archivo,
+    creé una copia adicional y comparé hashes SHA-256 para verificar que
+    ambas copias fueran idénticas.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -41,9 +49,12 @@ tarea4:
   title: "Explicar la Tarea 4 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 4 de la
-    Práctica 5 de Couchbase Server.
+    Práctica 5 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_4_AQUI.
+    Validé el snapshot mediante etcdutl snapshot status, revisé su metadata
+    y guardé información estructurada del respaldo. También confirmé que
+    el marcador creado antes del snapshot seguía presente y contenía el
+    valor esperado.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -53,11 +64,73 @@ tarea5:
   title: "Explicar la Tarea 5 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 5 de la
-    Práctica 5 de Couchbase Server.
+    Práctica 5 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_5_AQUI.
+    Creé un segundo namespace y ConfigMap después del snapshot para generar
+    información que no existe dentro del respaldo. Comparé el estado anterior
+    y posterior para disponer de evidencia clara durante la validación del
+    restore.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
     completó correctamente y qué errores comunes podrían presentarse.
 
+tarea6:
+  title: "Explicar la Tarea 6 con IA"
+  prompt: >-
+    Explícame expertamente qué hice en la Tarea 6 de la
+    Práctica 5 de Kubernetes CKA.
+
+    Preparé la restauración obteniendo del manifiesto actual de etcd el
+    nombre del miembro, initial-cluster y peer URL. Protegí una copia del
+    manifiesto original fuera de /etc/kubernetes/manifests y definí un
+    directorio nuevo para restaurar los datos.
+
+    Explica el propósito de cada comando, configuración o procedimiento,
+    cómo interpretar las salidas esperadas, cómo validar que la tarea se
+    completó correctamente y qué errores comunes podrían presentarse.
+
+tarea7:
+  title: "Explicar la Tarea 7 con IA"
+  prompt: >-
+    Explícame expertamente qué hice en la Tarea 7 de la
+    Práctica 5 de Kubernetes CKA.
+
+    Restauré el snapshot de etcd hacia un nuevo directorio de datos mediante
+    etcdutl y ajusté el static Pod de etcd para utilizar la ubicación
+    restaurada. Después observé mediante crictl el reinicio del contenedor
+    y comprobé directamente la salud del nuevo etcd.
+
+    Explica el propósito de cada comando, configuración o procedimiento,
+    cómo interpretar las salidas esperadas, cómo validar que la tarea se
+    completó correctamente y qué errores comunes podrían presentarse.
+
+tarea8:
+  title: "Explicar la Tarea 8 con IA"
+  prompt: >-
+    Explícame expertamente qué hice en la Tarea 8 de la
+    Práctica 5 de Kubernetes CKA.
+
+    Validé que el API Server y los nodos regresaran a estado operativo
+    después del restore. Confirmé que los objetos creados antes del snapshot
+    reaparecieron y que los creados después del snapshot dejaron de existir,
+    demostrando que Kubernetes regresó al punto de recuperación esperado.
+
+    Explica el propósito de cada comando, configuración o procedimiento,
+    cómo interpretar las salidas esperadas, cómo validar que la tarea se
+    completó correctamente y qué errores comunes podrían presentarse.
+
+tarea9:
+  title: "Explicar la Tarea 9 con IA"
+  prompt: >-
+    Explícame expertamente qué hice en la Tarea 9 de la
+    Práctica 5 de Kubernetes CKA.
+
+    Realicé las comprobaciones finales posteriores al restore para confirmar
+    que etcd, el API Server, los nodos y los componentes del sistema
+    permanecieran estables y que el estado recuperado fuera consistente
+    antes de cerrar el procedimiento de recuperación.
+
+    Explica el propósito de cada comando, configuración o procedimiento,
+    cómo interpretar las salidas esperadas, cómo validar que la tarea se
+    completó correctamente y qué errores comunes podrían presentarse.

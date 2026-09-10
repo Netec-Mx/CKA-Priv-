@@ -5,9 +5,12 @@ tarea1:
   title: "Explicar la Tarea 1 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 1 de la
-    Práctica 7 de Couchbase Server.
+    Práctica 7 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_1_AQUI.
+    Establecí una línea base de almacenamiento revisando StorageClasses,
+    PersistentVolumes y PersistentVolumeClaims. Seleccioné un worker y
+    preparé en él un directorio local que posteriormente sería utilizado
+    como almacenamiento físico de un PersistentVolume.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -17,9 +20,12 @@ tarea2:
   title: "Explicar la Tarea 2 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 2 de la
-    Práctica 7 de Couchbase Server.
+    Práctica 7 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_2_AQUI.
+    Creé una StorageClass con kubernetes.io/no-provisioner y
+    WaitForFirstConsumer, un PV local con node affinity, un PVC compatible y
+    un Pod consumidor. Después confirmé que el PV y PVC alcanzaran Bound y
+    que el Pod pudiera utilizar el volumen.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -29,9 +35,12 @@ tarea3:
   title: "Explicar la Tarea 3 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 3 de la
-    Práctica 7 de Couchbase Server.
+    Práctica 7 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_3_AQUI.
+    Construí un flujo de troubleshooting para almacenamiento inspeccionando
+    PVC, PV, claimRef, reclaim policy, eventos, capacidad, access modes,
+    StorageClass y node affinity. También verifiqué la persistencia del
+    archivo almacenado y el nodo en el que se ejecutaba el Pod.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -41,9 +50,12 @@ tarea4:
   title: "Explicar la Tarea 4 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 4 de la
-    Práctica 7 de Couchbase Server.
+    Práctica 7 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_4_AQUI.
+    Creé un PVC con una StorageClass incompatible para provocar un estado
+    Pending, revisé sus eventos y comparé la clase solicitada con las
+    disponibles. Después recreé el claim utilizando la StorageClass correcta
+    y analicé el efecto de WaitForFirstConsumer.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
@@ -53,11 +65,59 @@ tarea5:
   title: "Explicar la Tarea 5 con IA"
   prompt: >-
     Explícame expertamente qué hice en la Tarea 5 de la
-    Práctica 7 de Couchbase Server.
+    Práctica 7 de Kubernetes CKA.
 
-    CONTEXTO_DE_LA_TAREA_5_AQUI.
+    Preparé un PersistentVolume deliberadamente pequeño y un PVC que
+    solicitaba más capacidad de la disponible. Utilicé un Pod consumidor
+    para provocar el intento de binding, diagnostiqué la incompatibilidad
+    de capacidad y corregí la solicitud para utilizar almacenamiento
+    compatible.
 
     Explica el propósito de cada comando, configuración o procedimiento,
     cómo interpretar las salidas esperadas, cómo validar que la tarea se
     completó correctamente y qué errores comunes podrían presentarse.
 
+tarea6:
+  title: "Explicar la Tarea 6 con IA"
+  prompt: >-
+    Explícame expertamente qué hice en la Tarea 6 de la
+    Práctica 7 de Kubernetes CKA.
+
+    Trabajé con una incompatibilidad de access mode entre un PVC y los
+    PersistentVolumes disponibles. Analicé por qué el claim no podía
+    enlazarse y ajusté únicamente el modo de acceso solicitado para hacerlo
+    compatible con el almacenamiento disponible.
+
+    Explica el propósito de cada comando, configuración o procedimiento,
+    cómo interpretar las salidas esperadas, cómo validar que la tarea se
+    completó correctamente y qué errores comunes podrían presentarse.
+
+tarea7:
+  title: "Explicar la Tarea 7 con IA"
+  prompt: >-
+    Explícame expertamente qué hice en la Tarea 7 de la
+    Práctica 7 de Kubernetes CKA.
+
+    Diagnostiqué un problema de scheduling relacionado con la node affinity
+    de un volumen local. Relacioné la ubicación física del PV, las
+    restricciones del volumen y el nodo requerido por el Pod, y corregí el
+    escenario para que el workload pudiera ejecutarse en un nodo compatible.
+
+    Explica el propósito de cada comando, configuración o procedimiento,
+    cómo interpretar las salidas esperadas, cómo validar que la tarea se
+    completó correctamente y qué errores comunes podrían presentarse.
+
+tarea8:
+  title: "Explicar la Tarea 8 con IA"
+  prompt: >-
+    Explícame expertamente qué hice en la Tarea 8 de la
+    Práctica 7 de Kubernetes CKA.
+
+    Confirmé que los Pods podían seguir leyendo los datos persistentes,
+    revisé los estados finales de los PV y PVC y después eliminé el namespace
+    y los recursos cluster-scoped. También observé el efecto de la reclaim
+    policy Retain antes de completar la limpieza.
+
+    Explica el propósito de cada comando, configuración o procedimiento,
+    cómo interpretar las salidas esperadas, cómo validar que la tarea se
+    completó correctamente y qué errores comunes podrían presentarse.
