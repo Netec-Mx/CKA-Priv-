@@ -1,31 +1,32 @@
 ---
 layout: lab
-title: "Práctica 2: CAMBIAR_AQUI_NOMBRE_DE_LA_PRACTICA"
+title: "Práctica 2: Mantenimiento de nodos y reprogramación de cargas"
 permalink: /lab2/lab2/
 images_base: /labs/lab2/img
-duration: "## minutos"
+duration: "60 minutos"
 objective:
-  - OBJETIVO_DE_LA_PRACTICA
+  - Aplicar operaciones administrativas de cordon, drain y uncordon sobre un nodo Kubernetes, observar la reprogramación de cargas y validar el estado operativo del clúster antes, durante y después de una ventana de mantenimiento.
 prerequisites:
-  - PREREQUISITO_1
-  - PREREQUISITO_2
-  - PREREQUISITO_3
-  - PREREQUISITO_4
-  - PREREQUISITO_X
+  - Haber completado la Práctica 1 o conocer la inspección básica de nodos, Pods y componentes del clúster.
+  - Disponer del clúster CKA con cka-control y cka-worker1 en estado Ready.
+  - Mantener cka-worker2 preparado pero todavía sin unir al clúster.
+  - Tener acceso SSH al nodo cka-control y permisos administrativos con kubectl.
+  - Contar con conectividad entre los nodos mediante la red privada 10.10.10.0/24.
 introduction:
-  - INTRODUCCION_DE_LA_PRACTICA_BREVE_RESUMEN_EN_UN_SOLO_PARRAFO_RECOMENDADO
+  - En esta práctica realizarás un ciclo completo de mantenimiento sobre cka-worker1. Prepararás una carga administrada capaz de reprogramarse temporalmente en el control plane, aplicarás cordon y drain, observarás el comportamiento del scheduler y de los DaemonSets, devolverás el nodo al servicio y cerrarás con un reto administrativo sin comandos prescritos.
 slug: lab2
 lab_number: 2
 final_result: >
-  RESULTADO_FINAL_ESPERADO_DE_LA_PRACTICA_EN_UN_SOLO_PARRAFO_RECOMENDADO
+  Al finalizar habrás ejecutado y validado un ciclo completo de mantenimiento de cka-worker1, distinguiendo entre impedir nuevas asignaciones, evacuar cargas administradas y restaurar la capacidad de scheduling. También habrás comprobado la reprogramación de una aplicación y resuelto un escenario final con mínima guía, manteniendo cka-worker2 fuera del clúster para la práctica de kubeadm.
 notes:
-  - NOTAS_CONSIDERACIONES_ADICIONALES
-  - NOTAS_CONSIDERACIONES_ADICIONALES
+  - La carga de laboratorio incluye una toleration para el taint del control plane y una afinidad preferida hacia cka-worker1; esta configuración se utiliza únicamente para demostrar reprogramación con los dos nodos actualmente unidos.
+  - No elimines ni unas cka-worker2 durante esta práctica. Ese nodo se reserva para la Práctica 3.
+  - La práctica modifica temporalmente el estado de scheduling de cka-worker1, pero finaliza devolviendo el nodo a estado Ready y schedulable.
 references:
-  - text: DESCRIPCION_DEL_LINK_DE_REFERENCIA
-    url: https://developer.hashicorp.com/terraform
-  - text: DESCRIPCION_DEL_LINK_DE_REFERENCIA
-    url: https://learn.microsoft.com/es-es/cli/azure/
+  - text: Kubernetes - Safely Drain a Node
+    url: https://kubernetes.io/docs/tasks/administer-cluster/safely-drain-node/
+  - text: Kubernetes - Assigning Pods to Nodes
+    url: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
 prev: /lab1/lab1/
 next: /lab3/lab3/
 ---
@@ -34,57 +35,161 @@ next: /lab3/lab3/
 
 <!-- Aquí comienzan las instrucciones paso a paso de la práctica -->
 
-## 🔎 Tarea 1. NOMBRE DE LA TAREA — ## min
+## 🔎 Tarea 1. Preparar el escenario de mantenimiento — 10 min
 
-<!-- DESCRIPCION DE LA TAREA: RECOMENDADO 200-250 CARACTERES -->
-DESCRIPCION_DE_LA_TAREA.
+Validarás el estado inicial del clúster y desplegarás una aplicación administrada diseñada para preferir cka-worker1, pero capaz de ejecutarse temporalmente en el control plane durante el mantenimiento.
 
-### Tarea 1.1. NOMBRE DE_LA_SUBTAREA
+### Tarea 1.1. Confirmar el acceso administrativo
 
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
+Verificarás que trabajas desde cka-control, que kubectl utiliza el contexto esperado y que el API Server responde antes de modificar el estado de un nodo.
 
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_1.
+- {% include step_label.html %} Abre una sesión administrativa en `cka-control`, que será el punto desde el cual ejecutarás todas las operaciones de mantenimiento del clúster.
 
-  > **Nota:** NOTA_GENERAL_DEL_PASO.
+  > **Nota:** En CKA es importante identificar siempre el nodo y el contexto desde el que administras antes de modificar el estado de otros nodos.
   {: .lab-note .info .compact}
 
-  {% include step_image.html %}
-
   ```bash
-  CODIGO_DEL_PASO_1
+  ssh control@192.168.10.100
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_1.
+  > **Salida esperada:** Se abre una sesión remota en cka-control sin errores de conectividad.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_2.
+- {% include step_label.html %} Confirma el hostname antes de continuar para evitar ejecutar operaciones administrativas desde una VM distinta.
 
-  > **Importante:** CONSIDERACION_IMPORTANTE_DEL_PASO.
+  ```bash
+  hostname
+  ```
+
+  > **Salida esperada:** El comando muestra `cka-control`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Comprueba que `kubectl` utilizará el contexto administrativo esperado y no otro kubeconfig o contexto almacenado.
+
+  > **Importante:** Un `cordon` o `drain` ejecutado contra el contexto equivocado puede afectar otro clúster. Esta verificación debe convertirse en un hábito operativo.
   {: .lab-note .important .compact}
 
   ```bash
-  CODIGO_DEL_PASO_2
+  kubectl config current-context
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_2.
+  > **Salida esperada:** Se muestra `kubernetes-admin@kubernetes`.
   {: .lab-note .output .compact}
 
-### Tarea 1.2. NOMBRE_DE_LA_SUBTAREA
+### Tarea 1.2. Revisar el estado inicial de los nodos
 
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
+Comprobarás que los dos nodos actualmente unidos están disponibles y revisarás el taint del control plane que normalmente evita programar cargas de usuario sobre él.
 
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_3.
+- {% include step_label.html %} Obtén la vista ampliada de los nodos para establecer la línea base antes del mantenimiento: estado, rol, versión e IP interna.
 
-  > **Advertencia:** ADVERTENCIA_DEL_PASO.
-  {: .lab-note .warning .compact}
+  > **Nota:** La comparación con esta salida te permitirá distinguir posteriormente un cambio de scheduling de una falla real del nodo.
+  {: .lab-note .info .compact}
 
   ```bash
-  CODIGO_DEL_PASO_3
+  kubectl get nodes -o wide
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_3.
+  > **Salida esperada:** `cka-control` y `cka-worker1` aparecen `Ready`; `cka-worker2` no aparece porque todavía no está unido.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Verifica que `cka-worker1` inicia la práctica disponible para scheduling y sin taints que alteren el escenario.
+
+  ```bash
+  kubectl describe node cka-worker1 | grep -E 'Taints:|Unschedulable:'
+  ```
+
+  > **Salida esperada:** El nodo no está marcado como unschedulable y no presenta un taint administrativo que impida programar la carga del laboratorio.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Identifica el taint que protege al control plane de recibir cargas de usuario de forma predeterminada.
+
+  > **Importante:** No elimines este taint. La práctica utilizará una `toleration` específica para permitir reprogramación temporal sin alterar la configuración administrativa del nodo.
+  {: .lab-note .important .compact}
+
+  ```bash
+  kubectl describe node cka-control | grep -A2 '^Taints:'
+  ```
+
+  {: .lab-note .important .compact}
+
+  > **Salida esperada:** Se observa el taint `node-role.kubernetes.io/control-plane:NoSchedule`.
+  {: .lab-note .output .compact}
+
+### Tarea 1.3. Crear la carga administrada de laboratorio
+
+Crearás un Deployment con tres réplicas, afinidad preferida hacia cka-worker1 y toleration para que pueda reprogramarse en cka-control cuando el worker entre en mantenimiento.
+
+- {% include step_label.html %} Aísla todos los recursos temporales de la práctica en un namespace dedicado para facilitar validación y limpieza.
+
+  > **Nota:** Mantener los recursos de laboratorio en un namespace propio reduce el riesgo de confundirlos con componentes del sistema durante `drain`.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl create namespace lab2
+  ```
+
+  > **Salida esperada:** Se confirma la creación del namespace `lab2`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Construye el Deployment de prueba con tres réplicas, preferencia por `cka-worker1` y toleration para el control plane.
+
+  > **Nota:** `preferredDuringSchedulingIgnoredDuringExecution` expresa una preferencia, no una obligación. Por eso las réplicas pueden migrar a `cka-control` cuando el worker deje de estar disponible para nuevas asignaciones.
+  {: .lab-note .info .compact}
+
+  ```bash
+  cat > lab2-app.yaml <<'EOF'
+  apiVersion: apps/v1
+  kind: Deployment
+  metadata:
+    name: maintenance-app
+    namespace: lab2
+  spec:
+    replicas: 3
+    selector:
+      matchLabels:
+        app: maintenance-app
+    template:
+      metadata:
+        labels:
+          app: maintenance-app
+      spec:
+        tolerations:
+          - key: node-role.kubernetes.io/control-plane
+            operator: Exists
+            effect: NoSchedule
+        affinity:
+          nodeAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                preference:
+                  matchExpressions:
+                    - key: kubernetes.io/hostname
+                      operator: In
+                      values:
+                        - cka-worker1
+        containers:
+          - name: web
+            image: nginx:1.27-alpine
+            ports:
+              - containerPort: 80
+  EOF
+  ```
+
+- {% include step_label.html %} Aplica el manifiesto y confirma que el Deployment alcanza tres réplicas disponibles antes de iniciar el mantenimiento.
+
+  ```bash
+  kubectl apply -f lab2-app.yaml
+  ```
+
+  ```bash
+  kubectl rollout status deployment/maintenance-app -n lab2 --timeout=120s
+  ```
+
+  ```bash
+  kubectl get pods -n lab2 -o wide
+  ```
+
+  > **Salida esperada:** El Deployment queda disponible con tres réplicas y, en condiciones normales, los Pods se programan preferentemente en `cka-worker1`.
   {: .lab-note .output .compact}
 
 {% assign results = site.data.task-results[page.slug].results %}
@@ -95,55 +200,131 @@ DESCRIPCION_DE_LA_SUBTAREA.
 
 ---
 
-## ☁️ Tarea 2. NOMBRE DE LA TAREA — ## min
+## 🚧 Tarea 2. Aplicar cordon y validar el scheduling — 10 min
 
-<!-- DESCRIPCION DE LA TAREA: RECOMENDADO 200-250 CARACTERES -->
-DESCRIPCION_DE_LA_TAREA.
+Marcarás cka-worker1 como no programable sin expulsar sus Pods existentes. Después crearás una carga nueva para comprobar que cordon bloquea nuevas asignaciones, pero no afecta directamente las cargas que ya se ejecutan en el nodo.
 
-### Tarea 2.1. NOMBRE_DE_LA_SUBTAREA
+### Tarea 2.1. Marcar cka-worker1 como unschedulable
 
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
+Aplicarás cordon al worker y comprobarás la diferencia entre el estado operativo del nodo y su capacidad para recibir nuevas cargas.
 
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_1.
+- {% include step_label.html %} Marca `cka-worker1` como no programable para impedir que el scheduler coloque nuevas cargas durante la preparación del mantenimiento.
 
-  > **Nota:** NOTA_GENERAL_DEL_PASO.
+  > **Nota:** `cordon` no apaga el nodo ni expulsa Pods. Únicamente cambia `spec.unschedulable` para bloquear nuevas asignaciones.
   {: .lab-note .info .compact}
 
   ```bash
-  CODIGO_DEL_PASO_1
+  kubectl cordon cka-worker1
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_1.
+  > **Salida esperada:** kubectl confirma que `cka-worker1` fue marcado como cordoned.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_2.
+- {% include step_label.html %} Comprueba cómo Kubernetes representa visualmente un nodo sano que ha sido retirado del scheduling.
 
-  > **Importante:** CONSIDERACION_IMPORTANTE_DEL_PASO.
+  > **Importante:** `Ready,SchedulingDisabled` no significa que el nodo esté fallando; indica `Ready=True` y scheduling deshabilitado administrativamente.
   {: .lab-note .important .compact}
 
   ```bash
-  CODIGO_DEL_PASO_2
+  kubectl get nodes
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_2.
+  > **Salida esperada:** `cka-worker1` aparece como `Ready,SchedulingDisabled`; el nodo sigue sano, pero ya no acepta nuevas asignaciones.
   {: .lab-note .output .compact}
 
-### Tarea 2.2. NOMBRE_DE_LA_SUBTAREA
-
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
-
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_3.
-
-  > **Advertencia:** ADVERTENCIA_DEL_PASO.
-  {: .lab-note .warning .compact}
+- {% include step_label.html %} Confirma directamente en el objeto Node que el cambio de `cordon` quedó registrado como `Unschedulable: true`.
 
   ```bash
-  CODIGO_DEL_PASO_3
+  kubectl describe node cka-worker1 | grep 'Unschedulable:'
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_3.
+  > **Salida esperada:** Se muestra `Unschedulable: true`.
+  {: .lab-note .output .compact}
+
+### Tarea 2.2. Comprobar dónde se programa una carga nueva
+
+Crearás un Pod que tolera el control plane. Como cka-worker1 está cordoned, el scheduler deberá seleccionar el único nodo disponible que cumple las condiciones.
+
+- {% include step_label.html %} Define un Pod temporal que pueda tolerar el control plane y sirva como evidencia de que `cka-worker1` ya no acepta nuevas cargas.
+
+  > **Nota:** Sin esta toleration el Pod podría quedar `Pending`, porque actualmente sólo `cka-control` y `cka-worker1` forman parte del clúster.
+  {: .lab-note .info .compact}
+
+  ```bash
+  cat > lab2-cordon-test.yaml <<'EOF'
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: cordon-test
+    namespace: lab2
+  spec:
+    tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+    containers:
+      - name: web
+        image: nginx:1.27-alpine
+  EOF
+  ```
+
+- {% include step_label.html %} Envía el Pod al API Server para que el scheduler seleccione un nodo disponible bajo las condiciones actuales.
+
+  ```bash
+  kubectl apply -f lab2-cordon-test.yaml
+  ```
+
+  > **Salida esperada:** Se crea el Pod `cordon-test`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Espera a que el Pod esté operativo y comprueba el nodo elegido por el scheduler después de aplicar `cordon`.
+
+  > **Nota:** La columna `NODE` es la evidencia que relaciona el estado `SchedulingDisabled` con la decisión del scheduler.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl wait --for=condition=Ready pod/cordon-test -n lab2 --timeout=120s
+  ```
+
+  ```bash
+  kubectl get pod cordon-test -n lab2 -o wide
+  ```
+
+  > **Salida esperada:** El Pod queda `Running` en `cka-control`, porque `cka-worker1` no acepta nuevas cargas mientras permanece cordoned.
+  {: .lab-note .output .compact}
+
+### Tarea 2.3. Confirmar que cordon no evacúa Pods existentes
+
+Revisarás la aplicación previa para comprobar que cordon cambia el scheduling futuro, pero no elimina ni migra automáticamente los Pods que ya estaban en el worker.
+
+- {% include step_label.html %} Comprueba que las réplicas que ya estaban ejecutándose en `cka-worker1` continúan allí después de `cordon`.
+
+  > **Nota:** Este paso demuestra la diferencia operacional clave: `cordon` evita nuevas asignaciones, mientras que `drain` intenta evacuar cargas existentes.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get pods -n lab2 -l app=maintenance-app -o wide
+  ```
+
+  > **Salida esperada:** Los Pods existentes continúan ejecutándose; los que estaban en `cka-worker1` no fueron expulsados por `cordon`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Inspecciona los eventos para observar la decisión de scheduling y relacionarla con el estado administrativo del worker.
+
+  ```bash
+  kubectl get events -n lab2 --sort-by=.lastTimestamp
+  ```
+
+  > **Salida esperada:** Los eventos muestran la creación y asignación del Pod temporal y de los Pods de la aplicación sin fallas persistentes.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Elimina únicamente el Pod de comprobación para dejar activa sólo la carga que será utilizada durante el `drain`.
+
+  ```bash
+  kubectl delete pod cordon-test -n lab2
+  ```
+
+  > **Salida esperada:** El Pod `cordon-test` se elimina y el Deployment `maintenance-app` permanece activo.
   {: .lab-note .output .compact}
 
 {% capture r2 %}{{ results[1] }}{% endcapture %}
@@ -153,55 +334,175 @@ DESCRIPCION_DE_LA_SUBTAREA.
 
 ---
 
-## 🚀 Tarea 3. NOMBRE DE LA TAREA — ## min
+## 🔄 Tarea 3. Drenar el nodo y observar la reprogramación — 17 min
 
-<!-- DESCRIPCION DE LA TAREA: RECOMENDADO 200-250 CARACTERES -->
-DESCRIPCION_DE_LA_TAREA.
+Ejecutarás drain sobre cka-worker1 para evacuar cargas administradas. Observarás cómo los Pods del Deployment son recreados en otro nodo y distinguirás las cargas administradas por controladores de los Pods pertenecientes a DaemonSets.
 
-### Tarea 3.1. NOMBRE_DE_LA_SUBTAREA
+### Tarea 3.1. Preparar y ejecutar el drain
 
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
+Confirmarás qué cargas existen en el worker, ejecutarás el drenado con la opción adecuada para DaemonSets y comprobarás que el nodo permanece fuera del scheduling.
 
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_1.
+- {% include step_label.html %} Inventaría las cargas que existen en `cka-worker1` antes de drenarlo y distingue aplicaciones de componentes de infraestructura.
 
-  > **Nota:** NOTA_GENERAL_DEL_PASO.
-  {: .lab-note .info .compact}
-
-  ```bash
-  CODIGO_DEL_PASO_1
-  ```
-
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_1.
-  {: .lab-note .output .compact}
-
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_2.
-
-  > **Importante:** CONSIDERACION_IMPORTANTE_DEL_PASO.
+  > **Importante:** Antes de ejecutar `drain`, revisa qué Pods existen en el nodo. Esto permite anticipar objetos que podrían bloquear la evacuación.
   {: .lab-note .important .compact}
 
   ```bash
-  CODIGO_DEL_PASO_2
+  kubectl get pods -A -o wide --field-selector spec.nodeName=cka-worker1
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_2.
+  > **Salida esperada:** Se observan Pods del Deployment de laboratorio y Pods de infraestructura como `calico-node` y `kube-proxy`.
   {: .lab-note .output .compact}
 
-### Tarea 3.2. NOMBRE_DE_LA_SUBTAREA
+- {% include step_label.html %} Identifica los DaemonSets del clúster para entender qué Pods deben permanecer en el nodo durante el drenado.
 
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
-
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_3.
-
-  > **Advertencia:** ADVERTENCIA_DEL_PASO.
-  {: .lab-note .warning .compact}
+  > **Nota:** `drain` no elimina Pods de DaemonSets porque éstos representan normalmente agentes por nodo, como CNI o `kube-proxy`; por ello utilizarás `--ignore-daemonsets`.
+  {: .lab-note .info .compact}
 
   ```bash
-  CODIGO_DEL_PASO_3
+  kubectl get daemonsets -A
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_3.
+  {: .lab-note .info .compact}
+
+- {% include step_label.html %} Drena `cka-worker1` para evacuar las cargas administradas y preparar el nodo para una intervención.
+
+  > **Importante:** Usa únicamente `--ignore-daemonsets`. No agregues `--force` ni `--delete-emptydir-data` si el comando no los solicita; en un escenario CKA debes interpretar primero la causa de cualquier bloqueo.
+  {: .lab-note .important .compact}
+
+  ```bash
+  kubectl drain cka-worker1 --ignore-daemonsets
+  ```
+
+  {: .lab-note .important .compact}
+
+  > **Salida esperada:** Los Pods administrados que pueden ser desalojados son evicted y el comando finaliza indicando que el nodo fue drained.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Confirma que el nodo quedó drenado y sigue protegido contra nuevas asignaciones.
+
+  > **Nota:** `drain` aplica el equivalente de un `cordon` como parte del proceso; el nodo debe permanecer `SchedulingDisabled` hasta ejecutar `uncordon`.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get nodes
+  ```
+
+  > **Salida esperada:** `cka-worker1` permanece `Ready,SchedulingDisabled`.
+  {: .lab-note .output .compact}
+
+### Tarea 3.2. Observar la reprogramación de la aplicación
+
+Revisarás los Pods recreados por el Deployment y verificarás que el scheduler utiliza temporalmente cka-control gracias a la toleration incluida en la carga.
+
+- {% include step_label.html %} Observa en tiempo real cómo desaparecen las réplicas desalojadas y aparecen los reemplazos creados por el Deployment.
+
+  > **Nota:** Kubernetes no “mueve” un Pod existente; el controlador crea Pods nuevos para recuperar el estado deseado después de la eviction.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get pods -n lab2 -l app=maintenance-app -o wide -w
+  ```
+
+  > **Nota:** Presiona `Ctrl+C` cuando las tres réplicas aparezcan `Running`.
+  {: .lab-note .info .compact}
+
+- {% include step_label.html %} Verifica que las nuevas réplicas fueron programadas en `cka-control`, el único nodo schedulable que tolera la carga.
+
+  ```bash
+  kubectl get pods -n lab2 -l app=maintenance-app -o wide
+  ```
+
+  > **Salida esperada:** Las tres réplicas están `Running` y se encuentran en `cka-control` mientras el worker está drenado.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Confirma que el controlador del Deployment recuperó el estado deseado de tres réplicas tras la evacuación.
+
+  > **Nota:** Esta validación diferencia la continuidad declarativa de un Deployment del ciclo de vida individual de sus Pods.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get deployment maintenance-app -n lab2
+  ```
+
+  > **Salida esperada:** `READY`, `UP-TO-DATE` y `AVAILABLE` convergen en `3`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Revisa los eventos para reconstruir cronológicamente la eviction y posterior programación de los reemplazos.
+
+  ```bash
+  kubectl get events -n lab2 --sort-by=.lastTimestamp
+  ```
+
+  > **Salida esperada:** Los eventos permiten relacionar la eliminación de Pods anteriores con la creación y programación de sus reemplazos.
+  {: .lab-note .output .compact}
+
+### Tarea 3.3. Distinguir Pods administrados por DaemonSets
+
+Comprobarás que las cargas de infraestructura administradas por DaemonSets permanecen en el nodo aunque las cargas ordinarias hayan sido evacuadas.
+
+- {% include step_label.html %} Comprueba qué cargas permanecen físicamente en `cka-worker1` después del drain.
+
+  > **Nota:** Los Pods de DaemonSets permanecen porque su presencia está ligada al nodo y fueron excluidos explícitamente del drain.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get pods -A -o wide --field-selector spec.nodeName=cka-worker1
+  ```
+
+  > **Salida esperada:** Los Pods del Deployment ya no están en el worker, pero continúan Pods de DaemonSets como `calico-node` y `kube-proxy`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Comprueba el `ownerReference` de `kube-proxy` para demostrar que Kubernetes lo administra mediante un DaemonSet.
+
+  ```bash
+  kubectl get pod -n kube-system -l k8s-app=kube-proxy     --field-selector spec.nodeName=cka-worker1     -o jsonpath='{range .items[*]}{.metadata.name}{" -> "}{.metadata.ownerReferences[0].kind}{"\n"}{end}'
+  ```
+
+  > **Salida esperada:** El owner se identifica como `DaemonSet`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Relaciona el Pod observado con el estado deseado del DaemonSet `kube-proxy`.
+
+  ```bash
+  kubectl get daemonset kube-proxy -n kube-system
+  ```
+
+  > **Salida esperada:** El DaemonSet mantiene una instancia por cada nodo unido que corresponde a su selector.
+  {: .lab-note .output .compact}
+
+### Tarea 3.4. Validar la salud del clúster durante el mantenimiento
+
+Confirmarás que el control plane y la aplicación siguen operativos mientras cka-worker1 permanece drenado y sin aceptar nuevas cargas.
+
+- {% include step_label.html %} Verifica que el mantenimiento del worker no afecta la disponibilidad del API Server del control plane.
+
+  ```bash
+  kubectl get --raw='/readyz'
+  ```
+
+  > **Salida esperada:** El API Server responde `ok`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Confirma que la aplicación mantiene todas sus réplicas disponibles mientras el worker permanece drenado.
+
+  ```bash
+  kubectl get pods -n lab2 -o wide
+  ```
+
+  > **Salida esperada:** Las tres réplicas de `maintenance-app` permanecen `Running` sin Pods `Pending`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Consulta directamente la condición `Ready` para separar salud del nodo de capacidad de scheduling.
+
+  > **Importante:** Un nodo drenado puede seguir completamente sano. `Ready=True` y `SchedulingDisabled` describen dos dimensiones distintas del estado.
+  {: .lab-note .important .compact}
+
+  ```bash
+  kubectl get node cka-worker1 -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}{"\n"}'
+  ```
+
+  > **Salida esperada:** Se muestra `True`; drain afecta la colocación de cargas, no convierte por sí mismo al nodo en NotReady.
   {: .lab-note .output .compact}
 
 {% capture r3 %}{{ results[2] }}{% endcapture %}
@@ -211,351 +512,178 @@ DESCRIPCION_DE_LA_SUBTAREA.
 
 ---
 
-<!--
-======================================================================
-GUÍA DE USO DE LA PLANTILLA DEL LABORATORIO
-======================================================================
+## ✅ Tarea 4. Devolver el nodo al servicio — 11 min
 
-Este archivo es una plantilla base. Las 3 tareas incluidas sirven únicamente
-como referencia de estructura. La práctica final puede tener más o menos
-tareas, subtareas y pasos según lo requiera el contenido.
+Restaurarás la capacidad de scheduling de cka-worker1 y provocarás una nueva creación controlada de Pods para comprobar que la afinidad preferida vuelve a favorecer al worker cuando está disponible.
 
----------------------------------------------------------------------
-1. FRONT MATTER
----------------------------------------------------------------------
+### Tarea 4.1. Aplicar uncordon
 
-Completa los campos de la cabecera YAML sin cambiar sus nombres:
+Harás que el worker vuelva a aceptar nuevas cargas y comprobarás que el nodo continúa sano después de la ventana de mantenimiento.
 
-- title:
-    Nombre completo de la práctica.
+- {% include step_label.html %} Ejecuta `uncordon` para permitir nuevamente que el scheduler considere `cka-worker1` para cargas nuevas.
 
-- duration:
-    Duración total estimada de la práctica en minutos.
-
-- objective:
-    Objetivo principal de aprendizaje de la práctica.
-
-- prerequisites:
-    Requisitos previos necesarios para realizarla.
-    Agrega o elimina elementos según corresponda.
-
-- introduction:
-    Introducción breve de la práctica. Se recomienda un solo párrafo.
-
-- final_result:
-    Resultado final esperado al terminar toda la práctica.
-    Se recomienda describirlo en un solo párrafo.
-
-- notes:
-    Consideraciones generales que apliquen a toda la práctica.
-
-- references:
-    Documentación oficial o referencias técnicas relevantes.
-    Mantén la estructura:
-
-      - text: DESCRIPCION
-        url: URL
-
-- permalink, images_base, slug y lab_number:
-    Son generados automáticamente. No deben modificarse salvo que cambie
-    deliberadamente la estructura del sitio.
-
-- prev y next:
-    Son generados automáticamente por este script para navegación entre labs.
-
----------------------------------------------------------------------
-2. ESTRUCTURA GENERAL DE UNA TAREA
----------------------------------------------------------------------
-
-Cada tarea debe seguir esta estructura:
-
-  ## ICONO Tarea N. NOMBRE DE LA TAREA — ## min
-
-  DESCRIPCION_DE_LA_TAREA.
-
-  ### Tarea N.1. NOMBRE_DE_LA_SUBTAREA
-
-  DESCRIPCION_DE_LA_SUBTAREA.
-
-  - {% include step_label.html %} DESCRIPCION_DEL_PASO.
-
-La descripción de la tarea debe explicar qué se realizará y para qué.
-Como referencia, se recomiendan aproximadamente 200-250 caracteres.
-
-La descripción de cada subtarea debe indicar claramente el objetivo de esa
-sección. Como referencia, se recomiendan aproximadamente 120-150 caracteres.
-
----------------------------------------------------------------------
-3. TAREAS
----------------------------------------------------------------------
-
-Las tareas principales se numeran de forma consecutiva:
-
-  Tarea 1
-  Tarea 2
-  Tarea 3
-  Tarea 4
-  ...
-
-La plantilla incluye solamente 3 tareas como ejemplo.
-
-Si la práctica necesita más tareas:
-
-1) Duplica COMPLETA una sección de tarea existente.
-2) Cambia el encabezado de la tarea.
-3) Cambia la numeración de todas sus subtareas.
-4) Cambia el resultado asociado results[N].
-5) Cambia el identificador de support-prompt.html.
-
-Ejemplo para una Tarea 4:
-
-  ## 🔧 Tarea 4. NOMBRE DE LA TAREA — ## min
-
-Al finalizar debe contener:
-
-  {% capture r4 %}{{ results[3] }}{% endcapture %}
-  {% include task-result.html title="Tarea finalizada" content=r4 %}
-
-  {% include support-prompt.html task="tarea4" %}
-
-IMPORTANTE:
-El arreglo results utiliza índice base 0:
-
-  Tarea 1 -> results[0]
-  Tarea 2 -> results[1]
-  Tarea 3 -> results[2]
-  Tarea 4 -> results[3]
-  Tarea 5 -> results[4]
-  Tarea 6 -> results[5]
-  Tarea N -> results[N-1]
-
----------------------------------------------------------------------
-4. SUBTAREAS
----------------------------------------------------------------------
-
-Cada tarea puede contener tantas subtareas como sea necesario.
-La numeración debe conservar la relación con la tarea principal.
-
-Ejemplo para la Tarea 4:
-
-  ### Tarea 4.1. PRIMERA SUBTAREA
-  ### Tarea 4.2. SEGUNDA SUBTAREA
-  ### Tarea 4.3. TERCERA SUBTAREA
-  ### Tarea 4.4. CUARTA SUBTAREA
-
-No existe un límite fijo de subtareas.
-
----------------------------------------------------------------------
-5. PASOS
----------------------------------------------------------------------
-
-Cada acción que debe realizar el participante debe escribirse como un paso
-independiente utilizando:
-
-  - {% include step_label.html %} DESCRIPCION_DEL_PASO.
-
-No combines varias acciones importantes dentro de un único paso cuando puedan
-realizarse o validarse por separado.
-
-Cada paso debe contener, cuando corresponda:
-
-- Una descripción clara de la acción.
-- Una Nota, Importante o Advertencia.
-- Una imagen de referencia.
-- Un bloque de código o comando.
-- Una salida esperada o criterio de validación.
-
----------------------------------------------------------------------
-6. NOTAS, IMPORTANTES Y ADVERTENCIAS
----------------------------------------------------------------------
-
-Usa los bloques únicamente cuando aporten información útil.
-
-Nota informativa:
-
-  > **Nota:** TEXTO.
+  > **Nota:** `uncordon` no obliga a que los Pods existentes regresen al worker; sólo vuelve a habilitarlo como candidato para nuevas asignaciones.
   {: .lab-note .info .compact}
 
-Consideración importante:
-
-  > **Importante:** TEXTO.
-  {: .lab-note .important .compact}
-
-Advertencia:
-
-  > **Advertencia:** TEXTO.
-  {: .lab-note .warning .compact}
-
-Salida esperada:
-
-  > **Salida esperada:** TEXTO.
-  {: .lab-note .output .compact}
-
-No es obligatorio incluir los tres tipos de nota en todos los pasos.
-Utiliza solamente el que corresponda al contexto.
-
----------------------------------------------------------------------
-7. BLOQUES DE CÓDIGO
----------------------------------------------------------------------
-
-Cada comando o fragmento que el participante deba ejecutar debe tener su
-propio bloque de código.
-
-Ejemplo Bash:
-
   ```bash
-  COMANDO
+  kubectl uncordon cka-worker1
   ```
 
-Cambia el identificador del lenguaje cuando corresponda, por ejemplo:
-
-  ```yaml
-  ```json
-  ```sql
-  ```powershell
-  ```python
-
-Evita colocar varios pasos independientes dentro de un único bloque de código
-si deben ejecutarse y validarse por separado.
-
----------------------------------------------------------------------
-8. SALIDA ESPERADA
----------------------------------------------------------------------
-
-Después de un comando o acción importante debe existir una forma clara de
-validar que el paso fue realizado correctamente.
-
-Utiliza:
-
-  > **Salida esperada:** DESCRIPCION_DE_LA_VALIDACION.
+  > **Salida esperada:** kubectl informa que `cka-worker1` fue uncordoned.
   {: .lab-note .output .compact}
 
-La salida esperada no necesita reproducir siempre todo el texto del comando.
-Puede describir el estado, recurso, valor o comportamiento que debe observarse.
+- {% include step_label.html %} Verifica que `SchedulingDisabled` desapareció y que ambos nodos continúan `Ready`.
 
----------------------------------------------------------------------
-9. IMÁGENES
----------------------------------------------------------------------
+  ```bash
+  kubectl get nodes
+  ```
 
-La carpeta de imágenes de esta práctica se encuentra en:
+  > **Salida esperada:** `cka-control` y `cka-worker1` aparecen `Ready` y ya no se muestra `SchedulingDisabled`.
+  {: .lab-note .output .compact}
 
-  labs/labN/img/
+- {% include step_label.html %} Confirma en el objeto Node que `spec.unschedulable` volvió a su estado normal.
 
-Para insertar una imagen mediante el mecanismo de la plantilla utiliza:
+  ```bash
+  kubectl describe node cka-worker1 | grep 'Unschedulable:'
+  ```
 
-  {% include step_image.html %}
+  > **Salida esperada:** Se muestra `Unschedulable: false`.
+  {: .lab-note .output .compact}
 
-Conserva este include solamente en los pasos que realmente tengan una imagen.
-Si el paso no requiere imagen, elimínalo.
+### Tarea 4.2. Comprobar la programación después del mantenimiento
 
-No es necesario agregar una imagen a cada paso.
+Recrearás las réplicas del Deployment para observar que el scheduler vuelve a preferir cka-worker1 una vez que el nodo está disponible.
 
----------------------------------------------------------------------
-10. RESULTADO DE CADA TAREA
----------------------------------------------------------------------
+- {% include step_label.html %} Inicia un nuevo rollout para generar Pods nuevos y comprobar si el scheduler vuelve a preferir `cka-worker1`.
 
-Cada tarea debe terminar con un resultado esperado asociado a
-_data/task-results.yml.
+  > **Nota:** No estás “moviendo” los Pods del control plane. El reinicio genera un nuevo ReplicaSet y nuevas decisiones de scheduling.
+  {: .lab-note .info .compact}
 
-La asignación de results debe realizarse una sola vez antes del primer uso:
+  ```bash
+  kubectl rollout restart deployment/maintenance-app -n lab2
+  ```
 
-  {% assign results = site.data.task-results[page.slug].results %}
+  > **Salida esperada:** Kubernetes confirma el reinicio del Deployment.
+  {: .lab-note .output .compact}
 
-En esta plantilla se realiza en la Tarea 1.
-No es necesario repetir el assign en las tareas siguientes.
+- {% include step_label.html %} Espera a que la sustitución controlada de réplicas termine antes de evaluar su ubicación.
 
-Después utiliza el índice correspondiente:
+  ```bash
+  kubectl rollout status deployment/maintenance-app -n lab2 --timeout=120s
+  ```
 
-  {% capture r1 %}{{ results[0] }}{% endcapture %}
-  {% include task-result.html title="Tarea finalizada" content=r1 %}
+  > **Salida esperada:** El rollout termina correctamente sin réplicas no disponibles.
+  {: .lab-note .output .compact}
 
-Para la Tarea 2:
+- {% include step_label.html %} Comprueba la columna `NODE` y valida el efecto de la afinidad preferida una vez restaurado el worker.
 
-  {% capture r2 %}{{ results[1] }}{% endcapture %}
+  ```bash
+  kubectl get pods -n lab2 -l app=maintenance-app -o wide
+  ```
 
-Para la Tarea 3:
+  > **Salida esperada:** El scheduler vuelve a preferir `cka-worker1` para las réplicas nuevas, de acuerdo con la afinidad definida.
+  {: .lab-note .output .compact}
 
-  {% capture r3 %}{{ results[2] }}{% endcapture %}
+### Tarea 4.3. Validar el estado previo al reto
 
-Y así sucesivamente.
+Confirmarás que el clúster y la aplicación se encuentran estables antes de resolver el escenario final con mínima guía.
 
----------------------------------------------------------------------
-11. PROMPT DE SOPORTE
----------------------------------------------------------------------
+- {% include step_label.html %} Establece una nueva línea base antes del reto: ambos nodos deben estar sanos y aceptar scheduling.
 
-Después del resultado de cada tarea debe incluirse el prompt de soporte
-correspondiente:
+  ```bash
+  kubectl get nodes -o wide
+  ```
 
-  {% include support-prompt.html task="tarea1" %}
+  > **Salida esperada:** Ambos nodos unidos están `Ready` y schedulable.
+  {: .lab-note .output .compact}
 
-La numeración debe coincidir exactamente con la tarea:
+- {% include step_label.html %} Verifica que el Deployment haya convergido y que no queden réplicas indisponibles antes del escenario sin guía.
 
-  Tarea 1 -> task="tarea1"
-  Tarea 2 -> task="tarea2"
-  Tarea 3 -> task="tarea3"
-  Tarea 4 -> task="tarea4"
-  ...
+  ```bash
+  kubectl get deployment maintenance-app -n lab2
+  ```
 
----------------------------------------------------------------------
-12. SEPARACIÓN ENTRE TAREAS
----------------------------------------------------------------------
+  > **Salida esperada:** Las tres réplicas están disponibles.
+  {: .lab-note .output .compact}
 
-Separa cada tarea principal utilizando:
+- {% include step_label.html %} Descarta problemas de scheduling pendientes antes de iniciar el reto administrativo.
 
-  ---
+  ```bash
+  kubectl get pods -n lab2 --field-selector=status.phase=Pending
+  ```
 
-No utilices este separador entre pasos o subtareas de la misma tarea.
+  > **Salida esperada:** No se muestran Pods pendientes.
+  {: .lab-note .output .compact}
 
----------------------------------------------------------------------
-13. ICONOS DE LAS TAREAS
----------------------------------------------------------------------
+{% capture r4 %}{{ results[3] }}{% endcapture %}
+{% include task-result.html title="Tarea finalizada" content=r4 %}
 
-El icono del encabezado es visual y puede cambiarse de acuerdo con el tema de
-la tarea. Ejemplos utilizados en esta plantilla:
+{% include support-prompt.html task="tarea4" %}
 
-  🔎  ☁️  🚀
+---
 
-La numeración y el texto "Tarea N." son más importantes que el icono.
+## 🧩 Tarea 5. Reto de mantenimiento administrativo — 12 min
 
----------------------------------------------------------------------
-14. QUÉ SE PUEDE ELIMINAR
----------------------------------------------------------------------
+Resolverás un segundo ciclo de mantenimiento sin comandos prescritos. Utiliza únicamente las técnicas practicadas para proteger el scheduling, evacuar la aplicación, validar la continuidad y devolver cka-worker1 al servicio.
 
-Si un elemento no aplica a la práctica puede eliminarse, por ejemplo:
+### Tarea 5.1. Ejecutar una ventana de mantenimiento sin guía de comandos
 
-- Prerequisitos adicionales.
-- Notas generales.
-- Referencias adicionales.
-- Una Nota/Importante/Advertencia de un paso.
-- {% include step_image.html %} cuando no existe imagen.
-- Subtareas que no sean necesarias.
-- Tareas de ejemplo que no formen parte de la práctica real.
+Debes preparar cka-worker1 para una intervención administrativa, retirar las cargas administradas y demostrar que la aplicación continúa disponible en el clúster.
 
-No elimines los elementos estructurales necesarios para el funcionamiento del
-layout, resultados o navegación sin revisar primero su dependencia.
+- {% include step_label.html %} Determina por tu cuenta si `cka-worker1` inicia el reto sano y habilitado para recibir nuevas cargas.
 
----------------------------------------------------------------------
-15. VALIDACIÓN FINAL DEL ARCHIVO
----------------------------------------------------------------------
+  > **Nota:** En esta sección ya no se proporcionan comandos. Selecciona las consultas administrativas adecuadas a partir de lo practicado.
+  {: .lab-note .info .compact}
 
-Antes de considerar terminado el laboratorio verifica:
+  > **Criterio del reto:** Conserva evidencia de que el nodo está `Ready` y no está marcado como `SchedulingDisabled`.
+  {: .lab-note .important .compact}
 
-- El título y duración son correctos.
-- El objetivo describe claramente el aprendizaje esperado.
-- La introducción está completa.
-- Todas las tareas están numeradas consecutivamente.
-- Todas las subtareas corresponden al número de su tarea.
-- Cada acción del participante está separada como paso cuando corresponde.
-- Los comandos tienen bloques de código adecuados.
-- Los pasos importantes tienen una salida esperada o criterio de validación.
-- Los índices results[N] corresponden a cada número de tarea.
-- Cada tarea utiliza support-prompt.html con su número correcto.
-- Las imágenes utilizadas existen en la carpeta img de la práctica.
-- El resultado final describe lo que el participante habrá conseguido.
-- No permanecen textos de marcador como CAMBIAR_AQUI, DESCRIPCION_, NOMBRE_DE_,
-  CODIGO_, PREREQUISITO_, RESULTADO_ o ## min en la versión final.
+- {% include step_label.html %} Coloca `cka-worker1` en un estado seguro de pre-mantenimiento donde continúe operativo pero no reciba nuevas asignaciones.
 
-======================================================================
-FIN DE LA GUÍA DE USO DE LA PLANTILLA
-======================================================================
--->
+  > **Criterio del reto:** El nodo debe seguir sano, pero quedar marcado como no programable.
+  {: .lab-note .important .compact}
+
+- {% include step_label.html %} Evacúa del worker las cargas administradas que sí deben abandonar el nodo, preservando correctamente los Pods de DaemonSets.
+
+  > **Criterio del reto:** No utilices opciones destructivas que no sean necesarias para este escenario.
+  {: .lab-note .warning .compact}
+
+- {% include step_label.html %} Demuestra con evidencia del clúster que el Deployment recuperó sus tres réplicas después de la evacuación.
+
+  > **Salida esperada:** La aplicación mantiene tres réplicas disponibles y ninguna réplica administrada permanece en cka-worker1.
+  {: .lab-note .output .compact}
+
+### Tarea 5.2. Restaurar el servicio y cerrar la práctica
+
+Devolverás el worker al scheduling, validarás la salud final del clúster y eliminarás exclusivamente los recursos creados por esta práctica.
+
+- {% include step_label.html %} Finaliza la ventana de mantenimiento devolviendo `cka-worker1` al conjunto de nodos candidatos para scheduling.
+
+  > **Criterio del reto:** El nodo debe terminar `Ready` y sin `SchedulingDisabled`.
+  {: .lab-note .important .compact}
+
+- {% include step_label.html %} Genera nuevas réplicas mediante una operación sobre el Deployment y comprueba que `cka-worker1` vuelve a participar en el scheduling.
+
+  > **Criterio del reto:** Utiliza una operación sobre el Deployment, no elimines Pods individuales uno por uno.
+  {: .lab-note .important .compact}
+
+- {% include step_label.html %} Realiza una validación integral del estado final: nodos, disponibilidad de la aplicación y salud del API Server.
+
+  > **Salida esperada:** Ambos nodos unidos están `Ready`, la aplicación está disponible y el API Server responde correctamente.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Limpia exclusivamente los recursos temporales del laboratorio y conserva intacta la infraestructura base del clúster.
+
+  > **Importante:** Antes de limpiar, confirma que `cka-worker1` ya está `Ready` y schedulable. No finalices la práctica dejando el nodo cordoned.
+  {: .lab-note .important .compact}
+
+  > **Advertencia:** Elimina solamente los recursos de esta práctica. No modifiques `kube-system`, Calico, CoreDNS, kube-proxy ni cka-worker2.
+  {: .lab-note .warning .compact}
+
+  > **Salida esperada:** El namespace `lab2` deja de existir, cka-worker1 permanece `Ready` y cka-worker2 continúa sin unir al clúster.
+  {: .lab-note .output .compact}
+
+{% capture r5 %}{{ results[4] }}{% endcapture %}
+{% include task-result.html title="Tarea finalizada" content=r5 %}
+
+{% include support-prompt.html task="tarea5" %}

@@ -1,561 +1,1241 @@
 ---
 layout: lab
-title: "Práctica 7: CAMBIAR_AQUI_NOMBRE_DE_LA_PRACTICA"
+title: "Práctica 7: Diagnóstico de almacenamiento persistente y StorageClass"
 permalink: /lab7/lab7/
 images_base: /labs/lab7/img
-duration: "## minutos"
+duration: "50 minutos"
 objective:
-  - OBJETIVO_DE_LA_PRACTICA
+  - Diagnosticar y corregir problemas de almacenamiento persistente en Kubernetes mediante PersistentVolume, PersistentVolumeClaim, StorageClass, access modes, capacidad y node affinity.
 prerequisites:
-  - PREREQUISITO_1
-  - PREREQUISITO_2
-  - PREREQUISITO_3
-  - PREREQUISITO_4
-  - PREREQUISITO_X
+  - Haber completado la Práctica 6 y disponer del clúster CKA operativo.
+  - Tener kubectl configurado con acceso administrativo.
+  - Contar con al menos dos nodos worker en estado Ready.
+  - Poder ejecutar comandos con privilegios sudo en los workers.
+  - Trabajar desde Visual Studio Code utilizando Git Bash como terminal principal.
 introduction:
-  - INTRODUCCION_DE_LA_PRACTICA_BREVE_RESUMEN_EN_UN_SOLO_PARRAFO_RECOMENDADO
+  - En esta práctica establecerás primero una línea base funcional con PersistentVolume, PersistentVolumeClaim y StorageClass. Después resolverás escenarios de troubleshooting en los que un PVC permanece Pending, un volumen no satisface la capacidad o access mode solicitado y un Pod no puede programarse por la node affinity de un volumen local.
 slug: lab7
 lab_number: 7
 final_result: >
-  RESULTADO_FINAL_ESPERADO_DE_LA_PRACTICA_EN_UN_SOLO_PARRAFO_RECOMENDADO
+  Al finalizar habrás validado el ciclo PV-PVC-Pod, interpretado estados Bound y Pending, diagnosticado incompatibilidades de StorageClass, capacidad, access modes y node affinity, y recuperado workloads con almacenamiento persistente aplicando cambios puntuales basados en evidencia.
 notes:
-  - NOTAS_CONSIDERACIONES_ADICIONALES
-  - NOTAS_CONSIDERACIONES_ADICIONALES
+  - Los volúmenes locales utilizados son exclusivamente para laboratorio y no representan almacenamiento compartido de producción.
+  - Los PersistentVolumes son recursos de alcance de clúster; los PersistentVolumeClaims pertenecen a un namespace.
+  - Un PVC solo se enlaza con un PV compatible en capacidad, access modes, StorageClass y restricciones de scheduling.
+  - No elimines recursos antes de revisar su estado y eventos.
 references:
-  - text: DESCRIPCION_DEL_LINK_DE_REFERENCIA
-    url: https://developer.hashicorp.com/terraform
-  - text: DESCRIPCION_DEL_LINK_DE_REFERENCIA
-    url: https://learn.microsoft.com/es-es/cli/azure/
+  - text: Persistent Volumes
+    url: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+  - text: Storage Classes
+    url: https://kubernetes.io/docs/concepts/storage/storage-classes/
 prev: /lab6/lab6/
 next: /lab8/lab8/
 ---
 
 ---
 
-<!-- Aquí comienzan las instrucciones paso a paso de la práctica -->
+## 💾 Tarea 1. Establecer la línea base de almacenamiento — 7 min
 
-## 🔎 Tarea 1. NOMBRE DE LA TAREA — ## min
+### Tarea 1.1. Revisar recursos existentes
 
-<!-- DESCRIPCION DE LA TAREA: RECOMENDADO 200-250 CARACTERES -->
-DESCRIPCION_DE_LA_TAREA.
+- {% include step_label.html %} Consulta las StorageClasses disponibles para identificar las clases de almacenamiento configuradas y su comportamiento de aprovisionamiento.
 
-### Tarea 1.1. NOMBRE DE_LA_SUBTAREA
-
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
-
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_1.
-
-  > **Nota:** NOTA_GENERAL_DEL_PASO.
+  > **Nota:** Una StorageClass define características de aprovisionamiento y binding. Un clúster de laboratorio puede no tener una clase predeterminada.
   {: .lab-note .info .compact}
 
-  {% include step_image.html %}
-
   ```bash
-  CODIGO_DEL_PASO_1
+  kubectl get storageclass
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_1.
+  > **Salida esperada:** Se muestran las StorageClasses existentes o una lista vacía.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_2.
+- {% include step_label.html %} Consulta los PersistentVolumes para reconocer la capacidad disponible, su estado actual y la StorageClass asociada a cada volumen.
 
-  > **Importante:** CONSIDERACION_IMPORTANTE_DEL_PASO.
+  > **Nota:** Los PV representan capacidad de almacenamiento disponible o asignada a nivel de clúster.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get pv
+  ```
+
+  > **Salida esperada:** Se muestran los PV existentes o una lista vacía.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Consulta los PersistentVolumeClaims de todos los namespaces para identificar solicitudes de almacenamiento y su estado de binding.
+
+  > **Nota:** Los PVC representan solicitudes de almacenamiento realizadas por workloads dentro de un namespace.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get pvc -A
+  ```
+
+  > **Salida esperada:** Se muestran los PVC existentes y su estado actual en los namespaces donde estén definidos.
+  {: .lab-note .output .compact}
+
+### Tarea 1.2. Preparar el namespace y seleccionar un worker
+
+- {% include step_label.html %} Crea el namespace `storage-lab` para aislar los recursos de almacenamiento y mantener separados los escenarios de diagnóstico.
+
+  > **Nota:** El namespace aislará los claims y Pods usados durante la práctica.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl create namespace storage-lab
+  ```
+
+  > **Salida esperada:** Kubernetes confirma la creación del namespace `storage-lab`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Guarda el primer worker disponible en una variable para reutilizar su nombre al definir la afinidad del PersistentVolume local.
+
+  > **Nota:** El PV local deberá asociarse al mismo nodo donde exista físicamente su directorio.
+  {: .lab-note .info .compact}
+
+  ```bash
+  WORKER=$(kubectl get nodes     -l '!node-role.kubernetes.io/control-plane'     -o jsonpath='{.items[0].metadata.name}')
+  ```
+
+
+  > **Salida esperada:** La variable `WORKER` queda definida con el nombre de un nodo worker.
+  {: .lab-note .output .compact}
+- {% include step_label.html %} Confirma el worker seleccionado para asegurarte de que el volumen local se asociará al nodo correcto durante toda la práctica.
+
+  > **Importante:** Anota este nodo; la node affinity del volumen dependerá de él.
   {: .lab-note .important .compact}
 
   ```bash
-  CODIGO_DEL_PASO_2
+  echo "$WORKER"
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_2.
+
+  > **Salida esperada:** Se muestra el nombre del worker seleccionado.
   {: .lab-note .output .compact}
 
-### Tarea 1.2. NOMBRE_DE_LA_SUBTAREA
+### Tarea 1.3. Preparar el directorio local
 
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
+- {% include step_label.html %} Accede al worker seleccionado y crea `/mnt/cka-storage`, que funcionará como ruta física para el volumen local del laboratorio.
 
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_3.
-
-  > **Advertencia:** ADVERTENCIA_DEL_PASO.
+  > **Advertencia:** Este comando se ejecuta en el worker guardado en `$WORKER`, no en el control-plane.
   {: .lab-note .warning .compact}
 
   ```bash
-  CODIGO_DEL_PASO_3
+  sudo mkdir -p /mnt/cka-storage
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_3.
+
+  > **Salida esperada:** El directorio `/mnt/cka-storage` queda creado en el worker seleccionado.
   {: .lab-note .output .compact}
+- {% include step_label.html %} Ajusta los permisos del directorio para permitir que los Pods del laboratorio puedan leer y escribir sin bloqueos por permisos.
+
+  > **Nota:** Los permisos amplios simplifican la práctica; en producción deben definirse permisos apropiados al workload.
+  {: .lab-note .info .compact}
+
+  ```bash
+  sudo chmod 777 /mnt/cka-storage
+  ```
+
+  > **Salida esperada:** El comando termina sin errores y el directorio queda accesible para la práctica.
+  {: .lab-note .output .compact}
+- {% include step_label.html %} Verifica que la ruta local existe y conserva los permisos esperados antes de continuar con la definición del PersistentVolume.
+
+  > **Nota:** Confirmar la existencia del path evita confundir un error de ruta con un problema de Kubernetes.
+  {: .lab-note .info .compact}
+
+  ```bash
+  ls -ld /mnt/cka-storage
+  ```
 
 {% assign results = site.data.task-results[page.slug].results %}
+
+  > **Salida esperada:** Se muestra `/mnt/cka-storage` con los permisos configurados.
+  {: .lab-note .output .compact}
+
 {% capture r1 %}{{ results[0] }}{% endcapture %}
 {% include task-result.html title="Tarea finalizada" content=r1 %}
-
 {% include support-prompt.html task="tarea1" %}
 
 ---
 
-## ☁️ Tarea 2. NOMBRE DE LA TAREA — ## min
+## 🧱 Tarea 2. Crear StorageClass, PV, PVC y Pod — 7 min
 
-<!-- DESCRIPCION DE LA TAREA: RECOMENDADO 200-250 CARACTERES -->
-DESCRIPCION_DE_LA_TAREA.
+### Tarea 2.1. Crear una StorageClass manual
 
-### Tarea 2.1. NOMBRE_DE_LA_SUBTAREA
+- {% include step_label.html %} Regresa a Git Bash del **cka-control** y crea `storageclass.yaml` para definir una StorageClass manual sin aprovisionamiento dinámico.
 
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
-
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_1.
-
-  > **Nota:** NOTA_GENERAL_DEL_PASO.
+  > **Nota:** `kubernetes.io/no-provisioner` indica que los PV se crearán manualmente.
   {: .lab-note .info .compact}
 
   ```bash
-  CODIGO_DEL_PASO_1
+  cat > storageclass.yaml <<'EOF'
+  apiVersion: storage.k8s.io/v1
+  kind: StorageClass
+  metadata:
+    name: cka-local
+  provisioner: kubernetes.io/no-provisioner
+  volumeBindingMode: WaitForFirstConsumer
+  EOF
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_1.
+
+  > **Salida esperada:** Se crea el archivo `storageclass.yaml` con la definición de `cka-local`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_2.
+- {% include step_label.html %} Aplica la StorageClass para registrar la clase `cka-local` y habilitar el comportamiento de binding definido en el manifiesto.
 
-  > **Importante:** CONSIDERACION_IMPORTANTE_DEL_PASO.
+  > **Nota:** `WaitForFirstConsumer` permite considerar restricciones de scheduling antes del binding definitivo.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl apply -f storageclass.yaml
+  ```
+
+
+  > **Salida esperada:** Kubernetes confirma la creación o configuración de `storageclass.storage.k8s.io/cka-local`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Revisa las propiedades de `cka-local` para confirmar el provisioner configurado y el modo de binding esperado.
+
+  > **Nota:** Verifica especialmente el provisioner y `VOLUMEBINDINGMODE`.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get storageclass cka-local
+  ```
+
+
+  > **Salida esperada:** Se observa `kubernetes.io/no-provisioner` y `WaitForFirstConsumer`.
+  {: .lab-note .output .compact}
+
+### Tarea 2.2. Crear el PersistentVolume
+
+- {% include step_label.html %} Crea `pv.yaml` usando el worker seleccionado para asociar el volumen local con la ruta física y el nodo correctos.
+
+  > **Importante:** La node affinity relaciona el PV con el nodo que contiene `/mnt/cka-storage`.
   {: .lab-note .important .compact}
 
   ```bash
-  CODIGO_DEL_PASO_2
+  cat > pv.yaml <<EOF
+  apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: pv-cka-local
+  spec:
+    capacity:
+      storage: 1Gi
+    volumeMode: Filesystem
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: cka-local
+    local:
+      path: /mnt/cka-storage
+    nodeAffinity:
+      required:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - ${WORKER}
+  EOF
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_2.
+  > **Salida esperada:** Se crea `pv.yaml` con 1Gi, `ReadWriteOnce`, la ruta local y la node affinity del worker.
   {: .lab-note .output .compact}
 
-### Tarea 2.2. NOMBRE_DE_LA_SUBTAREA
+- {% include step_label.html %} Aplica el PersistentVolume para registrar 1Gi de almacenamiento local disponible con la StorageClass `cka-local`.
 
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
-
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_3.
-
-  > **Advertencia:** ADVERTENCIA_DEL_PASO.
-  {: .lab-note .warning .compact}
+  > **Nota:** El volumen queda disponible para un claim compatible.
+  {: .lab-note .info .compact}
 
   ```bash
-  CODIGO_DEL_PASO_3
+  kubectl apply -f pv.yaml
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_3.
+  > **Salida esperada:** Kubernetes confirma la creación de `persistentvolume/pv-cka-local`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Comprueba el estado del PersistentVolume para confirmar que Kubernetes lo reconoce y que está disponible para un claim compatible.
+
+  > **Nota:** Antes de tener consumidor puede aparecer `Available`.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get pv pv-cka-local
+  ```
+ 
+  > **Salida esperada:** El PV aparece registrado y normalmente en estado `Available` antes del binding.
+  {: .lab-note .output .compact}
+
+### Tarea 2.3. Crear PVC y Pod consumidor
+
+- {% include step_label.html %} Crea un PVC de 500Mi para solicitar almacenamiento compatible con la capacidad, access mode y StorageClass del PV creado.
+
+  > **Nota:** La capacidad y `ReadWriteOnce` son compatibles con el PV de 1Gi.
+  {: .lab-note .info .compact}
+
+  ```bash
+  cat > pvc.yaml <<'EOF'
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: data-pvc
+    namespace: storage-lab
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: cka-local
+    resources:
+      requests:
+        storage: 500Mi
+  EOF
+  ```
+  ```bash
+  kubectl apply -f pvc.yaml
+  ```
+
+  > **Salida esperada:** Se crea y aplica `data-pvc` con una solicitud de 500Mi y `ReadWriteOnce`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Crea `pod-storage.yaml` para montar el PVC en `/data` y comprobar que el Pod puede utilizar almacenamiento persistente.
+
+  > **Nota:** El scheduler deberá seleccionar el nodo compatible con la affinity del volumen.
+  {: .lab-note .info .compact}
+
+  ```bash
+  cat > pod-storage.yaml <<'EOF'
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: storage-app
+    namespace: storage-lab
+  spec:
+    containers:
+      - name: app
+        image: busybox:1.37
+        command: ["sh","-c","echo cka-storage-ok > /data/status.txt; sleep 3600"]
+        volumeMounts:
+          - name: data
+            mountPath: /data
+    volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: data-pvc
+  EOF
+  ```
+  ```bash
+  kubectl apply -f pod-storage.yaml
+  ```
+
+  > **Salida esperada:** Se crea y aplica el Pod `storage-app` con el PVC montado en `/data`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Espera a que el Pod quede Ready y revisa el binding para confirmar la relación funcional entre PV, PVC y consumidor.
+
+  > **Importante:** El estado funcional esperado es PVC `Bound`, PV `Bound` y Pod `Running`.
+  {: .lab-note .important .compact}
+
+  ```bash
+  kubectl wait --for=condition=Ready pod/storage-app     -n storage-lab --timeout=90s
+  ```
+  ```bash
+  kubectl get pv
+  kubectl get pvc -n storage-lab
+  ```
+
+
+  > **Salida esperada:** El Pod queda `Ready` y el PV/PVC aparecen `Bound`.
   {: .lab-note .output .compact}
 
 {% capture r2 %}{{ results[1] }}{% endcapture %}
 {% include task-result.html title="Tarea finalizada" content=r2 %}
-
 {% include support-prompt.html task="tarea2" %}
 
 ---
 
-## 🚀 Tarea 3. NOMBRE DE LA TAREA — ## min
+## 🔍 Tarea 3. Construir el flujo de diagnóstico — 6 min
 
-<!-- DESCRIPCION DE LA TAREA: RECOMENDADO 200-250 CARACTERES -->
-DESCRIPCION_DE_LA_TAREA.
+### Tarea 3.1. Inspeccionar el PVC
 
-### Tarea 3.1. NOMBRE_DE_LA_SUBTAREA
+- {% include step_label.html %} Describe `data-pvc` para revisar estado, StorageClass, volumen enlazado y eventos relacionados con el proceso de binding.
 
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
-
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_1.
-
-  > **Nota:** NOTA_GENERAL_DEL_PASO.
+  > **Nota:** `describe` reúne estado, StorageClass, volumen enlazado y eventos de binding.
   {: .lab-note .info .compact}
 
   ```bash
-  CODIGO_DEL_PASO_1
+  kubectl describe pvc data-pvc -n storage-lab
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_1.
+  > **Salida esperada:** El PVC muestra estado `Bound`, StorageClass `cka-local` y referencia al PV asignado.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_2.
+- {% include step_label.html %} Obtén el nombre del PV asignado desde el PVC para identificar de forma directa qué volumen satisfizo la solicitud.
 
-  > **Importante:** CONSIDERACION_IMPORTANTE_DEL_PASO.
+  > **Nota:** `spec.volumeName` identifica directamente el volumen reclamado.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get pvc data-pvc -n storage-lab -o jsonpath='{.spec.volumeName}{"\n"}'
+  ```
+
+  > **Salida esperada:** Se muestra `pv-cka-local`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Revisa los eventos del namespace para detectar mensajes de binding, scheduling o montaje relevantes para el diagnóstico.
+
+  > **Nota:** Los eventos suelen explicar por qué un claim no enlaza o por qué un Pod no puede programarse.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get events -n storage-lab --sort-by='.lastTimestamp'
+  ```
+
+  > **Salida esperada:** Se muestran eventos recientes sin errores persistentes de binding o montaje.
+  {: .lab-note .output .compact}
+
+### Tarea 3.2. Inspeccionar el PV
+
+- {% include step_label.html %} Describe el PersistentVolume para analizar capacidad, access mode, StorageClass, ruta local y restricciones de node affinity.
+
+  > **Nota:** Relaciona capacidad, access mode, StorageClass, ruta local y node affinity.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl describe pv pv-cka-local
+  ```
+
+  > **Salida esperada:** Se muestran capacidad, access mode, StorageClass, ruta local y node affinity del PV.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Consulta la `claimRef` para identificar el namespace y PVC que poseen actualmente el PersistentVolume seleccionado.
+
+  > **Nota:** `claimRef` muestra qué PVC posee actualmente el volumen.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get pv pv-cka-local -o jsonpath='{.spec.claimRef.namespace}/{.spec.claimRef.name}{"\n"}'
+  ```
+
+  > **Salida esperada:** Se muestra `storage-lab/data-pvc`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Consulta la reclaim policy para conocer qué ocurrirá con el volumen y sus datos cuando el claim deje de existir.
+
+  > **Nota:** `Retain` conserva los datos después de liberar el claim.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get pv pv-cka-local -o jsonpath='{.spec.persistentVolumeReclaimPolicy}{"\n"}'
+  ```
+
+  > **Salida esperada:** Se muestra `Retain`.
+  {: .lab-note .output .compact}
+
+### Tarea 3.3. Validar persistencia
+
+- {% include step_label.html %} Lee el archivo guardado en el volumen para comprobar que el montaje es funcional y que los datos persisten dentro del PVC.
+
+  > **Nota:** Esto confirma que el volumen está montado y accesible desde el contenedor.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl exec -n storage-lab storage-app -- cat /data/status.txt
+  ```
+
+  > **Salida esperada:** `cka-storage-ok`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Comprueba en qué nodo se ejecuta el Pod para verificar que coincide con la node affinity definida por el volumen local.
+
+  > **Nota:** Debe coincidir con el nodo de la affinity del PV.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get pod storage-app -n storage-lab -o wide
+  ```
+
+  > **Salida esperada:** El Pod aparece ejecutándose en el worker asociado al volumen.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Conserva esta línea base antes del troubleshooting para comparar estados saludables contra los escenarios defectuosos posteriores.
+
+  > **Importante:** A partir de ahora revisa siempre PVC, PV, Pod y eventos antes de corregir.
   {: .lab-note .important .compact}
 
   ```bash
-  CODIGO_DEL_PASO_2
+  kubectl get pv
   ```
-
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_2.
-  {: .lab-note .output .compact}
-
-### Tarea 3.2. NOMBRE_DE_LA_SUBTAREA
-
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
-
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_3.
-
-  > **Advertencia:** ADVERTENCIA_DEL_PASO.
-  {: .lab-note .warning .compact}
-
   ```bash
-  CODIGO_DEL_PASO_3
+  kubectl get pvc -n storage-lab
+  ```
+  ```bash
+  kubectl get pods -n storage-lab -o wide
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_3.
+  > **Salida esperada:** PV, PVC y Pods aparecen en estados saludables antes de iniciar los escenarios de fallo.
   {: .lab-note .output .compact}
 
 {% capture r3 %}{{ results[2] }}{% endcapture %}
 {% include task-result.html title="Tarea finalizada" content=r3 %}
-
 {% include support-prompt.html task="tarea3" %}
 
 ---
 
-<!--
-======================================================================
-GUÍA DE USO DE LA PLANTILLA DEL LABORATORIO
-======================================================================
+## 🧩 Tarea 4. Troubleshooting: StorageClass incompatible — 6 min
 
-Este archivo es una plantilla base. Las 3 tareas incluidas sirven únicamente
-como referencia de estructura. La práctica final puede tener más o menos
-tareas, subtareas y pasos según lo requiera el contenido.
+### Tarea 4.1. Introducir el fallo
 
----------------------------------------------------------------------
-1. FRONT MATTER
----------------------------------------------------------------------
+- {% include step_label.html %} Crea un PVC que solicite `cka-fast` para provocar una incompatibilidad controlada entre el claim y la StorageClass disponible.
 
-Completa los campos de la cabecera YAML sin cambiar sus nombres:
-
-- title:
-    Nombre completo de la práctica.
-
-- duration:
-    Duración total estimada de la práctica en minutos.
-
-- objective:
-    Objetivo principal de aprendizaje de la práctica.
-
-- prerequisites:
-    Requisitos previos necesarios para realizarla.
-    Agrega o elimina elementos según corresponda.
-
-- introduction:
-    Introducción breve de la práctica. Se recomienda un solo párrafo.
-
-- final_result:
-    Resultado final esperado al terminar toda la práctica.
-    Se recomienda describirlo en un solo párrafo.
-
-- notes:
-    Consideraciones generales que apliquen a toda la práctica.
-
-- references:
-    Documentación oficial o referencias técnicas relevantes.
-    Mantén la estructura:
-
-      - text: DESCRIPCION
-        url: URL
-
-- permalink, images_base, slug y lab_number:
-    Son generados automáticamente. No deben modificarse salvo que cambie
-    deliberadamente la estructura del sitio.
-
-- prev y next:
-    Son generados automáticamente por este script para navegación entre labs.
-
----------------------------------------------------------------------
-2. ESTRUCTURA GENERAL DE UNA TAREA
----------------------------------------------------------------------
-
-Cada tarea debe seguir esta estructura:
-
-  ## ICONO Tarea N. NOMBRE DE LA TAREA — ## min
-
-  DESCRIPCION_DE_LA_TAREA.
-
-  ### Tarea N.1. NOMBRE_DE_LA_SUBTAREA
-
-  DESCRIPCION_DE_LA_SUBTAREA.
-
-  - {% include step_label.html %} DESCRIPCION_DEL_PASO.
-
-La descripción de la tarea debe explicar qué se realizará y para qué.
-Como referencia, se recomiendan aproximadamente 200-250 caracteres.
-
-La descripción de cada subtarea debe indicar claramente el objetivo de esa
-sección. Como referencia, se recomiendan aproximadamente 120-150 caracteres.
-
----------------------------------------------------------------------
-3. TAREAS
----------------------------------------------------------------------
-
-Las tareas principales se numeran de forma consecutiva:
-
-  Tarea 1
-  Tarea 2
-  Tarea 3
-  Tarea 4
-  ...
-
-La plantilla incluye solamente 3 tareas como ejemplo.
-
-Si la práctica necesita más tareas:
-
-1) Duplica COMPLETA una sección de tarea existente.
-2) Cambia el encabezado de la tarea.
-3) Cambia la numeración de todas sus subtareas.
-4) Cambia el resultado asociado results[N].
-5) Cambia el identificador de support-prompt.html.
-
-Ejemplo para una Tarea 4:
-
-  ## 🔧 Tarea 4. NOMBRE DE LA TAREA — ## min
-
-Al finalizar debe contener:
-
-  {% capture r4 %}{{ results[3] }}{% endcapture %}
-  {% include task-result.html title="Tarea finalizada" content=r4 %}
-
-  {% include support-prompt.html task="tarea4" %}
-
-IMPORTANTE:
-El arreglo results utiliza índice base 0:
-
-  Tarea 1 -> results[0]
-  Tarea 2 -> results[1]
-  Tarea 3 -> results[2]
-  Tarea 4 -> results[3]
-  Tarea 5 -> results[4]
-  Tarea 6 -> results[5]
-  Tarea N -> results[N-1]
-
----------------------------------------------------------------------
-4. SUBTAREAS
----------------------------------------------------------------------
-
-Cada tarea puede contener tantas subtareas como sea necesario.
-La numeración debe conservar la relación con la tarea principal.
-
-Ejemplo para la Tarea 4:
-
-  ### Tarea 4.1. PRIMERA SUBTAREA
-  ### Tarea 4.2. SEGUNDA SUBTAREA
-  ### Tarea 4.3. TERCERA SUBTAREA
-  ### Tarea 4.4. CUARTA SUBTAREA
-
-No existe un límite fijo de subtareas.
-
----------------------------------------------------------------------
-5. PASOS
----------------------------------------------------------------------
-
-Cada acción que debe realizar el participante debe escribirse como un paso
-independiente utilizando:
-
-  - {% include step_label.html %} DESCRIPCION_DEL_PASO.
-
-No combines varias acciones importantes dentro de un único paso cuando puedan
-realizarse o validarse por separado.
-
-Cada paso debe contener, cuando corresponda:
-
-- Una descripción clara de la acción.
-- Una Nota, Importante o Advertencia.
-- Una imagen de referencia.
-- Un bloque de código o comando.
-- Una salida esperada o criterio de validación.
-
----------------------------------------------------------------------
-6. NOTAS, IMPORTANTES Y ADVERTENCIAS
----------------------------------------------------------------------
-
-Usa los bloques únicamente cuando aporten información útil.
-
-Nota informativa:
-
-  > **Nota:** TEXTO.
+  > **Nota:** Esa StorageClass no corresponde con el PV creado para esta práctica.
   {: .lab-note .info .compact}
 
-Consideración importante:
-
-  > **Importante:** TEXTO.
-  {: .lab-note .important .compact}
-
-Advertencia:
-
-  > **Advertencia:** TEXTO.
-  {: .lab-note .warning .compact}
-
-Salida esperada:
-
-  > **Salida esperada:** TEXTO.
-  {: .lab-note .output .compact}
-
-No es obligatorio incluir los tres tipos de nota en todos los pasos.
-Utiliza solamente el que corresponda al contexto.
-
----------------------------------------------------------------------
-7. BLOQUES DE CÓDIGO
----------------------------------------------------------------------
-
-Cada comando o fragmento que el participante deba ejecutar debe tener su
-propio bloque de código.
-
-Ejemplo Bash:
-
   ```bash
-  COMANDO
+  cat > pvc-class-broken.yaml <<'EOF'
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: class-broken
+    namespace: storage-lab
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: cka-fast
+    resources:
+      requests:
+        storage: 200Mi
+  EOF
+  ```
+  ```bash
+  kubectl apply -f pvc-class-broken.yaml
   ```
 
-Cambia el identificador del lenguaje cuando corresponda, por ejemplo:
 
-  ```yaml
-  ```json
-  ```sql
-  ```powershell
-  ```python
-
-Evita colocar varios pasos independientes dentro de un único bloque de código
-si deben ejecutarse y validarse por separado.
-
----------------------------------------------------------------------
-8. SALIDA ESPERADA
----------------------------------------------------------------------
-
-Después de un comando o acción importante debe existir una forma clara de
-validar que el paso fue realizado correctamente.
-
-Utiliza:
-
-  > **Salida esperada:** DESCRIPCION_DE_LA_VALIDACION.
+  > **Salida esperada:** Se crea el PVC `class-broken` solicitando la StorageClass `cka-fast`.
   {: .lab-note .output .compact}
 
-La salida esperada no necesita reproducir siempre todo el texto del comando.
-Puede describir el estado, recurso, valor o comportamiento que debe observarse.
+- {% include step_label.html %} Consulta el estado del PVC para observar cómo Kubernetes representa una solicitud válida que todavía no puede enlazarse.
 
----------------------------------------------------------------------
-9. IMÁGENES
----------------------------------------------------------------------
+  > **Importante:** No corrijas todavía. Primero identifica por qué el claim no puede satisfacerse.
+  {: .lab-note .important .compact}
 
-La carpeta de imágenes de esta práctica se encuentra en:
+  ```bash
+  kubectl get pvc class-broken -n storage-lab
+  ```
 
-  labs/labN/img/
+  > **Salida esperada:** El PVC permanece `Pending`.
+  {: .lab-note .output .compact}
 
-Para insertar una imagen mediante el mecanismo de la plantilla utiliza:
+### Tarea 4.2. Diagnosticar
 
-  {% include step_image.html %}
+- {% include step_label.html %} Describe el PVC para revisar los eventos y detectar por qué Kubernetes no encuentra almacenamiento compatible para la solicitud.
 
-Conserva este include solamente en los pasos que realmente tengan una imagen.
-Si el paso no requiere imagen, elimínalo.
+  > **Nota:** Revisa eventos relacionados con aprovisionamiento o ausencia de volúmenes compatibles.
+  {: .lab-note .info .compact}
 
-No es necesario agregar una imagen a cada paso.
+  ```bash
+  kubectl describe pvc class-broken -n storage-lab
+  ```
 
----------------------------------------------------------------------
-10. RESULTADO DE CADA TAREA
----------------------------------------------------------------------
+  > **Salida esperada:** Los eventos indican que no existe almacenamiento compatible con la solicitud actual.
+  {: .lab-note .output .compact}
 
-Cada tarea debe terminar con un resultado esperado asociado a
-_data/task-results.yml.
+- {% include step_label.html %} Compara la StorageClass solicitada con las existentes para confirmar que el problema proviene de una clase no disponible.
 
-La asignación de results debe realizarse una sola vez antes del primer uso:
+  > **Nota:** El diagnóstico debe demostrar la diferencia entre `cka-fast` y `cka-local`.
+  {: .lab-note .info .compact}
 
-  {% assign results = site.data.task-results[page.slug].results %}
+  ```bash
+  kubectl get pvc class-broken -n storage-lab -o jsonpath='{.spec.storageClassName}{"\n"}'
+  ```
+  ```bash
+  kubectl get storageclass
+  ```
 
-En esta plantilla se realiza en la Tarea 1.
-No es necesario repetir el assign en las tareas siguientes.
+  > **Salida esperada:** Se observa que el PVC solicita `cka-fast` y la clase disponible del laboratorio es `cka-local`.
+  {: .lab-note .output .compact}
 
-Después utiliza el índice correspondiente:
+### Tarea 4.3. Corregir
 
-  {% capture r1 %}{{ results[0] }}{% endcapture %}
-  {% include task-result.html title="Tarea finalizada" content=r1 %}
+- {% include step_label.html %} Elimina el claim defectuoso para recrearlo con una StorageClass compatible sin alterar otros recursos del escenario.
 
-Para la Tarea 2:
+  > **Nota:** Lo recrearás con la StorageClass correcta.
+  {: .lab-note .info .compact}
 
-  {% capture r2 %}{{ results[1] }}{% endcapture %}
+  ```bash
+  kubectl delete pvc class-broken -n storage-lab
+  ```
 
-Para la Tarea 3:
+  > **Salida esperada:** Kubernetes confirma la eliminación de `class-broken`.
+  {: .lab-note .output .compact}
 
-  {% capture r3 %}{{ results[2] }}{% endcapture %}
+- {% include step_label.html %} Genera una versión corregida del manifiesto cambiando únicamente el nombre del PVC y la StorageClass incompatible.
 
-Y así sucesivamente.
+  > **Nota:** La corrección modifica únicamente la causa identificada.
+  {: .lab-note .info .compact}
 
----------------------------------------------------------------------
-11. PROMPT DE SOPORTE
----------------------------------------------------------------------
+  ```bash
+  sed -e 's/name: class-broken/name: class-fixed/' -e 's/storageClassName: cka-fast/storageClassName: cka-local/' pvc-class-broken.yaml > pvc-class-fixed.yaml
+  ```
 
-Después del resultado de cada tarea debe incluirse el prompt de soporte
-correspondiente:
+  > **Salida esperada:** Se crea `pvc-class-fixed.yaml` con `storageClassName: cka-local`.
+  {: .lab-note .output .compact}
 
-  {% include support-prompt.html task="tarea1" %}
+- {% include step_label.html %} Aplica el PVC corregido y revisa su estado para confirmar que la incompatibilidad de StorageClass fue resuelta.
 
-La numeración debe coincidir exactamente con la tarea:
+  > **Nota:** Con `WaitForFirstConsumer` puede permanecer `Pending` mientras no exista un consumidor.
+  {: .lab-note .info .compact}
 
-  Tarea 1 -> task="tarea1"
-  Tarea 2 -> task="tarea2"
-  Tarea 3 -> task="tarea3"
-  Tarea 4 -> task="tarea4"
-  ...
+  ```bash
+  kubectl apply -f pvc-class-fixed.yaml
+  ```
+  ```bash
+  kubectl get pvc class-fixed -n storage-lab
+  ```
 
----------------------------------------------------------------------
-12. SEPARACIÓN ENTRE TAREAS
----------------------------------------------------------------------
+  > **Salida esperada:** El PVC `class-fixed` se crea; con `WaitForFirstConsumer` puede permanecer `Pending` sin consumidor.
+  {: .lab-note .output .compact}
 
-Separa cada tarea principal utilizando:
+{% capture r4 %}{{ results[3] }}{% endcapture %}
+{% include task-result.html title="Tarea finalizada" content=r4 %}
+{% include support-prompt.html task="tarea4" %}
 
-  ---
+---
 
-No utilices este separador entre pasos o subtareas de la misma tarea.
+## 📏 Tarea 5. Troubleshooting: capacidad insuficiente — 6 min
 
----------------------------------------------------------------------
-13. ICONOS DE LAS TAREAS
----------------------------------------------------------------------
+### Tarea 5.1. Crear un PV pequeño
 
-El icono del encabezado es visual y puede cambiarse de acuerdo con el tema de
-la tarea. Ejemplos utilizados en esta plantilla:
+- {% include step_label.html %} En el worker crea `/mnt/cka-storage-small` como ruta física independiente para el volumen usado en la prueba de capacidad.
 
-  🔎  ☁️  🚀
+  > **Advertencia:** El directorio debe crearse en el mismo worker asociado al PV.
+  {: .lab-note .warning .compact}
 
-La numeración y el texto "Tarea N." son más importantes que el icono.
+  ```bash
+  sudo mkdir -p /mnt/cka-storage-small
+  ```
+  ```bash
+  sudo chmod 777 /mnt/cka-storage-small
+  ```
 
----------------------------------------------------------------------
-14. QUÉ SE PUEDE ELIMINAR
----------------------------------------------------------------------
 
-Si un elemento no aplica a la práctica puede eliminarse, por ejemplo:
+  > **Salida esperada:** El directorio `/mnt/cka-storage-small` queda creado y accesible en el worker.
+  {: .lab-note .output .compact}
 
-- Prerequisitos adicionales.
-- Notas generales.
-- Referencias adicionales.
-- Una Nota/Importante/Advertencia de un paso.
-- {% include step_image.html %} cuando no existe imagen.
-- Subtareas que no sean necesarias.
-- Tareas de ejemplo que no formen parte de la práctica real.
+- {% include step_label.html %} Regresa a Git Bash y crea un PV de 300Mi para disponer de un volumen deliberadamente menor que la solicitud posterior.
 
-No elimines los elementos estructurales necesarios para el funcionamiento del
-layout, resultados o navegación sin revisar primero su dependencia.
+  > **Nota:** Este volumen será insuficiente para un claim de 700Mi.
+  {: .lab-note .info .compact}
 
----------------------------------------------------------------------
-15. VALIDACIÓN FINAL DEL ARCHIVO
----------------------------------------------------------------------
+  ```bash
+  cat > pv-small.yaml <<EOF
+  apiVersion: v1
+  kind: PersistentVolume
+  metadata:
+    name: pv-small
+  spec:
+    capacity:
+      storage: 300Mi
+    volumeMode: Filesystem
+    accessModes:
+      - ReadWriteOnce
+    persistentVolumeReclaimPolicy: Retain
+    storageClassName: cka-local
+    local:
+      path: /mnt/cka-storage-small
+    nodeAffinity:
+      required:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: In
+                values:
+                  - ${WORKER}
+  EOF
+  ```
+  ```bash
+  kubectl apply -f pv-small.yaml
+  ```
 
-Antes de considerar terminado el laboratorio verifica:
+  > **Salida esperada:** Se crea y aplica `pv-small` con capacidad de 300Mi.
+  {: .lab-note .output .compact}
 
-- El título y duración son correctos.
-- El objetivo describe claramente el aprendizaje esperado.
-- La introducción está completa.
-- Todas las tareas están numeradas consecutivamente.
-- Todas las subtareas corresponden al número de su tarea.
-- Cada acción del participante está separada como paso cuando corresponde.
-- Los comandos tienen bloques de código adecuados.
-- Los pasos importantes tienen una salida esperada o criterio de validación.
-- Los índices results[N] corresponden a cada número de tarea.
-- Cada tarea utiliza support-prompt.html con su número correcto.
-- Las imágenes utilizadas existen en la carpeta img de la práctica.
-- El resultado final describe lo que el participante habrá conseguido.
-- No permanecen textos de marcador como CAMBIAR_AQUI, DESCRIPCION_, NOMBRE_DE_,
-  CODIGO_, PREREQUISITO_, RESULTADO_ o ## min en la versión final.
+### Tarea 5.2. Solicitar más capacidad
 
-======================================================================
-FIN DE LA GUÍA DE USO DE LA PLANTILLA
-======================================================================
--->
+- {% include step_label.html %} Crea un PVC de 700Mi para provocar una incompatibilidad de capacidad frente al PersistentVolume de 300Mi disponible.
+
+  > **Importante:** Kubernetes no debe enlazar un PV cuya capacidad es inferior a la solicitada.
+  {: .lab-note .important .compact}
+
+  ```bash
+  cat > pvc-too-large.yaml <<'EOF'
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: too-large
+    namespace: storage-lab
+  spec:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: cka-local
+    resources:
+      requests:
+        storage: 700Mi
+  EOF
+  ```
+  ```bash
+  kubectl apply -f pvc-too-large.yaml
+  ```
+
+
+  > **Salida esperada:** Se crea `too-large` solicitando 700Mi.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Crea un Pod consumidor para forzar a Kubernetes a intentar resolver el binding del PVC bajo `WaitForFirstConsumer`.
+
+  > **Nota:** El consumidor obliga a Kubernetes a intentar resolver el binding.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl run capacity-test --image=busybox:1.37 --restart=Never -n storage-lab \
+    --overrides='{
+      "spec": {
+        "containers": [
+          {
+            "name": "capacity-test",
+            "image": "busybox:1.37",
+            "command": ["sleep", "3600"],
+            "volumeMounts": [
+              {
+                "name": "data",
+                "mountPath": "/data"
+              }
+            ]
+          }
+        ],
+        "volumes": [
+          {
+            "name": "data",
+            "persistentVolumeClaim": {
+              "claimName": "too-large"
+            }
+          }
+        ]
+      }
+    }'
+  ```
+
+  > **Salida esperada:** Se crea `capacity-test` para activar el intento de binding del claim.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Observa el estado del PVC y del Pod para identificar cómo una capacidad insuficiente afecta binding y scheduling.
+
+  > **Nota:** El claim y el Pod deben permanecer pendientes mientras no exista capacidad suficiente.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get pvc too-large -n storage-lab
+  ```
+  ```bash
+  kubectl get pod capacity-test -n storage-lab
+  ```
+
+  > **Salida esperada:** El PVC permanece `Pending` y el Pod no llega a `Running`.
+  {: .lab-note .output .compact}
+
+### Tarea 5.3. Diagnosticar y corregir
+
+- {% include step_label.html %} Describe el PVC y compara capacidades para demostrar con evidencia que la solicitud supera el tamaño del PV disponible.
+
+  > **Nota:** La evidencia debe mostrar que 700Mi no puede satisfacerse con un PV de 300Mi.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl describe pvc too-large -n storage-lab
+  ```
+  ```bash
+  kubectl get pv
+  ```
+
+  > **Salida esperada:** Los eventos indican que no existe almacenamiento compatible con la solicitud actual.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Elimina el Pod y PVC defectuosos para recrear el escenario con una solicitud de capacidad compatible.
+
+  > **Nota:** El escenario se recreará con una solicitud compatible.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl delete pod capacity-test -n storage-lab
+  ```
+  ```bash
+  kubectl delete pvc too-large -n storage-lab
+  ```
+
+  > **Salida esperada:** Kubernetes confirma la eliminación de `capacity-test` y `too-large`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Crea un claim corregido de 200Mi para demostrar que la reducción de capacidad permite una combinación compatible.
+
+  > **Importante:** La corrección se basa en la capacidad disponible, no en reiniciar componentes.
+  {: .lab-note .important .compact}
+
+  ```bash
+  sed -e 's/name: too-large/name: capacity-fixed/' -e 's/storage: 700Mi/storage: 200Mi/' pvc-too-large.yaml > pvc-capacity-fixed.yaml
+  ```
+  ```bash
+  kubectl apply -f pvc-capacity-fixed.yaml
+  ```
+
+  > **Salida esperada:** Se crea `capacity-fixed` con una solicitud de 200Mi compatible con `pv-small`.
+  {: .lab-note .output .compact}
+
+{% capture r5 %}{{ results[4] }}{% endcapture %}
+{% include task-result.html title="Tarea finalizada" content=r5 %}
+{% include support-prompt.html task="tarea5" %}
+
+---
+
+## 🔐 Tarea 6. Troubleshooting: access mode incompatible — 6 min
+
+### Tarea 6.1. Introducir la incompatibilidad
+
+- {% include step_label.html %} Crea un PVC que solicite `ReadWriteMany` para provocar una incompatibilidad con los PV `ReadWriteOnce` existentes.
+
+  > **Nota:** Los PV del laboratorio ofrecen `ReadWriteOnce`.
+  {: .lab-note .info .compact}
+
+  ```bash
+  cat > pvc-access-broken.yaml <<'EOF'
+  apiVersion: v1
+  kind: PersistentVolumeClaim
+  metadata:
+    name: access-broken
+    namespace: storage-lab
+  spec:
+    accessModes:
+      - ReadWriteMany
+    storageClassName: cka-local
+    resources:
+      requests:
+        storage: 100Mi
+  EOF
+  ```
+  ```bash
+  kubectl apply -f pvc-access-broken.yaml
+  ```
+
+
+  > **Salida esperada:** Se crea `access-broken` solicitando `ReadWriteMany`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Consulta el estado del PVC para confirmar que la solicitud permanece sin enlazar mientras no exista un volumen compatible.
+
+  > **Importante:** No modifiques los PV todavía; primero compara requisitos y capacidades.
+  {: .lab-note .important .compact}
+
+  ```bash
+  kubectl get pvc access-broken -n storage-lab
+  ```
+
+  > **Salida esperada:** El PVC `access-broken` permanece `Pending`.
+  {: .lab-note .output .compact}
+
+### Tarea 6.2. Diagnosticar
+
+- {% include step_label.html %} Consulta el access mode solicitado para identificar exactamente qué requisito de acceso está exigiendo el claim.
+
+  > **Nota:** El claim declara explícitamente el tipo de acceso requerido.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get pvc access-broken -n storage-lab -o jsonpath='{.spec.accessModes}{"\n"}'
+  ```
+
+  > **Salida esperada:** Se muestra `ReadWriteMany`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Compara los PV disponibles para verificar qué access modes ofrecen y localizar la diferencia con el PVC.
+
+  > **Nota:** Un PV `ReadWriteOnce` no satisface un claim que exige `ReadWriteMany`.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get pv -o custom-columns='NAME:.metadata.name,CAPACITY:.spec.capacity.storage,ACCESS:.spec.accessModes,CLASS:.spec.storageClassName,STATUS:.status.phase'
+  ```
+
+  > **Salida esperada:** Los PV disponibles muestran `ReadWriteOnce`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Revisa los eventos del PVC para complementar el diagnóstico con mensajes generados por el controlador de almacenamiento.
+
+  > **Nota:** Los eventos complementan la evidencia del mismatch.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl describe pvc access-broken -n storage-lab
+  ```
+
+  > **Salida esperada:** Los eventos muestran que no existe un volumen compatible con el modo solicitado.
+  {: .lab-note .output .compact}
+
+### Tarea 6.3. Corregir
+
+- {% include step_label.html %} Elimina el PVC defectuoso para recrearlo con un access mode compatible sin modificar los PersistentVolumes existentes.
+
+  > **Nota:** Lo recrearás con un access mode compatible.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl delete pvc access-broken -n storage-lab
+  ```
+
+  > **Salida esperada:** Kubernetes confirma la eliminación de `access-broken`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Genera una versión `ReadWriteOnce` del PVC modificando únicamente el requisito que causó la incompatibilidad.
+
+  > **Nota:** Se modifica únicamente el requisito incompatible.
+  {: .lab-note .info .compact}
+
+  ```bash
+  sed -e 's/name: access-broken/name: access-fixed/' -e 's/ReadWriteMany/ReadWriteOnce/' pvc-access-broken.yaml > pvc-access-fixed.yaml
+  ```
+
+  > **Salida esperada:** Se crea `pvc-access-fixed.yaml` solicitando `ReadWriteOnce`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Aplica el claim corregido para confirmar que el access mode solicitado ahora coincide con los volúmenes disponibles.
+
+  > **Nota:** El claim ya utiliza un modo ofrecido por los PV locales.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl apply -f pvc-access-fixed.yaml
+  ```
+
+  > **Salida esperada:** Se muestra `ReadWriteMany`.
+  {: .lab-note .output .compact}
+
+{% capture r6 %}{{ results[5] }}{% endcapture %}
+{% include task-result.html title="Tarea finalizada" content=r6 %}
+{% include support-prompt.html task="tarea6" %}
+
+---
+
+## 🧭 Tarea 7. Troubleshooting: conflicto de node affinity — 6 min
+
+### Tarea 7.1. Seleccionar otro worker
+
+- {% include step_label.html %} Lista los workers disponibles para identificar un segundo nodo y preparar un conflicto controlado de node affinity.
+
+  > **Nota:** Este escenario necesita un nodo diferente del que contiene el volumen local.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get nodes -l '!node-role.kubernetes.io/control-plane' -o custom-columns='NAME:.metadata.name'
+  ```
+
+  > **Salida esperada:** Se muestran al menos dos workers disponibles.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Guarda un worker distinto del asociado al PV para forzar un conflicto entre el Pod y la afinidad del volumen.
+
+  > **Importante:** `$OTHER_WORKER` debe ser diferente de `$WORKER`.
+  {: .lab-note .important .compact}
+
+  ```bash
+  WORKER=$(kubectl get pv pv-cka-local \
+    -o jsonpath='{.spec.nodeAffinity.required.nodeSelectorTerms[0].matchExpressions[0].values[0]}')
+  ``` 
+  ```bash
+  OTHER_WORKER=$(kubectl get nodes \
+    -l '!node-role.kubernetes.io/control-plane' \
+    -o jsonpath='{.items[*].metadata.name}' \
+    | tr ' ' '\n' \
+    | grep -v "^${WORKER}$" \
+    | head -n1)
+  ```
+
+  > **Salida esperada:** La variable `OTHER_WORKER` queda definida con un worker diferente de `$WORKER`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Confirma ambos nombres de worker para verificar que el nodo del volumen y el nodo forzado son realmente diferentes.
+
+  > **Nota:** Si ambos nombres son iguales, no continúes porque no se producirá el conflicto esperado.
+  {: .lab-note .info .compact}
+
+  ```bash
+  echo "PV node: $WORKER"
+  ```
+  ```bash
+  echo "Forced node: $OTHER_WORKER"
+  ```
+
+  > **Salida esperada:** Se muestran dos nombres de worker distintos.
+  {: .lab-note .output .compact}
+
+### Tarea 7.2. Provocar el conflicto
+
+- {% include step_label.html %} Crea un Pod que use `data-pvc` pero fuerce el segundo worker para provocar un conflicto real con la node affinity del PV.
+
+  > **Advertencia:** El Pod será intencionalmente incompatible con la node affinity del PV.
+  {: .lab-note .warning .compact}
+
+  ```bash
+  cat > pod-node-broken.yaml <<EOF
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: node-broken
+    namespace: storage-lab
+  spec:
+    nodeSelector:
+      kubernetes.io/hostname: ${OTHER_WORKER}
+    containers:
+      - name: app
+        image: busybox:1.37
+        command: ["sleep","3600"]
+        volumeMounts:
+          - name: data
+            mountPath: /data
+    volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: data-pvc
+  EOF
+  ```
+  ```bash
+  kubectl apply -f pod-node-broken.yaml
+  ```
+
+  > **Salida esperada:** Se crea `node-broken` utilizando `data-pvc` y forzando el nodo alterno.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Consulta el estado del Pod para observar cómo el scheduler mantiene `Pending` una carga incompatible con el volumen.
+
+  > **Nota:** El scheduler no debe ubicarlo en un nodo incompatible con el volumen local.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get pod node-broken -n storage-lab -o wide
+  ```
+
+  > **Salida esperada:** El Pod `node-broken` permanece `Pending`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Describe el Pod para revisar los eventos del scheduler y localizar evidencia específica del conflicto de node affinity.
+
+  > **Importante:** Busca evidencia de conflicto con la node affinity del volumen.
+  {: .lab-note .important .compact}
+
+  ```bash
+  kubectl describe pod node-broken -n storage-lab
+  ```
+
+  > **Salida esperada:** Los eventos del scheduler muestran un conflicto con la node affinity del volumen.
+  {: .lab-note .output .compact}
+
+### Tarea 7.3. Corregir
+
+- {% include step_label.html %} Elimina el Pod defectuoso para recrearlo sin la restricción de nodo que impide utilizar el volumen local.
+
+  > **Nota:** Se recreará sin forzar un nodo incompatible.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl delete pod node-broken -n storage-lab
+  ```
+
+  > **Salida esperada:** Kubernetes confirma la eliminación de `node-broken`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Crea una versión sin `nodeSelector` para permitir que el scheduler elija el nodo compatible con la affinity del PV.
+
+  > **Nota:** El scheduler podrá seleccionar el nodo que satisface la affinity del PV.
+  {: .lab-note .info .compact}
+
+  ```bash
+  cat > pod-node-fixed.yaml <<'EOF'
+  apiVersion: v1
+  kind: Pod
+  metadata:
+    name: node-fixed
+    namespace: storage-lab
+  spec:
+    containers:
+      - name: app
+        image: busybox:1.37
+        command: ["sleep","3600"]
+        volumeMounts:
+          - name: data
+            mountPath: /data
+    volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: data-pvc
+  EOF
+  ```
+  ```bash
+  kubectl apply -f pod-node-fixed.yaml
+  ```
+
+  > **Salida esperada:** Se crea y aplica `node-fixed` sin una restricción manual de nodo.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Espera a que el Pod quede Ready y confirma que fue programado en el mismo worker asociado al volumen local.
+
+  > **Nota:** El Pod debe terminar ejecutándose en el worker asociado al volumen.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl wait --for=condition=Ready pod/node-fixed -n storage-lab --timeout=90s
+  ```
+
+  ```bash
+  kubectl get pod node-fixed -n storage-lab -o wide
+  ```
+
+
+  > **Salida esperada:** El Pod queda `Ready` y el PV/PVC aparecen `Bound`.
+  {: .lab-note .output .compact}
+
+{% capture r7 %}{{ results[6] }}{% endcapture %}
+{% include task-result.html title="Tarea finalizada" content=r7 %}
+{% include support-prompt.html task="tarea7" %}
+
+---
+
+## ✅ Tarea 8. Validar recuperación y limpiar — 6 min
+
+### Tarea 8.1. Confirmar persistencia
+
+- {% include step_label.html %} Lee nuevamente el archivo desde `storage-app` para confirmar que los escenarios de troubleshooting no alteraron los datos.
+
+  > **Nota:** Los escenarios de troubleshooting no deben alterar el contenido persistente original.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl exec -n storage-lab storage-app -- cat /data/status.txt
+  ```
+
+  > **Salida esperada:** `cka-storage-ok`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Lee el mismo archivo desde `node-fixed` para comprobar que ambos Pods observan el contenido persistente del mismo PVC.
+
+  > **Nota:** Ambos Pods utilizan el mismo PVC y deben observar el mismo contenido.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl exec -n storage-lab node-fixed -- cat /data/status.txt
+  ```
+
+  > **Salida esperada:** `cka-storage-ok`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Revisa los estados finales de PV y PVC para identificar qué recursos quedaron Bound, Pending, Available o Released.
+
+  > **Importante:** Antes de limpiar distingue recursos `Bound`, `Pending`, `Available` o `Released`.
+  {: .lab-note .important .compact}
+
+  ```bash
+  kubectl get pv
+  ```
+  ```bash
+  kubectl get pvc -n storage-lab
+  ```
+
+  > **Salida esperada:** Se muestran los estados finales de los volúmenes y claims antes de la limpieza.
+  {: .lab-note .output .compact}
+
+### Tarea 8.2. Eliminar recursos Kubernetes
+
+- {% include step_label.html %} Elimina el namespace `storage-lab` para retirar Pods y PVC sin eliminar todavía los PersistentVolumes de alcance de clúster.
+
+  > **Advertencia:** Los PVC se eliminarán con el namespace, pero los PV son recursos de alcance de clúster.
+  {: .lab-note .warning .compact}
+
+  ```bash
+  kubectl delete namespace storage-lab --wait=true
+  ```
+
+  > **Salida esperada:** Kubernetes confirma la eliminación del namespace `storage-lab`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Revisa los PV después de eliminar los claims para observar el efecto de la política `Retain` sobre los volúmenes.
+
+  > **Nota:** Con política `Retain`, un PV usado puede quedar `Released`.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get pv
+  ```
+
+  > **Salida esperada:** Los PV usados pueden aparecer `Released` y los no usados pueden permanecer `Available`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Elimina los PersistentVolumes creados para la práctica una vez que ya revisaste su estado posterior a los claims.
+
+  > **Nota:** Eliminar los objetos PV no borra automáticamente los directorios locales.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl delete pv pv-cka-local pv-small
+  ```
+
+  > **Salida esperada:** Kubernetes confirma la eliminación de `pv-cka-local` y `pv-small`.
+  {: .lab-note .output .compact}
+
+### Tarea 8.3. Eliminar StorageClass y rutas locales
+
+- {% include step_label.html %} Elimina la StorageClass `cka-local` para retirar la configuración de almacenamiento creada exclusivamente para este laboratorio.
+
+  > **Nota:** La StorageClass deja de ser necesaria al finalizar el laboratorio.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl delete storageclass cka-local
+  ```
+
+  > **Salida esperada:** Kubernetes confirma la eliminación de `cka-local`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} En el worker elimina únicamente las rutas creadas para la práctica después de confirmar que ya no serán utilizadas por ningún PV.
+
+  > **Advertencia:** Verifica cuidadosamente las rutas antes de utilizar `rm -rf`.
+  {: .lab-note .warning .compact}
+
+  ```bash
+  sudo rm -rf /mnt/cka-storage
+  ```
+  ```bash
+  sudo rm -rf /mnt/cka-storage-small
+  ```
+
+  > **Salida esperada:** Los directorios locales del laboratorio quedan eliminados del worker.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Ejecuta una revisión final del clúster para confirmar que los nodos siguen saludables y que los recursos temporales fueron retirados.
+
+  > **Nota:** La práctica termina cuando los recursos temporales fueron retirados y los nodos permanecen saludables.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get nodes
+  ```
+  ```bash
+  kubectl get pv
+  ```
+  ```bash
+  kubectl get storageclass
+  ```
+
+  > **Salida esperada:** Los nodos permanecen `Ready` y los recursos temporales de la práctica ya no existen.
+  {: .lab-note .output .compact}
+
+{% capture r8 %}{{ results[7] }}{% endcapture %}
+{% include task-result.html title="Tarea finalizada" content=r8 %}
+{% include support-prompt.html task="tarea8" %}

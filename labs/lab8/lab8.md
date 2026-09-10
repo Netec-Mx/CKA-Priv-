@@ -1,561 +1,656 @@
 ---
 layout: lab
-title: "Práctica 8: CAMBIAR_AQUI_NOMBRE_DE_LA_PRACTICA"
+title: "Práctica 8: Troubleshooting integral tipo CKA"
 permalink: /lab8/lab8/
 images_base: /labs/lab8/img
-duration: "## minutos"
+duration: "75 minutos"
 objective:
-  - OBJETIVO_DE_LA_PRACTICA
+  - Resolver incidentes integrales de Kubernetes mediante diagnóstico autónomo de nodos, scheduling, Services, almacenamiento y control plane.
 prerequisites:
-  - PREREQUISITO_1
-  - PREREQUISITO_2
-  - PREREQUISITO_3
-  - PREREQUISITO_4
-  - PREREQUISITO_X
+  - Haber completado la Práctica 7 y disponer del clúster CKA operativo.
+  - Tener kubectl configurado con acceso administrativo desde cka-control.
+  - Tener acceso SSH y privilegios sudo en cka-worker2 y cka-control.
+  - Tener acceso a raw.githubusercontent.com desde los nodos del laboratorio.
+  - No inspeccionar los archivos task2 a task6 antes de completar cada escenario.
 introduction:
-  - INTRODUCCION_DE_LA_PRACTICA_BREVE_RESUMEN_EN_UN_SOLO_PARRAFO_RECOMENDADO
+  - Esta práctica simula incidentes tipo CKA. Cada reto prepara una condición defectuosa mediante un archivo neutral y exige diagnosticarla sin instrucciones de solución. Corrige únicamente la causa necesaria y demuestra el resultado exacto solicitado antes de continuar.
 slug: lab8
 lab_number: 8
 final_result: >
-  RESULTADO_FINAL_ESPERADO_DE_LA_PRACTICA_EN_UN_SOLO_PARRAFO_RECOMENDADO
+  Al finalizar habrás recuperado un nodo NotReady, corregido un workload sin scheduling, restaurado un Service sin endpoints, resuelto un problema de almacenamiento persistente y recuperado kube-scheduler, validando finalmente que el clúster vuelve a operar de forma estable.
 notes:
-  - NOTAS_CONSIDERACIONES_ADICIONALES
-  - NOTAS_CONSIDERACIONES_ADICIONALES
+  - Las Tareas 2 a 6 son escenarios de troubleshooting y los archivos de preparación no revelan la causa en el laboratorio.
+  - No inspecciones los archivos task2 a task6 antes de resolver cada escenario; hacerlo elimina el valor diagnóstico del reto.
+  - Corrige únicamente la causa identificada. No reinstales Kubernetes, no ejecutes kubeadm reset y no elimines nodos.
+  - Cada paso indica explícitamente el nodo desde el cual debe ejecutarse para evitar ambigüedad entre cka-control y los workers.
 references:
-  - text: DESCRIPCION_DEL_LINK_DE_REFERENCIA
-    url: https://developer.hashicorp.com/terraform
-  - text: DESCRIPCION_DEL_LINK_DE_REFERENCIA
-    url: https://learn.microsoft.com/es-es/cli/azure/
+  - text: Troubleshooting Clusters
+    url: https://kubernetes.io/docs/tasks/debug/debug-cluster/
+  - text: Assigning Pods to Nodes
+    url: https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/
+  - text: Services
+    url: https://kubernetes.io/docs/concepts/services-networking/service/
+  - text: Persistent Volumes
+    url: https://kubernetes.io/docs/concepts/storage/persistent-volumes/
+  - text: Static Pods
+    url: https://kubernetes.io/docs/concepts/workloads/pods/static-pods/
 prev: /lab7/lab7/
-next: /
+next: /lab9/lab9/
 ---
 
 ---
 
 <!-- Aquí comienzan las instrucciones paso a paso de la práctica -->
 
-## 🔎 Tarea 1. NOMBRE DE LA TAREA — ## min
+## 🔎 Tarea 1. Establecer una línea base rápida del clúster — 8 min
 
-<!-- DESCRIPCION DE LA TAREA: RECOMENDADO 200-250 CARACTERES -->
-DESCRIPCION_DE_LA_TAREA.
+### Tarea 1.1. Confirmar salud general desde cka-control
 
-### Tarea 1.1. NOMBRE DE_LA_SUBTAREA
+- {% include step_label.html %} Desde `cka-control`, revisa todos los nodos para registrar su estado inicial antes de introducir los incidentes de troubleshooting.
 
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
-
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_1.
-
-  > **Nota:** NOTA_GENERAL_DEL_PASO.
+  > **Nota:** Esta línea base permite distinguir una falla provocada por el escenario de un problema que ya existía antes de iniciar la práctica.
   {: .lab-note .info .compact}
 
-  {% include step_image.html %}
-
   ```bash
-  CODIGO_DEL_PASO_1
+  kubectl get nodes -o wide
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_1.
+  > **Salida esperada:** Todos los nodos del clúster aparecen en estado `Ready` antes de preparar la Tarea 2.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_2.
+- {% include step_label.html %} Desde `cka-control`, revisa los Pods de `kube-system` para confirmar que los componentes críticos parten de un estado funcional.
 
-  > **Importante:** CONSIDERACION_IMPORTANTE_DEL_PASO.
+  > **Nota:** Especialmente deben estar disponibles kube-apiserver, kube-controller-manager, kube-scheduler, etcd, CoreDNS y kube-proxy.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get pods -n kube-system -o wide
+  ```
+
+  > **Salida esperada:** Los componentes esenciales están `Running` y no existen fallas críticas previas que invaliden los escenarios.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Desde `cka-control`, confirma que el API Server responde correctamente antes de iniciar los retos que modificarán el entorno.
+
+  > **Importante:** No continúes si esta validación falla, porque las tareas posteriores presuponen que el control plane comienza saludable.
   {: .lab-note .important .compact}
 
   ```bash
-  CODIGO_DEL_PASO_2
+  kubectl get --raw='/readyz'
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_2.
+  > **Salida esperada:** El API Server responde `ok`.
   {: .lab-note .output .compact}
 
-### Tarea 1.2. NOMBRE_DE_LA_SUBTAREA
+### Tarea 1.2. Registrar herramientas disponibles
 
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
+- {% include step_label.html %} Desde `cka-control`, confirma la versión del cliente y servidor para conservar evidencia del entorno usado durante el ejercicio.
 
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_3.
-
-  > **Advertencia:** ADVERTENCIA_DEL_PASO.
-  {: .lab-note .warning .compact}
+  > **Nota:** Registrar versiones ayuda a interpretar diferencias menores de salida sin convertirlas automáticamente en problemas del escenario.
+  {: .lab-note .info .compact}
 
   ```bash
-  CODIGO_DEL_PASO_3
+  kubectl version
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_3.
+  > **Salida esperada:** Se muestran las versiones del cliente y del servidor Kubernetes sin errores de conexión.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Desde `cka-control`, verifica que `crictl` esté disponible porque el último escenario puede requerir diagnóstico local del runtime.
+
+  > **Nota:** En incidentes del control plane no siempre basta con kubectl; los static Pods son administrados directamente por kubelet.
+  {: .lab-note .info .compact}
+
+  ```bash
+  sudo crictl --version
+  ```
+
+  > **Salida esperada:** Se muestra una versión válida de `crictl`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Desde `cka-control`, confirma que puedes acceder al archivo Raw usado para preparar el primer escenario.
+
+  > **Importante:** Esta prueba valida conectividad HTTP únicamente; no abras el contenido del archivo neutral antes del reto.
+  {: .lab-note .important .compact}
+
+  ```bash
+  curl -I https://raw.githubusercontent.com/Netec-Mx/CKA-Priv-/main/labs/lab8/scripts/task2.sh
+  ```
+
+  > **Salida esperada:** GitHub Raw responde con un estado HTTP exitoso después de publicar `task2.sh` en el repositorio.
   {: .lab-note .output .compact}
 
 {% assign results = site.data.task-results[page.slug].results %}
 {% capture r1 %}{{ results[0] }}{% endcapture %}
 {% include task-result.html title="Tarea finalizada" content=r1 %}
-
 {% include support-prompt.html task="tarea1" %}
 
 ---
 
-## ☁️ Tarea 2. NOMBRE DE LA TAREA — ## min
+## 🧯 Tarea 2. Escenario CKA: recuperar un nodo NotReady — 11 min
 
-<!-- DESCRIPCION DE LA TAREA: RECOMENDADO 200-250 CARACTERES -->
-DESCRIPCION_DE_LA_TAREA.
+### Tarea 2.1. Preparar el escenario
 
-### Tarea 2.1. NOMBRE_DE_LA_SUBTAREA
+- {% include step_label.html %} Desde `cka-control`, conéctate por SSH a `cka-worker2` para ejecutar únicamente el archivo neutral que prepara este escenario.
 
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
-
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_1.
-
-  > **Nota:** NOTA_GENERAL_DEL_PASO.
-  {: .lab-note .info .compact}
-
-  ```bash
-  CODIGO_DEL_PASO_1
-  ```
-
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_1.
-  {: .lab-note .output .compact}
-
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_2.
-
-  > **Importante:** CONSIDERACION_IMPORTANTE_DEL_PASO.
+  > **Importante:** No abras ni inspecciones `task2.sh`; el objetivo es descubrir el problema utilizando el estado resultante del nodo.
   {: .lab-note .important .compact}
 
   ```bash
-  CODIGO_DEL_PASO_2
+  ssh control@cka-worker2
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_2.
+  > **Salida esperada:** El prompt cambia a `control@cka-worker2`.
   {: .lab-note .output .compact}
 
-### Tarea 2.2. NOMBRE_DE_LA_SUBTAREA
+- {% include step_label.html %} Desde `cka-worker2`, descarga `task2.sh` directamente desde GitHub Raw sin consultar previamente su contenido.
 
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
+  > **Nota:** El nombre neutral del archivo evita revelar qué componente será afectado durante la preparación del escenario.
+  {: .lab-note .info .compact}
 
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_3.
+  ```bash
+  curl -fsSLO https://raw.githubusercontent.com/Netec-Mx/CKA-Priv-/main/labs/lab8/scripts/task2.sh
+  ```
 
-  > **Advertencia:** ADVERTENCIA_DEL_PASO.
+  > **Salida esperada:** Se descarga `task2.sh` sin errores.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Desde `cka-worker2`, ejecuta el archivo de preparación y regresa al control-plane para iniciar el diagnóstico del incidente.
+
+  > **Advertencia:** No ejecutes nuevamente el script durante el mismo intento; prepara una sola vez el estado defectuoso solicitado.
   {: .lab-note .warning .compact}
 
   ```bash
-  CODIGO_DEL_PASO_3
+  chmod +x task2.sh
+  ./task2.sh
+  exit
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_3.
+  > **Salida esperada:** El script muestra `Escenario preparado.` y el prompt regresa a `control@cka-control`.
+  {: .lab-note .output .compact}
+
+### Tarea 2.2. Diagnosticar y recuperar
+
+- {% include step_label.html %} Desde `cka-control`, identifica por qué `cka-worker2` deja de estar disponible y determina la causa antes de modificar el nodo.
+
+  > **Importante:** Puedes utilizar herramientas de Kubernetes y del sistema, pero no reinstales paquetes, no elimines el nodo ni ejecutes `kubeadm join`.
+  {: .lab-note .important .compact}
+
+  > **Salida esperada:** Obtienes evidencia suficiente para explicar qué impide que `cka-worker2` reporte normalmente al control plane.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Corrige únicamente la causa identificada en `cka-worker2` utilizando la herramienta adecuada para recuperar el componente afectado.
+
+  > **Nota:** El reto evalúa diagnóstico y recuperación; no se proporciona el comando correctivo ni el componente que debes intervenir.
+  {: .lab-note .info .compact}
+
+  > **Salida esperada:** El componente responsable queda operativo y deja de generar el error que provocó la pérdida del nodo.
+  {: .lab-note .output .compact}
+
+### Tarea 2.3. Validar el resultado exacto
+
+- {% include step_label.html %} Desde `cka-control`, verifica el estado final del nodo y no continúes hasta que Kubernetes confirme su recuperación completa.
+
+  > **Importante:** La tarea no termina porque un servicio local arranque; el nodo debe volver a reportar `Ready` al control plane.
+  {: .lab-note .important .compact}
+
+  ```bash
+  kubectl get node cka-worker2
+  ```
+
+  > **Salida esperada:** `cka-worker2` aparece en estado `Ready`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Desde `cka-control`, comprueba que las condiciones del nodo ya no muestran una causa activa que impida su participación normal.
+
+  > **Nota:** Esta validación evita considerar resuelto un incidente únicamente porque cambió temporalmente la columna `STATUS`.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl describe node cka-worker2
+  ```
+
+  > **Salida esperada:** `Ready=True` y no existen eventos persistentes asociados con la causa corregida.
   {: .lab-note .output .compact}
 
 {% capture r2 %}{{ results[1] }}{% endcapture %}
 {% include task-result.html title="Tarea finalizada" content=r2 %}
-
 {% include support-prompt.html task="tarea2" %}
 
 ---
 
-## 🚀 Tarea 3. NOMBRE DE LA TAREA — ## min
+## 🧭 Tarea 3. Escenario CKA: workload sin scheduling — 10 min
 
-<!-- DESCRIPCION DE LA TAREA: RECOMENDADO 200-250 CARACTERES -->
-DESCRIPCION_DE_LA_TAREA.
+### Tarea 3.1. Preparar el escenario
 
-### Tarea 3.1. NOMBRE_DE_LA_SUBTAREA
+- {% include step_label.html %} Desde `cka-control`, aplica directamente `task3.yaml` desde GitHub Raw para crear el escenario de scheduling sin inspeccionarlo.
 
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
-
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_1.
-
-  > **Nota:** NOTA_GENERAL_DEL_PASO.
-  {: .lab-note .info .compact}
-
-  ```bash
-  CODIGO_DEL_PASO_1
-  ```
-
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_1.
-  {: .lab-note .output .compact}
-
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_2.
-
-  > **Importante:** CONSIDERACION_IMPORTANTE_DEL_PASO.
+  > **Importante:** No descargues ni abras el YAML antes del reto; debes deducir la causa a partir del estado y los eventos del workload.
   {: .lab-note .important .compact}
 
   ```bash
-  CODIGO_DEL_PASO_2
+  kubectl apply -f https://raw.githubusercontent.com/Netec-Mx/CKA-Priv-/main/labs/lab8/scripts/task3.yaml
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_2.
+  > **Salida esperada:** Kubernetes crea `exam-scheduling` y el Deployment `reports` sin errores de sintaxis.
   {: .lab-note .output .compact}
 
-### Tarea 3.2. NOMBRE_DE_LA_SUBTAREA
+- {% include step_label.html %} Desde `cka-control`, observa únicamente el síntoma inicial del workload después de que Kubernetes haya creado sus recursos.
 
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
-
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_3.
-
-  > **Advertencia:** ADVERTENCIA_DEL_PASO.
-  {: .lab-note .warning .compact}
+  > **Nota:** Un objeto puede crearse correctamente en el API Server y aun así ser incapaz de ejecutar sus Pods.
+  {: .lab-note .info .compact}
 
   ```bash
-  CODIGO_DEL_PASO_3
+  kubectl get pods -n exam-scheduling
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_3.
+  > **Salida esperada:** Los Pods de `reports` no alcanzan el estado `Running`.
+  {: .lab-note .output .compact}
+
+### Tarea 3.2. Diagnosticar y recuperar
+
+- {% include step_label.html %} Diagnostica por qué las dos réplicas de `reports` no pueden programarse y localiza la restricción exacta que impide el scheduling.
+
+  > **Importante:** No elimines el namespace ni cambies la imagen del contenedor; corrige solamente la condición responsable del incidente.
+  {: .lab-note .important .compact}
+
+  > **Salida esperada:** Identificas mediante evidencia del clúster qué requisito del workload no puede ser satisfecho por los nodos disponibles.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Modifica únicamente lo necesario para que el Deployment pueda programar ambas réplicas utilizando nodos válidos del clúster.
+
+  > **Nota:** Conserva `replicas: 2`, el nombre `reports` y el namespace `exam-scheduling` durante toda la recuperación.
+  {: .lab-note .info .compact}
+
+  > **Salida esperada:** El Deployment empieza a crear Pods que pueden ser asignados a nodos reales del clúster.
+  {: .lab-note .output .compact}
+
+### Tarea 3.3. Validar el resultado exacto
+
+- {% include step_label.html %} Desde `cka-control`, espera la disponibilidad completa del Deployment para demostrar que el problema de scheduling quedó resuelto.
+
+  > **Nota:** `rollout status` evita aceptar una solución parcial en la que solamente una de las réplicas pudo iniciar correctamente.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl rollout status deployment/reports -n exam-scheduling --timeout=90s
+  ```
+
+  > **Salida esperada:** El rollout finaliza correctamente.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Desde `cka-control`, confirma que las dos réplicas requeridas están ejecutándose y listas después de la corrección aplicada.
+
+  > **Importante:** Reducir el Deployment a una réplica no resuelve el reto; deben conservarse las dos réplicas definidas originalmente.
+  {: .lab-note .important .compact}
+
+  ```bash
+  kubectl get deployment reports -n exam-scheduling
+  ```
+
+  > **Salida esperada:** `READY` muestra `2/2` y `AVAILABLE` muestra `2`.
   {: .lab-note .output .compact}
 
 {% capture r3 %}{{ results[2] }}{% endcapture %}
 {% include task-result.html title="Tarea finalizada" content=r3 %}
-
 {% include support-prompt.html task="tarea3" %}
 
 ---
 
-<!--
-======================================================================
-GUÍA DE USO DE LA PLANTILLA DEL LABORATORIO
-======================================================================
+## 🌐 Tarea 4. Escenario CKA: Service sin acceso a la aplicación — 11 min
 
-Este archivo es una plantilla base. Las 3 tareas incluidas sirven únicamente
-como referencia de estructura. La práctica final puede tener más o menos
-tareas, subtareas y pasos según lo requiera el contenido.
+### Tarea 4.1. Preparar el escenario
 
----------------------------------------------------------------------
-1. FRONT MATTER
----------------------------------------------------------------------
+- {% include step_label.html %} Desde `cka-control`, aplica `task4.yaml` directamente desde GitHub Raw para crear la aplicación y su Service defectuoso.
 
-Completa los campos de la cabecera YAML sin cambiar sus nombres:
-
-- title:
-    Nombre completo de la práctica.
-
-- duration:
-    Duración total estimada de la práctica en minutos.
-
-- objective:
-    Objetivo principal de aprendizaje de la práctica.
-
-- prerequisites:
-    Requisitos previos necesarios para realizarla.
-    Agrega o elimina elementos según corresponda.
-
-- introduction:
-    Introducción breve de la práctica. Se recomienda un solo párrafo.
-
-- final_result:
-    Resultado final esperado al terminar toda la práctica.
-    Se recomienda describirlo en un solo párrafo.
-
-- notes:
-    Consideraciones generales que apliquen a toda la práctica.
-
-- references:
-    Documentación oficial o referencias técnicas relevantes.
-    Mantén la estructura:
-
-      - text: DESCRIPCION
-        url: URL
-
-- permalink, images_base, slug y lab_number:
-    Son generados automáticamente. No deben modificarse salvo que cambie
-    deliberadamente la estructura del sitio.
-
-- prev y next:
-    Son generados automáticamente por este script para navegación entre labs.
-
----------------------------------------------------------------------
-2. ESTRUCTURA GENERAL DE UNA TAREA
----------------------------------------------------------------------
-
-Cada tarea debe seguir esta estructura:
-
-  ## ICONO Tarea N. NOMBRE DE LA TAREA — ## min
-
-  DESCRIPCION_DE_LA_TAREA.
-
-  ### Tarea N.1. NOMBRE_DE_LA_SUBTAREA
-
-  DESCRIPCION_DE_LA_SUBTAREA.
-
-  - {% include step_label.html %} DESCRIPCION_DEL_PASO.
-
-La descripción de la tarea debe explicar qué se realizará y para qué.
-Como referencia, se recomiendan aproximadamente 200-250 caracteres.
-
-La descripción de cada subtarea debe indicar claramente el objetivo de esa
-sección. Como referencia, se recomiendan aproximadamente 120-150 caracteres.
-
----------------------------------------------------------------------
-3. TAREAS
----------------------------------------------------------------------
-
-Las tareas principales se numeran de forma consecutiva:
-
-  Tarea 1
-  Tarea 2
-  Tarea 3
-  Tarea 4
-  ...
-
-La plantilla incluye solamente 3 tareas como ejemplo.
-
-Si la práctica necesita más tareas:
-
-1) Duplica COMPLETA una sección de tarea existente.
-2) Cambia el encabezado de la tarea.
-3) Cambia la numeración de todas sus subtareas.
-4) Cambia el resultado asociado results[N].
-5) Cambia el identificador de support-prompt.html.
-
-Ejemplo para una Tarea 4:
-
-  ## 🔧 Tarea 4. NOMBRE DE LA TAREA — ## min
-
-Al finalizar debe contener:
-
-  {% capture r4 %}{{ results[3] }}{% endcapture %}
-  {% include task-result.html title="Tarea finalizada" content=r4 %}
-
-  {% include support-prompt.html task="tarea4" %}
-
-IMPORTANTE:
-El arreglo results utiliza índice base 0:
-
-  Tarea 1 -> results[0]
-  Tarea 2 -> results[1]
-  Tarea 3 -> results[2]
-  Tarea 4 -> results[3]
-  Tarea 5 -> results[4]
-  Tarea 6 -> results[5]
-  Tarea N -> results[N-1]
-
----------------------------------------------------------------------
-4. SUBTAREAS
----------------------------------------------------------------------
-
-Cada tarea puede contener tantas subtareas como sea necesario.
-La numeración debe conservar la relación con la tarea principal.
-
-Ejemplo para la Tarea 4:
-
-  ### Tarea 4.1. PRIMERA SUBTAREA
-  ### Tarea 4.2. SEGUNDA SUBTAREA
-  ### Tarea 4.3. TERCERA SUBTAREA
-  ### Tarea 4.4. CUARTA SUBTAREA
-
-No existe un límite fijo de subtareas.
-
----------------------------------------------------------------------
-5. PASOS
----------------------------------------------------------------------
-
-Cada acción que debe realizar el participante debe escribirse como un paso
-independiente utilizando:
-
-  - {% include step_label.html %} DESCRIPCION_DEL_PASO.
-
-No combines varias acciones importantes dentro de un único paso cuando puedan
-realizarse o validarse por separado.
-
-Cada paso debe contener, cuando corresponda:
-
-- Una descripción clara de la acción.
-- Una Nota, Importante o Advertencia.
-- Una imagen de referencia.
-- Un bloque de código o comando.
-- Una salida esperada o criterio de validación.
-
----------------------------------------------------------------------
-6. NOTAS, IMPORTANTES Y ADVERTENCIAS
----------------------------------------------------------------------
-
-Usa los bloques únicamente cuando aporten información útil.
-
-Nota informativa:
-
-  > **Nota:** TEXTO.
-  {: .lab-note .info .compact}
-
-Consideración importante:
-
-  > **Importante:** TEXTO.
+  > **Importante:** No inspecciones el manifiesto antes de resolver el reto; el diagnóstico debe realizarse únicamente sobre los objetos creados.
   {: .lab-note .important .compact}
 
-Advertencia:
-
-  > **Advertencia:** TEXTO.
-  {: .lab-note .warning .compact}
-
-Salida esperada:
-
-  > **Salida esperada:** TEXTO.
-  {: .lab-note .output .compact}
-
-No es obligatorio incluir los tres tipos de nota en todos los pasos.
-Utiliza solamente el que corresponda al contexto.
-
----------------------------------------------------------------------
-7. BLOQUES DE CÓDIGO
----------------------------------------------------------------------
-
-Cada comando o fragmento que el participante deba ejecutar debe tener su
-propio bloque de código.
-
-Ejemplo Bash:
-
   ```bash
-  COMANDO
+  kubectl apply -f https://raw.githubusercontent.com/Netec-Mx/CKA-Priv-/main/labs/lab8/scripts/task4.yaml
   ```
 
-Cambia el identificador del lenguaje cuando corresponda, por ejemplo:
-
-  ```yaml
-  ```json
-  ```sql
-  ```powershell
-  ```python
-
-Evita colocar varios pasos independientes dentro de un único bloque de código
-si deben ejecutarse y validarse por separado.
-
----------------------------------------------------------------------
-8. SALIDA ESPERADA
----------------------------------------------------------------------
-
-Después de un comando o acción importante debe existir una forma clara de
-validar que el paso fue realizado correctamente.
-
-Utiliza:
-
-  > **Salida esperada:** DESCRIPCION_DE_LA_VALIDACION.
+  > **Salida esperada:** Kubernetes crea `exam-network`, el Deployment `payments` y el Service `payments-svc`.
   {: .lab-note .output .compact}
 
-La salida esperada no necesita reproducir siempre todo el texto del comando.
-Puede describir el estado, recurso, valor o comportamiento que debe observarse.
+- {% include step_label.html %} Desde `cka-control`, espera que los Pods estén disponibles antes de diagnosticar por qué la aplicación no responde mediante el Service.
 
----------------------------------------------------------------------
-9. IMÁGENES
----------------------------------------------------------------------
+  > **Nota:** Esto evita confundir un problema de inicialización del Deployment con el incidente de conectividad que debes resolver.
+  {: .lab-note .info .compact}
 
-La carpeta de imágenes de esta práctica se encuentra en:
+  ```bash
+  kubectl rollout status deployment/payments -n exam-network --timeout=90s
+  ```
 
-  labs/labN/img/
+  > **Salida esperada:** El Deployment completa el rollout y mantiene dos Pods disponibles.
+  {: .lab-note .output .compact}
 
-Para insertar una imagen mediante el mecanismo de la plantilla utiliza:
+### Tarea 4.2. Diagnosticar y recuperar
 
-  {% include step_image.html %}
+- {% include step_label.html %} Diagnostica por qué `payments-svc` no entrega tráfico hacia la aplicación aunque los Pods del Deployment estén saludables.
 
-Conserva este include solamente en los pasos que realmente tengan una imagen.
-Si el paso no requiere imagen, elimínalo.
+  > **Importante:** No reinicies CoreDNS, kube-proxy ni el CNI sin evidencia; identifica primero dónde se rompe la relación del Service.
+  {: .lab-note .important .compact}
 
-No es necesario agregar una imagen a cada paso.
+  > **Salida esperada:** Demuestras qué propiedad impide que `payments-svc` disponga de backends válidos.
+  {: .lab-note .output .compact}
 
----------------------------------------------------------------------
-10. RESULTADO DE CADA TAREA
----------------------------------------------------------------------
+- {% include step_label.html %} Corrige únicamente el recurso responsable para que `payments-svc` vuelva a dirigir tráfico a los Pods existentes.
 
-Cada tarea debe terminar con un resultado esperado asociado a
-_data/task-results.yml.
+  > **Nota:** Conserva el nombre del Service, el puerto 80 y las dos réplicas del Deployment durante la recuperación.
+  {: .lab-note .info .compact}
 
-La asignación de results debe realizarse una sola vez antes del primer uso:
+  > **Salida esperada:** El Service obtiene endpoints correspondientes a los Pods saludables de `payments`.
+  {: .lab-note .output .compact}
 
-  {% assign results = site.data.task-results[page.slug].results %}
+### Tarea 4.3. Validar el resultado exacto
 
-En esta plantilla se realiza en la Tarea 1.
-No es necesario repetir el assign en las tareas siguientes.
+- {% include step_label.html %} Desde `cka-control`, comprueba que el Service cuenta con EndpointSlices que contienen direcciones backend después de la corrección.
 
-Después utiliza el índice correspondiente:
+  > **Nota:** Un Service existente no demuestra conectividad por sí solo; debe disponer de endpoints válidos para entregar tráfico.
+  {: .lab-note .info .compact}
 
-  {% capture r1 %}{{ results[0] }}{% endcapture %}
-  {% include task-result.html title="Tarea finalizada" content=r1 %}
+  ```bash
+  kubectl get endpointslice -n exam-network -l kubernetes.io/service-name=payments-svc -o wide
+  ```
 
-Para la Tarea 2:
+  > **Salida esperada:** Se muestran direcciones correspondientes a los dos Pods del Deployment `payments`.
+  {: .lab-note .output .compact}
 
-  {% capture r2 %}{{ results[1] }}{% endcapture %}
+- {% include step_label.html %} Desde `cka-control`, crea una solicitud temporal dentro del clúster para comprobar el acceso real mediante el nombre del Service.
 
-Para la Tarea 3:
+  > **Importante:** Acceder directamente a una IP de Pod no demuestra que `payments-svc` haya sido reparado correctamente.
+  {: .lab-note .important .compact}
 
-  {% capture r3 %}{{ results[2] }}{% endcapture %}
+  ```bash
+  kubectl run service-check -n exam-network --image=curlimages/curl:8.16.0 --restart=Never --rm -i -- curl -sS --max-time 5 http://payments-svc
+  ```
 
-Y así sucesivamente.
+  > **Salida esperada:** La solicitud devuelve la página HTML de NGINX sin timeout ni error de resolución.
+  {: .lab-note .output .compact}
 
----------------------------------------------------------------------
-11. PROMPT DE SOPORTE
----------------------------------------------------------------------
+{% capture r4 %}{{ results[3] }}{% endcapture %}
+{% include task-result.html title="Tarea finalizada" content=r4 %}
+{% include support-prompt.html task="tarea4" %}
 
-Después del resultado de cada tarea debe incluirse el prompt de soporte
-correspondiente:
+---
 
-  {% include support-prompt.html task="tarea1" %}
+## 💾 Tarea 5. Escenario CKA: almacenamiento persistente no disponible — 11 min
 
-La numeración debe coincidir exactamente con la tarea:
+### Tarea 5.1. Preparar el escenario
 
-  Tarea 1 -> task="tarea1"
-  Tarea 2 -> task="tarea2"
-  Tarea 3 -> task="tarea3"
-  Tarea 4 -> task="tarea4"
-  ...
+- {% include step_label.html %} Desde `cka-control`, aplica `task5.yaml` desde GitHub Raw para crear el escenario completo de almacenamiento sin inspeccionarlo.
 
----------------------------------------------------------------------
-12. SEPARACIÓN ENTRE TAREAS
----------------------------------------------------------------------
+  > **Importante:** No abras el YAML antes del diagnóstico; revisa posteriormente PV, PVC, StorageClass, Pod y eventos como en un escenario CKA.
+  {: .lab-note .important .compact}
 
-Separa cada tarea principal utilizando:
+  ```bash
+  kubectl apply -f https://raw.githubusercontent.com/Netec-Mx/CKA-Priv-/main/labs/lab8/scripts/task5.yaml
+  ```
 
-  ---
+  > **Salida esperada:** Kubernetes crea los objetos del escenario en `exam-storage` sin errores de validación del manifiesto.
+  {: .lab-note .output .compact}
 
-No utilices este separador entre pasos o subtareas de la misma tarea.
+- {% include step_label.html %} Desde `cka-control`, observa el estado inicial del Pod y del claim para registrar el síntoma antes de realizar cualquier cambio.
 
----------------------------------------------------------------------
-13. ICONOS DE LAS TAREAS
----------------------------------------------------------------------
+  > **Nota:** El hecho de que los objetos existan no implica que Kubernetes haya podido completar el binding del almacenamiento.
+  {: .lab-note .info .compact}
 
-El icono del encabezado es visual y puede cambiarse de acuerdo con el tema de
-la tarea. Ejemplos utilizados en esta plantilla:
+  ```bash
+  kubectl get pod,pvc -n exam-storage
+  ```
 
-  🔎  ☁️  🚀
+  > **Salida esperada:** `app-data` no queda `Bound` y `storage-api` no alcanza `Running`.
+  {: .lab-note .output .compact}
 
-La numeración y el texto "Tarea N." son más importantes que el icono.
+### Tarea 5.2. Diagnosticar y recuperar
 
----------------------------------------------------------------------
-14. QUÉ SE PUEDE ELIMINAR
----------------------------------------------------------------------
+- {% include step_label.html %} Diagnostica por qué el claim `app-data` no puede utilizar el PersistentVolume preparado para este escenario de almacenamiento.
 
-Si un elemento no aplica a la práctica puede eliminarse, por ejemplo:
+  > **Importante:** No elimines `lab8-pv` ni cambies su capacidad; identifica exactamente qué requisito del claim impide el binding.
+  {: .lab-note .important .compact}
 
-- Prerequisitos adicionales.
-- Notas generales.
-- Referencias adicionales.
-- Una Nota/Importante/Advertencia de un paso.
-- {% include step_image.html %} cuando no existe imagen.
-- Subtareas que no sean necesarias.
-- Tareas de ejemplo que no formen parte de la práctica real.
+  > **Salida esperada:** Obtienes evidencia que explica la incompatibilidad entre el PVC y el almacenamiento disponible.
+  {: .lab-note .output .compact}
 
-No elimines los elementos estructurales necesarios para el funcionamiento del
-layout, resultados o navegación sin revisar primero su dependencia.
+- {% include step_label.html %} Corrige el PVC conservando el nombre `app-data`, una solicitud de 500Mi y el Pod `storage-api` como consumidor.
 
----------------------------------------------------------------------
-15. VALIDACIÓN FINAL DEL ARCHIVO
----------------------------------------------------------------------
+  > **Nota:** Si necesitas recrear el PVC por tratarse de un campo no modificable, conserva los requisitos funcionales indicados en el reto.
+  {: .lab-note .info .compact}
 
-Antes de considerar terminado el laboratorio verifica:
+  > **Salida esperada:** El PVC puede enlazarse con `lab8-pv` y el Pod comienza su proceso normal de creación.
+  {: .lab-note .output .compact}
 
-- El título y duración son correctos.
-- El objetivo describe claramente el aprendizaje esperado.
-- La introducción está completa.
-- Todas las tareas están numeradas consecutivamente.
-- Todas las subtareas corresponden al número de su tarea.
-- Cada acción del participante está separada como paso cuando corresponde.
-- Los comandos tienen bloques de código adecuados.
-- Los pasos importantes tienen una salida esperada o criterio de validación.
-- Los índices results[N] corresponden a cada número de tarea.
-- Cada tarea utiliza support-prompt.html con su número correcto.
-- Las imágenes utilizadas existen en la carpeta img de la práctica.
-- El resultado final describe lo que el participante habrá conseguido.
-- No permanecen textos de marcador como CAMBIAR_AQUI, DESCRIPCION_, NOMBRE_DE_,
-  CODIGO_, PREREQUISITO_, RESULTADO_ o ## min en la versión final.
+### Tarea 5.3. Validar el resultado exacto
 
-======================================================================
-FIN DE LA GUÍA DE USO DE LA PLANTILLA
-======================================================================
--->
+- {% include step_label.html %} Desde `cka-control`, verifica que el claim está enlazado exactamente con el PV preparado para este escenario.
+
+  > **Nota:** Esta comprobación demuestra que la corrección resolvió la compatibilidad y no sustituyó el diseño del reto.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get pvc app-data -n exam-storage
+  ```
+
+  > **Salida esperada:** `app-data` aparece `Bound` y la columna `VOLUME` muestra `lab8-pv`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Desde `cka-control`, espera que `storage-api` quede listo y comprueba el contenido escrito dentro del volumen montado.
+
+  > **Importante:** Un PVC `Bound` sin un Pod funcional no completa el escenario; debes demostrar uso real del volumen.
+  {: .lab-note .important .compact}
+
+  ```bash
+  kubectl wait --for=condition=Ready pod/storage-api -n exam-storage --timeout=90s
+  kubectl exec -n exam-storage storage-api -- cat /data/status.txt
+  ```
+
+  > **Salida esperada:** El Pod queda `Ready` y el archivo contiene exactamente `storage-ready`.
+  {: .lab-note .output .compact}
+
+{% capture r5 %}{{ results[4] }}{% endcapture %}
+{% include task-result.html title="Tarea finalizada" content=r5 %}
+{% include support-prompt.html task="tarea5" %}
+
+---
+
+## ⚙️ Tarea 6. Escenario CKA: componente del control plane degradado — 14 min
+
+### Tarea 6.1. Preparar el escenario
+
+- {% include step_label.html %} Desde `cka-control`, descarga `task6.sh` desde GitHub Raw sin inspeccionarlo para preparar el último incidente técnico.
+
+  > **Advertencia:** Este escenario modifica un componente del control plane; no ejecutes el script más de una vez ni lo uses en otro nodo.
+  {: .lab-note .warning .compact}
+
+  ```bash
+  curl -fsSLO https://raw.githubusercontent.com/Netec-Mx/CKA-Priv-/main/labs/lab8/scripts/task6.sh
+  ```
+
+  > **Salida esperada:** Se descarga `task6.sh` sin errores.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Desde `cka-control`, ejecuta una sola vez el archivo de preparación y conserva abierta esta sesión para realizar el diagnóstico local.
+
+  > **Importante:** No abras el script; a partir de este punto identifica el componente afectado usando evidencia del clúster y del nodo.
+  {: .lab-note .important .compact}
+
+  ```bash
+  chmod +x task6.sh
+  ./task6.sh
+  ```
+
+  > **Salida esperada:** El script muestra `Escenario preparado.` y el shell permanece disponible en `cka-control`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Desde `cka-control`, crea un Pod de prueba para observar el síntoma provocado por el incidente activo del control plane.
+
+  > **Nota:** El API Server puede aceptar el objeto aunque el componente encargado de asignarlo a un nodo esté degradado.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl run scheduler-check --image=nginx:1.29-alpine --restart=Never
+  ```
+
+  > **Salida esperada:** El Pod se crea como objeto, pero no alcanza `Running` mientras el incidente permanezca activo.
+  {: .lab-note .output .compact}
+
+### Tarea 6.2. Diagnosticar y recuperar
+
+- {% include step_label.html %} Diagnostica qué componente del control plane impide que un Pod nuevo sea asignado a un nodo aunque el API Server responda.
+
+  > **Importante:** Utiliza las herramientas necesarias, pero no reinicies todos los servicios ni restaures etcd para resolver este incidente.
+  {: .lab-note .important .compact}
+
+  > **Salida esperada:** Identificas el componente afectado y obtienes evidencia local que explica por qué no funciona normalmente.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Corrige únicamente la configuración responsable y permite que kubelet vuelva a ejecutar correctamente el static Pod afectado.
+
+  > **Advertencia:** Si modificas `/etc/kubernetes/manifests`, no dejes copias de respaldo normales dentro de ese directorio vigilado por kubelet.
+  {: .lab-note .warning .compact}
+
+  > **Salida esperada:** El static Pod afectado vuelve a ejecutarse sin errores persistentes relacionados con la configuración incorrecta.
+  {: .lab-note .output .compact}
+
+### Tarea 6.3. Validar el resultado exacto
+
+- {% include step_label.html %} Desde `cka-control`, espera que `scheduler-check` sea programado y alcance `Ready` después de recuperar el componente afectado.
+
+  > **Nota:** Este Pod fue creado durante el incidente y funciona como evidencia directa de que el scheduling volvió a operar.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl wait --for=condition=Ready pod/scheduler-check --timeout=90s
+  ```
+
+  > **Salida esperada:** `pod/scheduler-check condition met`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Desde `cka-control`, confirma que el mirror Pod del scheduler vuelve a aparecer saludable dentro de `kube-system`.
+
+  > **Importante:** No basta con que un Pod se programe; el componente del control plane debe permanecer estable después de la recuperación.
+  {: .lab-note .important .compact}
+
+  ```bash
+  kubectl get pod -n kube-system -l component=kube-scheduler
+  ```
+
+  > **Salida esperada:** `kube-scheduler-cka-control` aparece `1/1` y `Running`.
+  {: .lab-note .output .compact}
+
+{% capture r6 %}{{ results[5] }}{% endcapture %}
+{% include task-result.html title="Tarea finalizada" content=r6 %}
+{% include support-prompt.html task="tarea6" %}
+
+---
+
+## ✅ Tarea 7. Validación integral y cierre — 10 min
+
+### Tarea 7.1. Comprobar recuperación completa
+
+- {% include step_label.html %} Desde `cka-control`, revisa todos los nodos para confirmar que ningún incidente dejó componentes de infraestructura degradados.
+
+  > **Nota:** La validación integral exige regresar a una condición equivalente a la línea base registrada antes de los retos.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get nodes
+  ```
+
+  > **Salida esperada:** Todos los nodos aparecen `Ready`, incluido `cka-worker2`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Desde `cka-control`, revisa los Pods de sistema y confirma que los componentes esenciales permanecen operativos.
+
+  > **Nota:** Presta especial atención a kube-scheduler, porque fue intervenido durante el último escenario.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get pods -n kube-system
+  ```
+
+  > **Salida esperada:** Los componentes esenciales del control plane y networking aparecen `Running`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Desde `cka-control`, verifica simultáneamente los workloads principales usados en los escenarios de scheduling y networking.
+
+  > **Importante:** No realices la limpieza si alguno todavía muestra Pods `Pending`, reinicios persistentes o falta de disponibilidad.
+  {: .lab-note .important .compact}
+
+  ```bash
+  kubectl get deployments -n exam-scheduling
+  kubectl get deployments -n exam-network
+  ```
+
+  > **Salida esperada:** `reports` muestra `2/2` y `payments` mantiene sus dos réplicas disponibles.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Desde `cka-control`, confirma por última vez que el almacenamiento recuperado mantiene el claim y el Pod en estado saludable.
+
+  > **Nota:** Esta comprobación evita limpiar el laboratorio antes de demostrar que el volumen fue realmente recuperado.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get pvc,pod -n exam-storage
+  ```
+
+  > **Salida esperada:** `app-data` aparece `Bound` y `storage-api` aparece `Running`.
+  {: .lab-note .output .compact}
+
+### Tarea 7.2. Limpiar los escenarios
+
+- {% include step_label.html %} Desde `cka-control`, elimina los namespaces de los escenarios una vez que todos los criterios de aceptación hayan sido comprobados.
+
+  > **Advertencia:** La limpieza elimina evidencia útil del troubleshooting; ejecútala únicamente después de completar la validación integral.
+  {: .lab-note .warning .compact}
+
+  ```bash
+  kubectl delete namespace exam-scheduling exam-network exam-storage
+  ```
+
+  > **Salida esperada:** Kubernetes confirma la eliminación de los tres namespaces.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Desde `cka-control`, elimina el Pod temporal utilizado para validar la recuperación del scheduler al final del último reto.
+
+  > **Nota:** `scheduler-check` pertenece al namespace `default`, por lo que no se elimina junto con los namespaces de los escenarios.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl delete pod scheduler-check --ignore-not-found
+  ```
+
+  > **Salida esperada:** `scheduler-check` queda eliminado o Kubernetes informa que ya no existe.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Desde `cka-control`, elimina los objetos de almacenamiento de alcance de clúster creados específicamente para la Tarea 5.
+
+  > **Importante:** Los PV y StorageClasses no pertenecen al namespace `exam-storage`, por lo que deben limpiarse explícitamente.
+  {: .lab-note .important .compact}
+
+  ```bash
+  kubectl delete pv lab8-pv --ignore-not-found
+  kubectl delete storageclass lab8-local --ignore-not-found
+  ```
+
+  > **Salida esperada:** `lab8-pv` y `lab8-local` dejan de existir.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Desde `cka-control`, ejecuta una comprobación final para confirmar que la práctica termina nuevamente con el clúster saludable.
+
+  > **Nota:** Este criterio final debe coincidir con la línea base de la Tarea 1 y demuestra que todos los incidentes fueron recuperados.
+  {: .lab-note .info .compact}
+
+  ```bash
+  kubectl get nodes
+  kubectl get pods -n kube-system
+  kubectl get --raw='/readyz'
+  ```
+
+  > **Salida esperada:** Todos los nodos están `Ready`, los componentes esenciales están `Running` y `/readyz` responde `ok`.
+  {: .lab-note .output .compact}
+
+{% capture r7 %}{{ results[6] }}{% endcapture %}
+{% include task-result.html title="Tarea finalizada" content=r7 %}
+{% include support-prompt.html task="tarea7" %}

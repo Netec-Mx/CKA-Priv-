@@ -1,31 +1,35 @@
 ---
 layout: lab
-title: "Práctica 1: CAMBIAR_AQUI_NOMBRE_DE_LA_PRACTICA"
+title: "Práctica 1: Inspección completa de un clúster Kubernetes"
 permalink: /lab1/lab1/
 images_base: /labs/lab1/img
-duration: "## minutos"
+duration: "50 minutos"
 objective:
-  - OBJETIVO_DE_LA_PRACTICA
+  - Inspeccionar de forma sistemática un clúster Kubernetes administrado con kubeadm, identificando nodos, componentes del control plane, runtime, servicios internos, almacenamiento y señales básicas de salud sin modificar su estado.
 prerequisites:
-  - PREREQUISITO_1
-  - PREREQUISITO_2
-  - PREREQUISITO_3
-  - PREREQUISITO_4
-  - PREREQUISITO_X
+  - Acceso por SSH a las máquinas virtuales cka-control y cka-worker1.
+  - Clúster Kubernetes v1.35.x operativo con cka-control y cka-worker1 en estado Ready.
+  - cka-worker2 preparado pero todavía no unido al clúster.
+  - kubectl, kubeadm, kubelet y crictl disponibles según el rol de cada nodo.
+  - Conocimientos básicos de kubectl, YAML y administración Linux.
 introduction:
-  - INTRODUCCION_DE_LA_PRACTICA_BREVE_RESUMEN_EN_UN_SOLO_PARRAFO_RECOMENDADO
+  - En esta práctica inspeccionarás un clúster Kubernetes real creado con kubeadm desde la perspectiva de un administrador. Seguirás una ruta de diagnóstico que parte del contexto de acceso, continúa con nodos y componentes del control plane, desciende al kubelet y al runtime del worker y termina validando CNI, DNS, almacenamiento y salud general del clúster. La práctica es completamente guiada y no realiza cambios deliberados sobre la infraestructura.
 slug: lab1
 lab_number: 1
 final_result: >
-  RESULTADO_FINAL_ESPERADO_DE_LA_PRACTICA_EN_UN_SOLO_PARRAFO_RECOMENDADO
+  Al finalizar habrás identificado la topología del clúster, diferenciado el control plane de los workers, relacionado los static Pods con sus manifiestos y con containerd, comprobado el estado de kubelet, CNI, CoreDNS, kube-proxy, etcd y StorageClass, y validado que el API Server y los nodos se encuentran operativos antes de realizar tareas administrativas posteriores.
 notes:
-  - NOTAS_CONSIDERACIONES_ADICIONALES
-  - NOTAS_CONSIDERACIONES_ADICIONALES
+  - Ejecuta los comandos exactamente en el nodo indicado. La práctica alterna entre cka-control y cka-worker1 mediante SSH.
+  - cka-worker2 no debe aparecer todavía en kubectl get nodes; se mantiene preparado y fuera del clúster para una práctica posterior con kubeadm join.
+  - Esta práctica es de inspección. No edites manifiestos, no elimines Pods del sistema y no ejecutes comandos de mantenimiento sobre los nodos.
+  - Las direcciones de acceso desde Windows son 192.168.10.100 para cka-control y 192.168.10.101 para cka-worker1; la red privada del clúster utiliza 10.10.10.0/24.
 references:
-  - text: DESCRIPCION_DEL_LINK_DE_REFERENCIA
-    url: https://developer.hashicorp.com/terraform
-  - text: DESCRIPCION_DEL_LINK_DE_REFERENCIA
-    url: https://learn.microsoft.com/es-es/cli/azure/
+  - text: Arquitectura de clústeres Kubernetes
+    url: https://kubernetes.io/docs/concepts/architecture/
+  - text: Referencia de kubectl
+    url: https://kubernetes.io/docs/reference/kubectl/
+  - text: Administración de clústeres Kubernetes
+    url: https://kubernetes.io/docs/tasks/administer-cluster/
 prev: /
 next: /lab2/lab2/
 ---
@@ -34,57 +38,85 @@ next: /lab2/lab2/
 
 <!-- Aquí comienzan las instrucciones paso a paso de la práctica -->
 
-## 🔎 Tarea 1. NOMBRE DE LA TAREA — ## min
+## 🔎 Tarea 1. Acceso al entorno y contexto administrativo — 7 min
 
-<!-- DESCRIPCION DE LA TAREA: RECOMENDADO 200-250 CARACTERES -->
-DESCRIPCION_DE_LA_TAREA.
+Accederás al control plane, confirmarás que trabajas sobre la VM correcta y revisarás el contexto de kubectl y las versiones administrativas disponibles. El objetivo es saber con precisión qué clúster, usuario y herramientas estás utilizando antes de comenzar cualquier inspección.
 
-### Tarea 1.1. NOMBRE DE_LA_SUBTAREA
+### Tarea 1.1. Conectarse al control plane e identificar el host
 
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
+Establecerás la sesión administrativa inicial desde Windows y confirmarás el hostname y las interfaces de red visibles en el nodo de control.
 
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_1.
-
-  > **Nota:** NOTA_GENERAL_DEL_PASO.
-  {: .lab-note .info .compact}
-
-  {% include step_image.html %}
+- {% include step_label.html %} Desde Windows Terminal, PowerShell o Git Bash, abre una sesión SSH hacia el control plane.
 
   ```bash
-  CODIGO_DEL_PASO_1
+  ssh control@192.168.10.100
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_1.
+  > **Salida esperada:** La sesión inicia correctamente y el prompt corresponde al usuario `control` en `cka-control`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_2.
-
-  > **Importante:** CONSIDERACION_IMPORTANTE_DEL_PASO.
-  {: .lab-note .important .compact}
+- {% include step_label.html %} Confirma el nombre del nodo en el que estás trabajando.
 
   ```bash
-  CODIGO_DEL_PASO_2
+  hostname
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_2.
+  > **Salida esperada:** El comando muestra `cka-control`.
   {: .lab-note .output .compact}
 
-### Tarea 1.2. NOMBRE_DE_LA_SUBTAREA
-
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
-
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_3.
-
-  > **Advertencia:** ADVERTENCIA_DEL_PASO.
-  {: .lab-note .warning .compact}
+- {% include step_label.html %} Identifica las interfaces y direcciones IP configuradas en el nodo.
 
   ```bash
-  CODIGO_DEL_PASO_3
+  ip -br addr
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_3.
+  > **Salida esperada:** Debes identificar una interfaz en la red privada `10.10.10.0/24` con la dirección `10.10.10.10` y otra dirección utilizada para acceso desde Windows.
+  {: .lab-note .output .compact}
+
+### Tarea 1.2. Identificar el contexto de kubectl
+
+Comprobarás qué contexto utiliza kubectl y qué endpoint representa el clúster actual antes de consultar recursos administrativos.
+
+- {% include step_label.html %} Consulta el contexto activo de kubectl.
+
+  ```bash
+  kubectl config current-context
+  ```
+
+  > **Salida esperada:** Se muestra `kubernetes-admin@kubernetes`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Lista los contextos disponibles y confirma cuál está marcado como actual.
+
+  ```bash
+  kubectl config get-contexts
+  ```
+
+  > **Salida esperada:** El contexto activo aparece marcado con `*` y referencia al clúster y usuario administrativos configurados.
+  {: .lab-note .output .compact}
+
+### Tarea 1.3. Verificar acceso y versiones administrativas
+
+Confirmarás que kubectl puede comunicarse con el API Server y revisarás las versiones de las herramientas principales del entorno.
+
+- {% include step_label.html %} Comprueba que kubectl puede localizar el API Server y CoreDNS.
+
+  ```bash
+  kubectl cluster-info
+  ```
+
+  > **Salida esperada:** Se muestran las direcciones del Kubernetes control plane y del servicio CoreDNS sin errores de conexión.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Consulta las versiones de kubectl, kubeadm y kubelet instaladas en el control plane.
+
+  ```bash
+  kubectl version --client
+  kubeadm version -o short
+  kubelet --version
+  ```
+
+  > **Salida esperada:** Las herramientas reportan versiones de Kubernetes v1.35.x; en el entorno preparado se utiliza v1.35.8.
   {: .lab-note .output .compact}
 
 {% assign results = site.data.task-results[page.slug].results %}
@@ -95,55 +127,115 @@ DESCRIPCION_DE_LA_SUBTAREA.
 
 ---
 
-## ☁️ Tarea 2. NOMBRE DE LA TAREA — ## min
+## 🖥️ Tarea 2. Inspección de nodos y capacidad — 10 min
 
-<!-- DESCRIPCION DE LA TAREA: RECOMENDADO 200-250 CARACTERES -->
-DESCRIPCION_DE_LA_TAREA.
+Examinarás los nodos registrados, sus direcciones, roles, condiciones, recursos asignables, labels y taints. Esta lectura permite establecer una línea base administrativa antes de realizar mantenimiento o scheduling en prácticas posteriores.
 
-### Tarea 2.1. NOMBRE_DE_LA_SUBTAREA
+### Tarea 2.1. Revisar el inventario de nodos
 
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
+Identificarás qué nodos pertenecen actualmente al clúster y compararás su rol, versión, red interna y runtime.
 
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_1.
+- {% include step_label.html %} Lista los nodos registrados en el clúster.
 
-  > **Nota:** NOTA_GENERAL_DEL_PASO.
+  ```bash
+  kubectl get nodes
+  ```
+
+  > **Salida esperada:** Aparecen `cka-control` y `cka-worker1` en estado `Ready`. `cka-worker2` no debe aparecer todavía.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Amplía la consulta para observar IP interna, sistema operativo y container runtime.
+
+  ```bash
+  kubectl get nodes -o wide
+  ```
+
+  > **Salida esperada:** `cka-control` utiliza `10.10.10.10` y `cka-worker1` utiliza `10.10.10.11`; ambos reportan containerd como runtime.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Consulta las columnas de labels más comunes sin modificar ningún nodo.
+
+  ```bash
+  kubectl get nodes --show-labels
+  ```
+
+  > **Salida esperada:** Se observan labels del sistema, arquitectura, hostname y rol del control plane.
+  {: .lab-note .output .compact}
+
+### Tarea 2.2. Interpretar el estado detallado de cka-worker1
+
+Usarás `kubectl describe` para localizar las secciones que un administrador consulta al diagnosticar capacidad, presión de recursos o problemas del nodo.
+
+- {% include step_label.html %} Obtén la descripción completa de `cka-worker1`.
+
+  ```bash
+  kubectl describe node cka-worker1
+  ```
+
+  > **Nota:** No es necesario memorizar toda la salida. Localiza las secciones `Labels`, `Taints`, `Conditions`, `Capacity`, `Allocatable`, `System Info`, `Allocated resources` y `Events`.
   {: .lab-note .info .compact}
 
+- {% include step_label.html %} Extrae únicamente las condiciones del nodo para facilitar su lectura.
+
   ```bash
-  CODIGO_DEL_PASO_1
+  kubectl get node cka-worker1 \
+    -o jsonpath='{range .status.conditions[*]}{.type}{"="}{.status}{"\n"}{end}'
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_1.
+  > **Salida esperada:** `Ready=True` y las condiciones de presión relevantes, como `MemoryPressure`, `DiskPressure` y `PIDPressure`, deben aparecer en `False` en un nodo sano.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_2.
-
-  > **Importante:** CONSIDERACION_IMPORTANTE_DEL_PASO.
-  {: .lab-note .important .compact}
+- {% include step_label.html %} Consulta la capacidad total del nodo.
 
   ```bash
-  CODIGO_DEL_PASO_2
+  kubectl get node cka-worker1 \
+    -o jsonpath='{.status.capacity}{"\n"}'
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_2.
+  > **Salida esperada:** Se muestran recursos como `cpu`, `memory`, `pods` y almacenamiento efímero disponibles físicamente en el nodo.
   {: .lab-note .output .compact}
 
-### Tarea 2.2. NOMBRE_DE_LA_SUBTAREA
-
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
-
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_3.
-
-  > **Advertencia:** ADVERTENCIA_DEL_PASO.
-  {: .lab-note .warning .compact}
+- {% include step_label.html %} Consulta los recursos asignables a Pods después de las reservas del sistema.
 
   ```bash
-  CODIGO_DEL_PASO_3
+  kubectl get node cka-worker1 \
+    -o jsonpath='{.status.allocatable}{"\n"}'
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_3.
+  > **Salida esperada:** Se muestran los valores `Allocatable`, que pueden ser menores a `Capacity` y representan lo que Kubernetes puede asignar a las cargas.
+  {: .lab-note .output .compact}
+
+### Tarea 2.3. Comparar control plane y worker
+
+Compararás características administrativas de ambos tipos de nodo para reconocer qué elementos distinguen al control plane de un worker.
+
+- {% include step_label.html %} Revisa los labels asociados específicamente al rol del control plane.
+
+  ```bash
+  kubectl get node cka-control --show-labels
+  ```
+
+  > **Salida esperada:** Se identifica el label `node-role.kubernetes.io/control-plane` entre los labels de `cka-control`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Consulta los taints configurados en el control plane.
+
+  ```bash
+  kubectl get node cka-control \
+    -o jsonpath='{.spec.taints}{"\n"}'
+  ```
+
+  > **Salida esperada:** Debe observarse el taint administrativo que evita programar cargas normales en el control plane, salvo que exista una toleration compatible.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Compara los taints del worker.
+
+  ```bash
+  kubectl get node cka-worker1 \
+    -o jsonpath='{.spec.taints}{"\n"}'
+  ```
+
+  > **Salida esperada:** En el estado base del laboratorio, `cka-worker1` no debe presentar el taint de `control-plane`.
   {: .lab-note .output .compact}
 
 {% capture r2 %}{{ results[1] }}{% endcapture %}
@@ -153,55 +245,127 @@ DESCRIPCION_DE_LA_SUBTAREA.
 
 ---
 
-## 🚀 Tarea 3. NOMBRE DE LA TAREA — ## min
+## 🧭 Tarea 3. Inspección del control plane — 12 min
 
-<!-- DESCRIPCION DE LA TAREA: RECOMENDADO 200-250 CARACTERES -->
-DESCRIPCION_DE_LA_TAREA.
+Relacionarás los componentes críticos del control plane con los Pods visibles desde Kubernetes, los manifiestos estáticos almacenados en el nodo y los contenedores gestionados por containerd. También validarás la salud del API Server.
 
-### Tarea 3.1. NOMBRE_DE_LA_SUBTAREA
+### Tarea 3.1. Identificar los componentes del control plane
 
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
+Localizarás los componentes del control plane dentro de `kube-system` y verificarás en qué nodo se ejecutan.
 
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_1.
-
-  > **Nota:** NOTA_GENERAL_DEL_PASO.
-  {: .lab-note .info .compact}
+- {% include step_label.html %} Lista los Pods del namespace `kube-system` con información de nodo e IP.
 
   ```bash
-  CODIGO_DEL_PASO_1
+  kubectl get pods -n kube-system -o wide
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_1.
+  > **Salida esperada:** Se observan `kube-apiserver-cka-control`, `kube-controller-manager-cka-control`, `kube-scheduler-cka-control` y `etcd-cka-control`, además de CoreDNS, kube-proxy y Calico.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_2.
-
-  > **Importante:** CONSIDERACION_IMPORTANTE_DEL_PASO.
-  {: .lab-note .important .compact}
+- {% include step_label.html %} Filtra los Pods que representan los cuatro componentes principales del control plane.
 
   ```bash
-  CODIGO_DEL_PASO_2
+  kubectl get pods -n kube-system \
+    -l tier=control-plane -o wide
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_2.
+  > **Salida esperada:** Se muestran los static Pods del control plane que utilizan el label `tier=control-plane`.
   {: .lab-note .output .compact}
 
-### Tarea 3.2. NOMBRE_DE_LA_SUBTAREA
-
-<!-- DESCRIPCION DE LA SUBTAREA: RECOMENDADO 120-150 CARACTERES -->
-DESCRIPCION_DE_LA_SUBTAREA.
-
-- {% include step_label.html %} DESCRIPCION_DEL_PASO_3.
-
-  > **Advertencia:** ADVERTENCIA_DEL_PASO.
-  {: .lab-note .warning .compact}
+- {% include step_label.html %} Comprueba el estado individual de etcd mediante su label de componente.
 
   ```bash
-  CODIGO_DEL_PASO_3
+  kubectl get pod -n kube-system \
+    -l component=etcd -o wide
   ```
 
-  > **Salida esperada:** DESCRIPCION_DE_LA_SALIDA_ESPERADA_DEL_PASO_3.
+  > **Salida esperada:** `etcd-cka-control` aparece `1/1 Running` sobre `cka-control`.
+  {: .lab-note .output .compact}
+
+### Tarea 3.2. Relacionar static Pods con sus manifiestos
+
+Inspeccionarás la ubicación que kubeadm utiliza para los manifiestos estáticos y comprobarás que cada archivo corresponde a un componente del control plane.
+
+- {% include step_label.html %} Lista los manifiestos estáticos presentes en el control plane.
+
+  ```bash
+  sudo ls -l /etc/kubernetes/manifests/
+  ```
+
+  > **Salida esperada:** Existen `etcd.yaml`, `kube-apiserver.yaml`, `kube-controller-manager.yaml` y `kube-scheduler.yaml`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Identifica la imagen utilizada por el kube-apiserver sin editar el manifiesto.
+
+  ```bash
+  sudo grep -n 'image:' \
+    /etc/kubernetes/manifests/kube-apiserver.yaml
+  ```
+
+  > **Salida esperada:** Se muestra la imagen del `kube-apiserver` correspondiente a la versión Kubernetes del clúster.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Identifica el directorio de datos configurado para etcd.
+
+  ```bash
+  sudo grep -n -- '--data-dir' \
+    /etc/kubernetes/manifests/etcd.yaml
+  ```
+
+  > **Salida esperada:** El manifiesto muestra el parámetro `--data-dir` utilizado por etcd para almacenar sus datos.
+  {: .lab-note .output .compact}
+
+### Tarea 3.3. Relacionar Kubernetes con el container runtime
+
+Usarás `crictl` para observar los contenedores que containerd mantiene en ejecución y compararlos con los componentes ya vistos mediante kubectl.
+
+- {% include step_label.html %} Lista los contenedores administrados por el runtime en `cka-control`.
+
+  ```bash
+  sudo crictl ps
+  ```
+
+  > **Salida esperada:** Aparecen contenedores como `kube-apiserver`, `etcd`, `kube-scheduler`, `kube-controller-manager`, `coredns`, `kube-proxy` y componentes de Calico.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Localiza específicamente el contenedor del API Server.
+
+  ```bash
+  sudo crictl ps | grep kube-apiserver
+  ```
+
+  > **Salida esperada:** Se muestra un contenedor `Running` asociado al Pod `kube-apiserver-cka-control`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Localiza específicamente el contenedor de etcd.
+
+  ```bash
+  sudo crictl ps | grep etcd
+  ```
+
+  > **Salida esperada:** Se muestra un contenedor `Running` asociado al Pod `etcd-cka-control`.
+  {: .lab-note .output .compact}
+
+### Tarea 3.4. Validar la salud del API Server
+
+Consultarás directamente los endpoints de salud expuestos por el API Server para distinguir una simple conexión exitosa de una validación interna de readiness.
+
+- {% include step_label.html %} Consulta el endpoint resumido de readiness.
+
+  ```bash
+  kubectl get --raw='/readyz'
+  ```
+
+  > **Salida esperada:** El API Server responde `ok`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Consulta las verificaciones detalladas de readiness.
+
+  ```bash
+  kubectl get --raw='/readyz?verbose'
+  ```
+
+  > **Salida esperada:** Las verificaciones internas aparecen como exitosas y la respuesta final confirma que el API Server está listo.
   {: .lab-note .output .compact}
 
 {% capture r3 %}{{ results[2] }}{% endcapture %}
@@ -211,351 +375,236 @@ DESCRIPCION_DE_LA_SUBTAREA.
 
 ---
 
-<!--
-======================================================================
-GUÍA DE USO DE LA PLANTILLA DEL LABORATORIO
-======================================================================
+## ⚙️ Tarea 4. Inspección del worker y del runtime — 10 min
 
-Este archivo es una plantilla base. Las 3 tareas incluidas sirven únicamente
-como referencia de estructura. La práctica final puede tener más o menos
-tareas, subtareas y pasos según lo requiera el contenido.
+Cambiarás de perspectiva y entrarás directamente a `cka-worker1` para revisar kubelet, containerd y los directorios administrativos del nodo. El objetivo es relacionar lo que Kubernetes muestra desde el control plane con los servicios que realmente operan en el worker.
 
----------------------------------------------------------------------
-1. FRONT MATTER
----------------------------------------------------------------------
+### Tarea 4.1. Acceder al worker y comprobar kubelet
 
-Completa los campos de la cabecera YAML sin cambiar sus nombres:
+Abrirás una sesión independiente en el worker y comprobarás que kubelet está activo y registrando actividad normal.
 
-- title:
-    Nombre completo de la práctica.
-
-- duration:
-    Duración total estimada de la práctica en minutos.
-
-- objective:
-    Objetivo principal de aprendizaje de la práctica.
-
-- prerequisites:
-    Requisitos previos necesarios para realizarla.
-    Agrega o elimina elementos según corresponda.
-
-- introduction:
-    Introducción breve de la práctica. Se recomienda un solo párrafo.
-
-- final_result:
-    Resultado final esperado al terminar toda la práctica.
-    Se recomienda describirlo en un solo párrafo.
-
-- notes:
-    Consideraciones generales que apliquen a toda la práctica.
-
-- references:
-    Documentación oficial o referencias técnicas relevantes.
-    Mantén la estructura:
-
-      - text: DESCRIPCION
-        url: URL
-
-- permalink, images_base, slug y lab_number:
-    Son generados automáticamente. No deben modificarse salvo que cambie
-    deliberadamente la estructura del sitio.
-
-- prev y next:
-    Son generados automáticamente por este script para navegación entre labs.
-
----------------------------------------------------------------------
-2. ESTRUCTURA GENERAL DE UNA TAREA
----------------------------------------------------------------------
-
-Cada tarea debe seguir esta estructura:
-
-  ## ICONO Tarea N. NOMBRE DE LA TAREA — ## min
-
-  DESCRIPCION_DE_LA_TAREA.
-
-  ### Tarea N.1. NOMBRE_DE_LA_SUBTAREA
-
-  DESCRIPCION_DE_LA_SUBTAREA.
-
-  - {% include step_label.html %} DESCRIPCION_DEL_PASO.
-
-La descripción de la tarea debe explicar qué se realizará y para qué.
-Como referencia, se recomiendan aproximadamente 200-250 caracteres.
-
-La descripción de cada subtarea debe indicar claramente el objetivo de esa
-sección. Como referencia, se recomiendan aproximadamente 120-150 caracteres.
-
----------------------------------------------------------------------
-3. TAREAS
----------------------------------------------------------------------
-
-Las tareas principales se numeran de forma consecutiva:
-
-  Tarea 1
-  Tarea 2
-  Tarea 3
-  Tarea 4
-  ...
-
-La plantilla incluye solamente 3 tareas como ejemplo.
-
-Si la práctica necesita más tareas:
-
-1) Duplica COMPLETA una sección de tarea existente.
-2) Cambia el encabezado de la tarea.
-3) Cambia la numeración de todas sus subtareas.
-4) Cambia el resultado asociado results[N].
-5) Cambia el identificador de support-prompt.html.
-
-Ejemplo para una Tarea 4:
-
-  ## 🔧 Tarea 4. NOMBRE DE LA TAREA — ## min
-
-Al finalizar debe contener:
-
-  {% capture r4 %}{{ results[3] }}{% endcapture %}
-  {% include task-result.html title="Tarea finalizada" content=r4 %}
-
-  {% include support-prompt.html task="tarea4" %}
-
-IMPORTANTE:
-El arreglo results utiliza índice base 0:
-
-  Tarea 1 -> results[0]
-  Tarea 2 -> results[1]
-  Tarea 3 -> results[2]
-  Tarea 4 -> results[3]
-  Tarea 5 -> results[4]
-  Tarea 6 -> results[5]
-  Tarea N -> results[N-1]
-
----------------------------------------------------------------------
-4. SUBTAREAS
----------------------------------------------------------------------
-
-Cada tarea puede contener tantas subtareas como sea necesario.
-La numeración debe conservar la relación con la tarea principal.
-
-Ejemplo para la Tarea 4:
-
-  ### Tarea 4.1. PRIMERA SUBTAREA
-  ### Tarea 4.2. SEGUNDA SUBTAREA
-  ### Tarea 4.3. TERCERA SUBTAREA
-  ### Tarea 4.4. CUARTA SUBTAREA
-
-No existe un límite fijo de subtareas.
-
----------------------------------------------------------------------
-5. PASOS
----------------------------------------------------------------------
-
-Cada acción que debe realizar el participante debe escribirse como un paso
-independiente utilizando:
-
-  - {% include step_label.html %} DESCRIPCION_DEL_PASO.
-
-No combines varias acciones importantes dentro de un único paso cuando puedan
-realizarse o validarse por separado.
-
-Cada paso debe contener, cuando corresponda:
-
-- Una descripción clara de la acción.
-- Una Nota, Importante o Advertencia.
-- Una imagen de referencia.
-- Un bloque de código o comando.
-- Una salida esperada o criterio de validación.
-
----------------------------------------------------------------------
-6. NOTAS, IMPORTANTES Y ADVERTENCIAS
----------------------------------------------------------------------
-
-Usa los bloques únicamente cuando aporten información útil.
-
-Nota informativa:
-
-  > **Nota:** TEXTO.
-  {: .lab-note .info .compact}
-
-Consideración importante:
-
-  > **Importante:** TEXTO.
-  {: .lab-note .important .compact}
-
-Advertencia:
-
-  > **Advertencia:** TEXTO.
-  {: .lab-note .warning .compact}
-
-Salida esperada:
-
-  > **Salida esperada:** TEXTO.
-  {: .lab-note .output .compact}
-
-No es obligatorio incluir los tres tipos de nota en todos los pasos.
-Utiliza solamente el que corresponda al contexto.
-
----------------------------------------------------------------------
-7. BLOQUES DE CÓDIGO
----------------------------------------------------------------------
-
-Cada comando o fragmento que el participante deba ejecutar debe tener su
-propio bloque de código.
-
-Ejemplo Bash:
+- {% include step_label.html %} Sal de la sesión del control plane.
 
   ```bash
-  COMANDO
+  exit
   ```
 
-Cambia el identificador del lenguaje cuando corresponda, por ejemplo:
-
-  ```yaml
-  ```json
-  ```sql
-  ```powershell
-  ```python
-
-Evita colocar varios pasos independientes dentro de un único bloque de código
-si deben ejecutarse y validarse por separado.
-
----------------------------------------------------------------------
-8. SALIDA ESPERADA
----------------------------------------------------------------------
-
-Después de un comando o acción importante debe existir una forma clara de
-validar que el paso fue realizado correctamente.
-
-Utiliza:
-
-  > **Salida esperada:** DESCRIPCION_DE_LA_VALIDACION.
+  > **Salida esperada:** Regresas a la terminal de Windows desde la que iniciaste la conexión SSH.
   {: .lab-note .output .compact}
 
-La salida esperada no necesita reproducir siempre todo el texto del comando.
-Puede describir el estado, recurso, valor o comportamiento que debe observarse.
+- {% include step_label.html %} Conéctate a `cka-worker1` mediante SSH.
 
----------------------------------------------------------------------
-9. IMÁGENES
----------------------------------------------------------------------
+  ```bash
+  ssh worker1@192.168.10.101
+  ```
 
-La carpeta de imágenes de esta práctica se encuentra en:
+  > **Salida esperada:** La sesión inicia en `cka-worker1` con el usuario asignado al worker.
+  {: .lab-note .output .compact}
 
-  labs/labN/img/
+- {% include step_label.html %} Comprueba el estado del servicio kubelet.
 
-Para insertar una imagen mediante el mecanismo de la plantilla utiliza:
+  ```bash
+  systemctl status kubelet --no-pager
+  ```
 
-  {% include step_image.html %}
+  > **Salida esperada:** El servicio aparece `active (running)`.
+  {: .lab-note .output .compact}
 
-Conserva este include solamente en los pasos que realmente tengan una imagen.
-Si el paso no requiere imagen, elimínalo.
+### Tarea 4.2. Revisar logs, containerd y CRI
 
-No es necesario agregar una imagen a cada paso.
+Validarás el servicio del runtime y usarás `crictl` para identificar Pods y contenedores ejecutándose directamente en el worker.
 
----------------------------------------------------------------------
-10. RESULTADO DE CADA TAREA
----------------------------------------------------------------------
+- {% include step_label.html %} Consulta los mensajes recientes de kubelet.
 
-Cada tarea debe terminar con un resultado esperado asociado a
-_data/task-results.yml.
+  ```bash
+  sudo journalctl -u kubelet -n 20 --no-pager
+  ```
 
-La asignación de results debe realizarse una sola vez antes del primer uso:
+  > **Salida esperada:** Se muestran eventos recientes del kubelet sin un patrón continuo de errores que impida su operación.
+  {: .lab-note .output .compact}
 
-  {% assign results = site.data.task-results[page.slug].results %}
+- {% include step_label.html %} Comprueba que containerd está activo.
 
-En esta plantilla se realiza en la Tarea 1.
-No es necesario repetir el assign en las tareas siguientes.
+  ```bash
+  systemctl status containerd --no-pager
+  ```
 
-Después utiliza el índice correspondiente:
+  > **Salida esperada:** `containerd.service` aparece `active (running)`.
+  {: .lab-note .output .compact}
 
-  {% capture r1 %}{{ results[0] }}{% endcapture %}
-  {% include task-result.html title="Tarea finalizada" content=r1 %}
+- {% include step_label.html %} Lista los contenedores que el runtime mantiene activos en el worker.
 
-Para la Tarea 2:
+  ```bash
+  sudo crictl ps
+  ```
 
-  {% capture r2 %}{{ results[1] }}{% endcapture %}
+  > **Salida esperada:** Se observan contenedores de infraestructura como `calico-node` y `kube-proxy`, además de cualquier workload actualmente programado en el nodo.
+  {: .lab-note .output .compact}
 
-Para la Tarea 3:
+- {% include step_label.html %} Lista los Pod sandboxes conocidos por el runtime.
 
-  {% capture r3 %}{{ results[2] }}{% endcapture %}
+  ```bash
+  sudo crictl pods
+  ```
 
-Y así sucesivamente.
+  > **Salida esperada:** Se muestran los sandboxes de Pods activos en `cka-worker1`, incluyendo componentes de `kube-system` ejecutados en ese nodo.
+  {: .lab-note .output .compact}
 
----------------------------------------------------------------------
-11. PROMPT DE SOPORTE
----------------------------------------------------------------------
+### Tarea 4.3. Inspeccionar archivos administrativos del worker
 
-Después del resultado de cada tarea debe incluirse el prompt de soporte
-correspondiente:
+Compararás los archivos presentes en un worker con los del control plane para identificar qué configuración pertenece a kubelet y qué elementos sólo existen en el nodo de control.
 
-  {% include support-prompt.html task="tarea1" %}
+- {% include step_label.html %} Lista el contenido del directorio `/etc/kubernetes` del worker.
 
-La numeración debe coincidir exactamente con la tarea:
+  ```bash
+  sudo ls -l /etc/kubernetes/
+  ```
 
-  Tarea 1 -> task="tarea1"
-  Tarea 2 -> task="tarea2"
-  Tarea 3 -> task="tarea3"
-  Tarea 4 -> task="tarea4"
-  ...
+  > **Salida esperada:** Se observan archivos asociados al kubelet, pero no los cuatro manifiestos estáticos del control plane.
+  {: .lab-note .output .compact}
 
----------------------------------------------------------------------
-12. SEPARACIÓN ENTRE TAREAS
----------------------------------------------------------------------
+- {% include step_label.html %} Confirma que el directorio de manifiestos del control plane no contiene componentes estáticos en este worker.
 
-Separa cada tarea principal utilizando:
+  ```bash
+  sudo ls -l /etc/kubernetes/manifests/ 2>/dev/null || true
+  ```
 
-  ---
+  > **Salida esperada:** El directorio puede existir vacío o no contener `kube-apiserver.yaml`, `etcd.yaml`, `kube-controller-manager.yaml` ni `kube-scheduler.yaml`.
+  {: .lab-note .output .compact}
 
-No utilices este separador entre pasos o subtareas de la misma tarea.
+- {% include step_label.html %} Revisa los archivos principales administrados por kubelet.
 
----------------------------------------------------------------------
-13. ICONOS DE LAS TAREAS
----------------------------------------------------------------------
+  ```bash
+  sudo ls -l /var/lib/kubelet/
+  ```
 
-El icono del encabezado es visual y puede cambiarse de acuerdo con el tema de
-la tarea. Ejemplos utilizados en esta plantilla:
+  > **Salida esperada:** Se identifican archivos y directorios como `config.yaml`, `pki`, `pods` y otros elementos utilizados por kubelet.
+  {: .lab-note .output .compact}
 
-  🔎  ☁️  🚀
+{% capture r4 %}{{ results[3] }}{% endcapture %}
+{% include task-result.html title="Tarea finalizada" content=r4 %}
 
-La numeración y el texto "Tarea N." son más importantes que el icono.
+{% include support-prompt.html task="tarea4" %}
 
----------------------------------------------------------------------
-14. QUÉ SE PUEDE ELIMINAR
----------------------------------------------------------------------
+---
 
-Si un elemento no aplica a la práctica puede eliminarse, por ejemplo:
+## 🌐 Tarea 5. Validación de networking, DNS, storage y salud general — 11 min
 
-- Prerequisitos adicionales.
-- Notas generales.
-- Referencias adicionales.
-- Una Nota/Importante/Advertencia de un paso.
-- {% include step_image.html %} cuando no existe imagen.
-- Subtareas que no sean necesarias.
-- Tareas de ejemplo que no formen parte de la práctica real.
+Regresarás al control plane para comprobar los servicios de plataforma que sostienen la operación del clúster. Revisarás CNI, CoreDNS, kube-proxy, StorageClass, eventos y salud general sin crear ni modificar recursos persistentes.
 
-No elimines los elementos estructurales necesarios para el funcionamiento del
-layout, resultados o navegación sin revisar primero su dependencia.
+### Tarea 5.1. Validar el CNI y kube-proxy
 
----------------------------------------------------------------------
-15. VALIDACIÓN FINAL DEL ARCHIVO
----------------------------------------------------------------------
+Comprobarás que los componentes responsables de la red de Pods y del procesamiento de Services se encuentran desplegados en los nodos esperados.
 
-Antes de considerar terminado el laboratorio verifica:
+- {% include step_label.html %} Regresa al control plane desde Windows.
 
-- El título y duración son correctos.
-- El objetivo describe claramente el aprendizaje esperado.
-- La introducción está completa.
-- Todas las tareas están numeradas consecutivamente.
-- Todas las subtareas corresponden al número de su tarea.
-- Cada acción del participante está separada como paso cuando corresponde.
-- Los comandos tienen bloques de código adecuados.
-- Los pasos importantes tienen una salida esperada o criterio de validación.
-- Los índices results[N] corresponden a cada número de tarea.
-- Cada tarea utiliza support-prompt.html con su número correcto.
-- Las imágenes utilizadas existen en la carpeta img de la práctica.
-- El resultado final describe lo que el participante habrá conseguido.
-- No permanecen textos de marcador como CAMBIAR_AQUI, DESCRIPCION_, NOMBRE_DE_,
-  CODIGO_, PREREQUISITO_, RESULTADO_ o ## min en la versión final.
+  ```bash
+  exit
+  ```
+  ```bash
+  ssh control@192.168.10.100
+  ```
 
-======================================================================
-FIN DE LA GUÍA DE USO DE LA PLANTILLA
-======================================================================
--->
+  > **Salida esperada:** El prompt vuelve a corresponder a `control@cka-control`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Comprueba el DaemonSet de Calico y sus Pods.
+
+  ```bash
+  kubectl get daemonset calico-node -n kube-system
+  ```
+  ```bash
+  kubectl get pods -n kube-system -l k8s-app=calico-node -o wide
+  ```
+
+  > **Salida esperada:** El DaemonSet reporta dos instancias disponibles y los Pods `calico-node` aparecen `1/1 Running` sobre `cka-control` y `cka-worker1`.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Comprueba el DaemonSet de kube-proxy.
+
+  ```bash
+  kubectl get daemonset kube-proxy -n kube-system
+  ```
+
+  > **Salida esperada:** Los valores `DESIRED`, `CURRENT`, `READY` y `AVAILABLE` son coherentes con los nodos actualmente unidos al clúster.
+  {: .lab-note .output .compact}
+
+### Tarea 5.2. Validar CoreDNS
+
+Verificarás que Kubernetes dispone de un servicio DNS interno y que las réplicas de CoreDNS se encuentran disponibles.
+
+- {% include step_label.html %} Revisa el Deployment de CoreDNS.
+
+  ```bash
+  kubectl get deployment coredns -n kube-system
+  ```
+
+  > **Salida esperada:** Las réplicas configuradas aparecen disponibles y listas.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Consulta el Service utilizado por los Pods para resolución DNS interna.
+
+  ```bash
+  kubectl get service kube-dns -n kube-system
+  ```
+
+  > **Salida esperada:** Se muestra el Service `kube-dns` con una `CLUSTER-IP`; en el entorno base se utiliza `10.96.0.10`.
+  {: .lab-note .output .compact}
+
+### Tarea 5.3. Inspeccionar almacenamiento disponible
+
+Identificarás la StorageClass predeterminada y comprobarás si existen volúmenes persistentes o claims antes de realizar prácticas específicas de storage.
+
+- {% include step_label.html %} Lista las StorageClasses configuradas.
+
+  ```bash
+  kubectl get storageclass
+  ```
+
+  > **Salida esperada:** `local-path` aparece como StorageClass predeterminada.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Revisa los PV y PVC existentes sin crear recursos nuevos.
+
+  ```bash
+  kubectl get pv
+  ```
+  ```bash
+  kubectl get pvc -A
+  ```
+
+  > **Salida esperada:** Puede no existir ningún PV o PVC todavía; lo importante es que las consultas se completen sin errores.
+  {: .lab-note .output .compact}
+
+### Tarea 5.4. Confirmar la salud global del clúster
+
+Cerrarás la práctica con una revisión de nodos, Pods, eventos recientes y readiness del API Server para establecer una línea base operativa.
+
+- {% include step_label.html %} Revisa de forma consolidada nodos, Pods del sistema y eventos recientes.
+
+  ```bash
+  kubectl get nodes -o wide
+  ```
+  ```bash
+  kubectl get pods -n kube-system -o wide
+  ```
+  ```bash
+  kubectl get events -A --sort-by=.lastTimestamp | tail -n 20
+  ```
+
+  > **Salida esperada:** `cka-control` y `cka-worker1` permanecen `Ready`; los componentes críticos están `Running` y no existe un error activo que comprometa la operación del clúster.
+  {: .lab-note .output .compact}
+
+- {% include step_label.html %} Realiza la verificación final del API Server.
+
+  ```bash
+  kubectl get --raw='/readyz'
+  ```
+
+  > **Salida esperada:** El API Server responde `ok`.
+  {: .lab-note .output .compact}
+
+{% capture r5 %}{{ results[4] }}{% endcapture %}
+{% include task-result.html title="Tarea finalizada" content=r5 %}
+
+{% include support-prompt.html task="tarea5" %}
