@@ -21,6 +21,12 @@
   const STORAGE_PREFIX = "netec:stepProgress:";
   const STORAGE_VERSION = 1;
 
+  const PROGRESS_CHANGE_EVENT =
+    "lab-progress-change";
+
+  const PROGRESS_APPLY_EVENT =
+    "lab-progress-apply";
+
   /* ---------------------------------------------------------
      Utilidades
      --------------------------------------------------------- */
@@ -35,6 +41,15 @@
 
   function getLabRoot() {
     return document.querySelector("article.lab");
+  }
+
+  function getCourseId(root) {
+    if (!root) return null;
+
+    return (
+      root.dataset.courseId ||
+      null
+    );
   }
 
   function getLabId(root) {
@@ -59,8 +74,45 @@
     return path || "lab";
   }
 
-  function getStorageKey(labId) {
-    return `${STORAGE_PREFIX}${labId}`;
+  function getLegacyStorageKey(
+    labId
+  ) {
+    return (
+      `${STORAGE_PREFIX}${labId}`
+    );
+  }
+
+  function getStorageKey(
+    courseId,
+    labId
+  ) {
+    const demoKey =
+      window.LabControlDemo?.getProgressKey(
+        courseId,
+        labId
+      );
+
+    if (demoKey) {
+      return demoKey;
+    }
+    /*
+     * En Labs con tracking, courseId + labId forman
+     * la identidad local estable.
+     *
+     * Para páginas legacy sin course_id conservamos
+     * el comportamiento anterior basado solamente
+     * en labId/pathname.
+     */
+    if (!courseId) {
+      return getLegacyStorageKey(
+        labId
+      );
+    }
+
+    return (
+      `${STORAGE_PREFIX}` +
+      `${courseId}:${labId}`
+    );
   }
 
   function createEmptyState() {
@@ -71,39 +123,145 @@
     };
   }
 
-  function loadState(labId) {
-    const key = getStorageKey(labId);
-    const stored = localStorage.getItem(key);
+  function loadState(
+    courseId,
+    labId
+  ) {
+    const key =
+      getStorageKey(
+        courseId,
+        labId
+      );
+
+    let stored =
+      localStorage.getItem(
+        key
+      );
+
+    /*
+     * Compatibilidad con progreso creado antes de
+     * incorporar courseId a la clave.
+     *
+     * La clave legacy se consume una sola vez para
+     * evitar que el mismo progreso pueda migrarse a
+     * varios cursos con un labId equivalente.
+     */
+    if (
+      !stored &&
+      courseId &&
+      !window.LabControlDemo?.isActive()
+    ) {
+      const legacyKey =
+        getLegacyStorageKey(
+          labId
+        );
+
+      const legacyStored =
+        localStorage.getItem(
+          legacyKey
+        );
+
+      if (legacyStored) {
+        localStorage.setItem(
+          key,
+          legacyStored
+        );
+
+        localStorage.removeItem(
+          legacyKey
+        );
+
+        stored =
+          legacyStored;
+      }
+    }
 
     if (!stored) {
       return createEmptyState();
     }
 
-    const parsed = safeParse(stored, createEmptyState());
+    const parsed =
+      safeParse(
+        stored,
+        createEmptyState()
+      );
 
-    if (!Array.isArray(parsed.completed)) {
+    if (
+      !Array.isArray(
+        parsed.completed
+      )
+    ) {
       parsed.completed = [];
     }
 
     return parsed;
   }
 
-  function saveState(labId, state) {
-    state.version = STORAGE_VERSION;
-    state.updatedAt = Date.now();
+  function saveState(
+    courseId,
+    labId,
+    state
+  ) {
+    state.version =
+      STORAGE_VERSION;
+
+    state.updatedAt =
+      Date.now();
 
     localStorage.setItem(
-      getStorageKey(labId),
-      JSON.stringify(state)
+      getStorageKey(
+        courseId,
+        labId
+      ),
+      JSON.stringify(
+        state
+      )
     );
   }
 
-  function removeState(labId) {
-    localStorage.removeItem(getStorageKey(labId));
+  function removeState(
+    courseId,
+    labId
+  ) {
+    localStorage.removeItem(
+      getStorageKey(
+        courseId,
+        labId
+      )
+    );
   }
 
   function getStepId(step) {
     return step.dataset.stepId || null;
+  }
+
+  function getTaskId(step) {
+    return step.dataset.taskId || null;
+  }
+
+  function dispatchProgressChange(
+    labId,
+    changes
+  ) {
+    if (
+      !labId ||
+      !Array.isArray(changes) ||
+      changes.length === 0
+    ) {
+      return;
+    }
+
+    document.dispatchEvent(
+      new CustomEvent(
+        PROGRESS_CHANGE_EVENT,
+        {
+          detail: {
+            labId,
+            changes
+          }
+        }
+      )
+    );
   }
 
   function getStepNumber(step) {
@@ -563,13 +721,25 @@
       return;
     }
 
-    const labId = getLabId(root);
+    const courseId =
+      getCourseId(
+        root
+      );
+
+    const labId =
+      getLabId(
+        root
+      );
 
     if (!labId) {
       return;
     }
 
-    let state = loadState(labId);
+    let state =
+      loadState(
+        courseId,
+        labId
+      );
 
     const panel =
       createProgressPanel(root);
@@ -619,24 +789,16 @@
 
       if (!clickedId) return;
 
-      state = loadState(labId);
+      state =
+        loadState(
+          courseId,
+          labId
+        );
 
-      /*
-      * Índice del paso seleccionado dentro de la secuencia
-      * real del laboratorio.
-      */
       const clickedIndex = steps.indexOf(step);
 
       if (clickedIndex === -1) return;
 
-      /*
-      * Averiguar hasta qué paso existe progreso continuo.
-      *
-      * Ejemplo:
-      * completados = Paso 1, Paso 2, Paso 3
-      *
-      * currentCompletedIndex = 2
-      */
       let currentCompletedIndex = -1;
 
       for (let i = 0; i < steps.length; i++) {
@@ -652,15 +814,14 @@
         }
       }
 
-      /*
-      * CASO A
-      * El usuario hace clic en un paso pendiente.
-      *
-      * Se marcará automáticamente ese paso y todos
-      * los anteriores que todavía estén pendientes.
-      */
-      if (clickedIndex > currentCompletedIndex) {
+      const changes = [];
 
+      /*
+       * Avanzar:
+       * completar el paso seleccionado y cualquier
+       * paso anterior todavía pendiente.
+       */
+      if (clickedIndex > currentCompletedIndex) {
         const previousIndex =
           currentCompletedIndex;
 
@@ -669,19 +830,52 @@
           i <= clickedIndex;
           i++
         ) {
-          const id = getStepId(steps[i]);
+          const currentStep =
+            steps[i];
+
+          const id =
+            getStepId(
+              currentStep
+            );
+
+          const taskId =
+            getTaskId(
+              currentStep
+            );
 
           if (!id) continue;
 
-          addCompleted(state, id);
+          const wasCompleted =
+            state.completed.includes(
+              id
+            );
+
+          addCompleted(
+            state,
+            id
+          );
 
           paintStep(
-            steps[i],
+            currentStep,
             true
           );
+
+          if (
+            !wasCompleted &&
+            taskId
+          ) {
+            changes.push({
+              taskId,
+              stepId:
+                id,
+              isCompleted:
+                true
+            });
+          }
         }
 
         saveState(
+          courseId,
           labId,
           state
         );
@@ -692,9 +886,11 @@
           steps
         );
 
-        /*
-        * Si avanzó solamente un paso:
-        */
+        dispatchProgressChange(
+          labId,
+          changes
+        );
+
         if (
           clickedIndex ===
           previousIndex + 1
@@ -704,9 +900,6 @@
             "forward"
           );
         } else {
-          /*
-          * Si saltó varios pasos:
-          */
           showProgressNotice(
             `Avance actualizado hasta el Paso ${clickedIndex + 1}`,
             "forward"
@@ -717,32 +910,62 @@
       }
 
       /*
-      * CASO B
-      * El usuario hace clic sobre un paso ya completado.
-      *
-      * Ese paso y todos los posteriores vuelven
-      * al estado pendiente.
-      */
+       * Retroceder:
+       * el paso seleccionado y todos los posteriores
+       * vuelven a pendiente.
+       */
       if (clickedIndex <= currentCompletedIndex) {
-
         for (
           let i = clickedIndex;
           i < steps.length;
           i++
         ) {
-          const id = getStepId(steps[i]);
+          const currentStep =
+            steps[i];
+
+          const id =
+            getStepId(
+              currentStep
+            );
+
+          const taskId =
+            getTaskId(
+              currentStep
+            );
 
           if (!id) continue;
 
-          removeCompleted(state, id);
+          const wasCompleted =
+            state.completed.includes(
+              id
+            );
+
+          removeCompleted(
+            state,
+            id
+          );
 
           paintStep(
-            steps[i],
+            currentStep,
             false
           );
+
+          if (
+            wasCompleted &&
+            taskId
+          ) {
+            changes.push({
+              taskId,
+              stepId:
+                id,
+              isCompleted:
+                false
+            });
+          }
         }
 
         saveState(
+          courseId,
           labId,
           state
         );
@@ -751,6 +974,11 @@
           panel,
           state,
           steps
+        );
+
+        dispatchProgressChange(
+          labId,
+          changes
         );
 
         if (clickedIndex === 0) {
@@ -813,7 +1041,11 @@
       continueBtn.addEventListener(
         "click",
         () => {
-          state = loadState(labId);
+          state =
+        loadState(
+          courseId,
+          labId
+        );
 
           const pending =
             findFirstPendingStep(
@@ -850,7 +1082,49 @@
             return;
           }
 
-          removeState(labId);
+          state =
+            loadState(
+              courseId,
+              labId
+            );
+
+          const resetChanges =
+            steps
+              .filter(step => {
+                const stepId =
+                  getStepId(
+                    step
+                  );
+
+                return (
+                  stepId &&
+                  state.completed.includes(
+                    stepId
+                  )
+                );
+              })
+              .map(step => ({
+                taskId:
+                  getTaskId(
+                    step
+                  ),
+                stepId:
+                  getStepId(
+                    step
+                  ),
+                isCompleted:
+                  false
+              }))
+              .filter(
+                change =>
+                  change.taskId &&
+                  change.stepId
+              );
+
+          removeState(
+            courseId,
+            labId
+          );
 
           state =
             createEmptyState();
@@ -868,6 +1142,11 @@
             steps
           );
 
+          dispatchProgressChange(
+            labId,
+            resetChanges
+          );
+
           /*
            * Volver al primer paso después
            * de reiniciar.
@@ -880,6 +1159,94 @@
         }
       );
     }
+
+    /*
+     * Estado confirmado por LabControl.
+     *
+     * lab-progress.js es el único módulo que escribe
+     * netec:stepProgress:<courseId>:<labId> y actualiza la UI.
+     */
+    document.addEventListener(
+      PROGRESS_APPLY_EVENT,
+      event => {
+        const detail =
+          event.detail;
+
+        if (
+          !detail ||
+          detail.labId !==
+            labId ||
+          !Array.isArray(
+            detail.completedStepIds
+          )
+        ) {
+          return;
+        }
+
+        const validStepIds =
+          new Set(
+            steps
+              .map(
+                getStepId
+              )
+              .filter(
+                Boolean
+              )
+          );
+
+        const completed =
+          Array.from(
+            new Set(
+              detail
+                .completedStepIds
+                .filter(
+                  stepId =>
+                    validStepIds.has(
+                      stepId
+                    )
+                )
+            )
+          );
+
+        state = {
+          version:
+            STORAGE_VERSION,
+          completed,
+          updatedAt:
+            Date.now()
+        };
+
+        saveState(
+          courseId,
+          labId,
+          state
+        );
+
+        steps.forEach(step => {
+          const stepId =
+            getStepId(
+              step
+            );
+
+          if (!stepId) {
+            return;
+          }
+
+          paintStep(
+            step,
+            completed.includes(
+              stepId
+            )
+          );
+        });
+
+        updateProgressPanel(
+          panel,
+          state,
+          steps
+        );
+      }
+    );
   }
 
   /* ---------------------------------------------------------

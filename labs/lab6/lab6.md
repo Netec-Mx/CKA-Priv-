@@ -1,4 +1,8 @@
 ---
+course_id: ckapriv
+lab_id: l006
+tracking: true
+position: 6
 layout: lab
 title: "Práctica 6: Diagnóstico de CNI, kube-proxy y CoreDNS"
 permalink: /lab6/lab6/
@@ -48,7 +52,10 @@ Antes de diagnosticar una falla necesitas conocer el estado normal del entorno. 
 
 ### Tarea 1.1. Confirmar el estado de los nodos
 
-- {% include step_label.html %} Consulta los nodos y confirma que el clúster está estable antes de modificar recursos de red.
+
+{% assign tracking_task_id = "t001" %}
+
+- {% include step_label.html id="s001" %} Consulta los nodos y confirma que el clúster está estable antes de modificar recursos de red.
 
   > **Nota:** Una condición `NotReady` puede producir síntomas de red que no están relacionados directamente con CNI, kube-proxy o CoreDNS. Por eso primero se valida la salud general.
   {: .lab-note .info .compact}
@@ -60,7 +67,7 @@ Antes de diagnosticar una falla necesitas conocer el estado normal del entorno. 
   > **Salida esperada:** Los nodos utilizados en la práctica aparecen en estado `Ready`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Consulta las condiciones principales de los nodos.
+- {% include step_label.html id="s002" %} Consulta las condiciones principales de los nodos.
 
   > **Nota:** `NetworkUnavailable` ayuda a detectar si Kubernetes considera que existe un problema con la red del nodo.
   {: .lab-note .info .compact}
@@ -73,7 +80,7 @@ Antes de diagnosticar una falla necesitas conocer el estado normal del entorno. 
   > **Salida esperada:** `READY` aparece como `True`; `NETWORK_UNAVAILABLE` normalmente aparece `False` o vacío según el CNI.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Comprueba que los nodos tienen asignadas direcciones internas.
+- {% include step_label.html id="s003" %} Comprueba que los nodos tienen asignadas direcciones internas.
 
   > **Nota:** Las direcciones de nodo forman parte del camino utilizado para comunicación entre hosts y pueden ayudar a diferenciar problemas de red física de problemas dentro del clúster.
   {: .lab-note .info .compact}
@@ -88,7 +95,7 @@ Antes de diagnosticar una falla necesitas conocer el estado normal del entorno. 
 
 ### Tarea 1.2. Revisar CNI, kube-proxy y CoreDNS
 
-- {% include step_label.html %} Lista los Pods de `kube-system` y localiza los componentes relacionados con red y DNS.
+- {% include step_label.html id="s004" %} Lista los Pods de `kube-system` y localiza los componentes relacionados con red y DNS.
 
   > **Importante:** No asumas que todos los CNIs utilizan los mismos nombres de Pods. Identifica el plugin realmente desplegado en tu clúster.
   {: .lab-note .important .compact}
@@ -100,7 +107,7 @@ Antes de diagnosticar una falla necesitas conocer el estado normal del entorno. 
   > **Salida esperada:** CoreDNS y kube-proxy aparecen operativos, junto con los Pods correspondientes al CNI instalado.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Comprueba específicamente los Pods de kube-proxy.
+- {% include step_label.html id="s005" %} Comprueba específicamente los Pods de kube-proxy.
 
   > **Nota:** kube-proxy suele ejecutarse como DaemonSet para mantener la programación de tráfico de Services en cada nodo.
   {: .lab-note .info .compact}
@@ -114,7 +121,7 @@ Antes de diagnosticar una falla necesitas conocer el estado normal del entorno. 
   > **Salida esperada:** Existe un Pod de kube-proxy por cada nodo donde deba ejecutarse.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Comprueba los Pods de CoreDNS.
+- {% include step_label.html id="s006" %} Comprueba los Pods de CoreDNS.
 
   > **Nota:** Kubernetes conserva la etiqueta `k8s-app=kube-dns` por compatibilidad, aunque la implementación sea CoreDNS.
   {: .lab-note .info .compact}
@@ -130,7 +137,7 @@ Antes de diagnosticar una falla necesitas conocer el estado normal del entorno. 
 
 ### Tarea 1.3. Identificar el modo de kube-proxy y el Service DNS
 
-- {% include step_label.html %} Consulta el ConfigMap de kube-proxy para identificar el modo configurado.
+- {% include step_label.html id="s007" %} Consulta el ConfigMap de kube-proxy para identificar el modo configurado.
 
   > **Nota:** En Kubernetes actuales kube-proxy puede trabajar con implementaciones distintas. La forma correcta de diagnosticarlo es consultar su configuración en lugar de asumir el modo.
   {: .lab-note .info .compact}
@@ -145,7 +152,7 @@ Antes de diagnosticar una falla necesitas conocer el estado normal del entorno. 
   > **Salida esperada:** Se muestra el valor de `mode`; si aparece vacío, kube-proxy utilizará el comportamiento determinado por su configuración y versión.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Consulta el Service que expone CoreDNS.
+- {% include step_label.html id="s008" %} Consulta el Service que expone CoreDNS.
 
   > **Nota:** Los Pods no consultan directamente una IP de CoreDNS elegida manualmente. Normalmente utilizan la `ClusterIP` del Service `kube-dns`.
   {: .lab-note .info .compact}
@@ -157,7 +164,7 @@ Antes de diagnosticar una falla necesitas conocer el estado normal del entorno. 
   > **Salida esperada:** Se muestra un Service `ClusterIP` con los puertos DNS 53/UDP y 53/TCP.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Consulta los EndpointSlices asociados al Service DNS.
+- {% include step_label.html id="s009" %} Consulta los EndpointSlices asociados al Service DNS.
 
   > **Nota:** Un Service necesita backends disponibles. EndpointSlice relaciona el Service con las direcciones de los Pods que pueden recibir tráfico.
   {: .lab-note .info .compact}
@@ -185,7 +192,10 @@ Crearás una aplicación de prueba con dos réplicas y un cliente. Así podrás 
 
 ### Tarea 2.1. Crear el escenario de red
 
-- {% include step_label.html %} Crea el namespace `net-lab`.
+
+{% assign tracking_task_id = "t002" %}
+
+- {% include step_label.html id="s010" %} Crea el namespace `net-lab`.
 
   > **Nota:** Mantener los recursos de diagnóstico en un namespace separado facilita la limpieza y evita mezclar políticas con otras aplicaciones.
   {: .lab-note .info .compact}
@@ -197,7 +207,7 @@ Crearás una aplicación de prueba con dos réplicas y un cliente. Así podrás 
   > **Salida esperada:** `namespace/net-lab created`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Crea un Deployment de NGINX con dos réplicas.
+- {% include step_label.html id="s011" %} Crea un Deployment de NGINX con dos réplicas.
 
   > **Nota:** Las dos réplicas permiten observar varios backends detrás del mismo Service y comprobar la relación entre Pods y EndpointSlices.
   {: .lab-note .info .compact}
@@ -212,7 +222,7 @@ Crearás una aplicación de prueba con dos réplicas y un cliente. Así podrás 
   > **Salida esperada:** `deployment.apps/web created`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Espera a que las dos réplicas estén disponibles.
+- {% include step_label.html id="s012" %} Espera a que las dos réplicas estén disponibles.
 
   > **Importante:** No continúes con pruebas de conectividad mientras los backends aún están iniciando, porque podrías interpretar un problema de readiness como una falla de red.
   {: .lab-note .important .compact}
@@ -228,7 +238,7 @@ Crearás una aplicación de prueba con dos réplicas y un cliente. Así podrás 
 
 ### Tarea 2.2. Exponer y revisar el Service
 
-- {% include step_label.html %} Expón el Deployment mediante un Service `ClusterIP`.
+- {% include step_label.html id="s013" %} Expón el Deployment mediante un Service `ClusterIP`.
 
   > **Nota:** Un Service proporciona una dirección virtual estable aunque las IP de los Pods cambien.
   {: .lab-note .info .compact}
@@ -244,7 +254,7 @@ Crearás una aplicación de prueba con dos réplicas y un cliente. Así podrás 
   > **Salida esperada:** `service/web-svc exposed`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Consulta la `ClusterIP` asignada.
+- {% include step_label.html id="s014" %} Consulta la `ClusterIP` asignada.
 
   > **Nota:** Esta IP pertenece al espacio virtual de Services; no corresponde a una interfaz de red dentro de un Pod.
   {: .lab-note .info .compact}
@@ -256,7 +266,7 @@ Crearás una aplicación de prueba con dos réplicas y un cliente. Así podrás 
   > **Salida esperada:** `web-svc` muestra una `CLUSTER-IP` y el puerto `80/TCP`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Consulta los EndpointSlices del Service.
+- {% include step_label.html id="s015" %} Consulta los EndpointSlices del Service.
 
   > **Nota:** Las direcciones mostradas deben corresponder a Pods seleccionados por `web-svc`. Si no existen endpoints, kube-proxy no tiene backends válidos a los cuales dirigir tráfico.
   {: .lab-note .info .compact}
@@ -273,7 +283,7 @@ Crearás una aplicación de prueba con dos réplicas y un cliente. Así podrás 
 
 ### Tarea 2.3. Comparar tráfico directo y tráfico por Service
 
-- {% include step_label.html %} Crea un Pod cliente que permanecerá disponible para las pruebas.
+- {% include step_label.html id="s016" %} Crea un Pod cliente que permanecerá disponible para las pruebas.
 
   > **Nota:** El cliente proporciona un punto de observación dentro de la red del clúster, que es donde deben probarse las IP de Pods y las ClusterIP.
   {: .lab-note .info .compact}
@@ -290,7 +300,7 @@ Crearás una aplicación de prueba con dos réplicas y un cliente. Así podrás 
   > **Salida esperada:** `pod/net-client created`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Espera a que el cliente esté listo.
+- {% include step_label.html id="s017" %} Espera a que el cliente esté listo.
 
   > **Nota:** `kubectl wait` evita lanzar las pruebas antes de que el contenedor pueda ejecutar comandos.
   {: .lab-note .info .compact}
@@ -306,7 +316,7 @@ Crearás una aplicación de prueba con dos réplicas y un cliente. Así podrás 
   > **Salida esperada:** `pod/net-client condition met`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Obtén una IP de Pod backend y realiza una solicitud directa.
+- {% include step_label.html id="s018" %} Obtén una IP de Pod backend y realiza una solicitud directa.
 
   > **Nota:** Esta prueba evita el Service y verifica principalmente la ruta Pod-to-Pod proporcionada por el CNI.
   {: .lab-note .info .compact}
@@ -327,7 +337,7 @@ Crearás una aplicación de prueba con dos réplicas y un cliente. Así podrás 
   > **Salida esperada:** Se recibe contenido HTML de NGINX.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Realiza ahora la misma solicitud utilizando la IP virtual del Service.
+- {% include step_label.html id="s019" %} Realiza ahora la misma solicitud utilizando la IP virtual del Service.
 
   > **Nota:** Si la IP directa funciona pero la ClusterIP falla, el diagnóstico debe enfocarse en Service, EndpointSlices o el mecanismo de proxy de Services.
   {: .lab-note .info .compact}
@@ -354,7 +364,10 @@ Comprobarás cómo un Pod recibe la dirección del DNS del clúster y cómo Core
 
 ### Tarea 3.1. Crear un Pod de diagnóstico DNS
 
-- {% include step_label.html %} Crea un Pod con herramientas de resolución DNS.
+
+{% assign tracking_task_id = "t003" %}
+
+- {% include step_label.html id="s020" %} Crea un Pod con herramientas de resolución DNS.
 
   ```bash
   cat > dns-client.yaml <<'EOF'
@@ -380,7 +393,7 @@ Comprobarás cómo un Pod recibe la dirección del DNS del clúster y cómo Core
   > **Salida esperada:** `pod/dns-client created`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Espera a que el Pod DNS esté listo.
+- {% include step_label.html id="s021" %} Espera a que el Pod DNS esté listo.
 
   > **Nota:** Las pruebas de resolución deben realizarse únicamente después de que el contenedor esté en ejecución.
   {: .lab-note .info .compact}
@@ -396,7 +409,7 @@ Comprobarás cómo un Pod recibe la dirección del DNS del clúster y cómo Core
   > **Salida esperada:** `pod/dns-client condition met`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Revisa el archivo `/etc/resolv.conf` del Pod.
+- {% include step_label.html id="s022" %} Revisa el archivo `/etc/resolv.conf` del Pod.
 
   > **Importante:** El `nameserver` debe apuntar normalmente a la ClusterIP del Service `kube-dns`, no a la dirección DNS configurada directamente en el nodo.
   {: .lab-note .important .compact}
@@ -411,7 +424,7 @@ Comprobarás cómo un Pod recibe la dirección del DNS del clúster y cómo Core
 
 ### Tarea 3.2. Resolver nombres de Kubernetes
 
-- {% include step_label.html %} Resuelve el Service interno `kubernetes.default`.
+- {% include step_label.html id="s023" %} Resuelve el Service interno `kubernetes.default`.
 
   > **Nota:** Este nombre es una prueba estándar porque el Service `kubernetes` existe normalmente en el namespace `default`.
   {: .lab-note .info .compact}
@@ -424,7 +437,7 @@ Comprobarás cómo un Pod recibe la dirección del DNS del clúster y cómo Core
   > **Salida esperada:** La consulta devuelve una dirección IP sin errores de resolución.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Resuelve el nombre corto `web-svc`.
+- {% include step_label.html id="s024" %} Resuelve el nombre corto `web-svc`.
 
   > **Nota:** Como el cliente se encuentra en `net-lab`, el search domain permite resolver el Service del mismo namespace utilizando únicamente su nombre corto.
   {: .lab-note .info .compact}
@@ -437,7 +450,7 @@ Comprobarás cómo un Pod recibe la dirección del DNS del clúster y cómo Core
   > **Salida esperada:** Se devuelve la ClusterIP de `web-svc`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Resuelve el FQDN completo del Service.
+- {% include step_label.html id="s025" %} Resuelve el FQDN completo del Service.
 
   > **Nota:** El nombre completo evita depender de los search domains y resulta útil al diagnosticar resolución entre namespaces.
   {: .lab-note .info .compact}
@@ -452,7 +465,7 @@ Comprobarás cómo un Pod recibe la dirección del DNS del clúster y cómo Core
 
 ### Tarea 3.3. Relacionar CoreDNS con sus endpoints
 
-- {% include step_label.html %} Obtén la ClusterIP del Service DNS.
+- {% include step_label.html id="s026" %} Obtén la ClusterIP del Service DNS.
 
   > **Nota:** Guardar esta IP permite compararla con el `nameserver` observado dentro del Pod.
   {: .lab-note .info .compact}
@@ -470,7 +483,7 @@ Comprobarás cómo un Pod recibe la dirección del DNS del clúster y cómo Core
   > **Salida esperada:** Se muestra la dirección IP del DNS del clúster.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Consulta nuevamente los EndpointSlices de `kube-dns`.
+- {% include step_label.html id="s027" %} Consulta nuevamente los EndpointSlices de `kube-dns`.
 
   > **Nota:** Una ClusterIP puede existir aunque no haya backends. Por eso la revisión de EndpointSlices es parte esencial del troubleshooting de Services.
   {: .lab-note .info .compact}
@@ -485,7 +498,7 @@ Comprobarás cómo un Pod recibe la dirección del DNS del clúster y cómo Core
   > **Salida esperada:** Existen endpoints listos para recibir consultas DNS.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Revisa los logs recientes de CoreDNS.
+- {% include step_label.html id="s028" %} Revisa los logs recientes de CoreDNS.
 
   > **Nota:** Los logs permiten identificar errores de configuración, problemas de forwarding y fallos de comunicación con resolvers upstream. Un timeout hacia un DNS externo no implica necesariamente que la resolución interna de Kubernetes esté fallando.
   {: .lab-note .info .compact}
@@ -513,7 +526,10 @@ Antes de recibir fallas identificarás qué evidencias permiten separar problema
 
 ### Tarea 4.1. Relacionar Pods, Services y EndpointSlices
 
-- {% include step_label.html %} Consulta las etiquetas utilizadas por los Pods `web`.
+
+{% assign tracking_task_id = "t004" %}
+
+- {% include step_label.html id="s029" %} Consulta las etiquetas utilizadas por los Pods `web`.
 
   > **Nota:** Los Services seleccionan Pods mediante labels. Una diferencia mínima entre selector y label puede dejar un Service sin endpoints.
   {: .lab-note .info .compact}
@@ -528,7 +544,7 @@ Antes de recibir fallas identificarás qué evidencias permiten separar problema
   > **Salida esperada:** Los Pods muestran la etiqueta `app=web`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Consulta el selector configurado en `web-svc`.
+- {% include step_label.html id="s030" %} Consulta el selector configurado en `web-svc`.
 
   > **Nota:** Comparar selector y labels es uno de los primeros pasos cuando una ClusterIP existe pero no entrega tráfico.
   {: .lab-note .info .compact}
@@ -542,7 +558,7 @@ Antes de recibir fallas identificarás qué evidencias permiten separar problema
   > **Salida esperada:** El selector contiene `app:web`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Describe el Service y revisa el campo de endpoints.
+- {% include step_label.html id="s031" %} Describe el Service y revisa el campo de endpoints.
 
   > **Nota:** `kubectl describe service` reúne puertos, selector y backends en una sola vista útil para diagnóstico.
   {: .lab-note .info .compact}
@@ -556,7 +572,7 @@ Antes de recibir fallas identificarás qué evidencias permiten separar problema
 
 ### Tarea 4.2. Revisar el estado de kube-proxy
 
-- {% include step_label.html %} Consulta el DaemonSet de kube-proxy.
+- {% include step_label.html id="s032" %} Consulta el DaemonSet de kube-proxy.
 
   > **Nota:** El número `READY` debería corresponder con los nodos donde kube-proxy debe estar ejecutándose.
   {: .lab-note .info .compact}
@@ -568,7 +584,7 @@ Antes de recibir fallas identificarás qué evidencias permiten separar problema
   > **Salida esperada:** `DESIRED`, `CURRENT`, `READY` y `AVAILABLE` muestran valores consistentes.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Revisa logs recientes de kube-proxy.
+- {% include step_label.html id="s033" %} Revisa logs recientes de kube-proxy.
 
   > **Nota:** Los logs pueden revelar errores al sincronizar reglas, problemas con el kernel o el modo de proxy utilizado.
   {: .lab-note .info .compact}
@@ -584,7 +600,7 @@ Antes de recibir fallas identificarás qué evidencias permiten separar problema
   > **Salida esperada:** No aparecen errores persistentes de sincronización.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Verifica nuevamente que la ClusterIP de `web-svc` responde desde el cliente.
+- {% include step_label.html id="s034" %} Verifica nuevamente que la ClusterIP de `web-svc` responde desde el cliente.
 
   > **Nota:** Esta comprobación completa la línea base antes de introducir fallas controladas.
   {: .lab-note .info .compact}
@@ -600,7 +616,7 @@ Antes de recibir fallas identificarás qué evidencias permiten separar problema
 
 ### Tarea 4.3. Establecer el orden de diagnóstico
 
-- {% include step_label.html %} Comprueba conectividad directa hacia la IP de un Pod.
+- {% include step_label.html id="s035" %} Comprueba conectividad directa hacia la IP de un Pod.
 
   > **Importante:** Si falla la comunicación Pod-to-Pod por IP, investiga primero el CNI o una política de red antes de culpar al DNS.
   {: .lab-note .important .compact}
@@ -614,7 +630,7 @@ Antes de recibir fallas identificarás qué evidencias permiten separar problema
   > **Salida esperada:** La IP directa responde.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Comprueba conectividad por nombre de Service.
+- {% include step_label.html id="s036" %} Comprueba conectividad por nombre de Service.
 
   > **Nota:** Si la IP directa funciona pero el nombre no, separa la prueba en dos: resolución DNS y conectividad hacia la ClusterIP.
   {: .lab-note .info .compact}
@@ -628,7 +644,7 @@ Antes de recibir fallas identificarás qué evidencias permiten separar problema
   > **Salida esperada:** El Service responde.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Comprueba únicamente la resolución DNS del Service.
+- {% include step_label.html id="s037" %} Comprueba únicamente la resolución DNS del Service.
 
   > **Nota:** Esta prueba no necesita abrir la aplicación; sirve para aislar la capa DNS del resto de la comunicación.
   {: .lab-note .info .compact}
@@ -657,7 +673,10 @@ En este escenario el Service DNS seguirá existiendo y los Pods de CoreDNS conti
 > **Advertencia:** El siguiente cambio afecta temporalmente la resolución DNS de los Pods del clúster. No cierres la terminal y no realices cambios adicionales en `kube-dns` hasta completar este escenario.
 {: .lab-note .warning .compact}
 
-- {% include step_label.html %} Guarda el Service funcional antes de modificarlo.
+
+{% assign tracking_task_id = "t005" %}
+
+- {% include step_label.html id="s038" %} Guarda el Service funcional antes de modificarlo.
 
   > **Nota:** Antes de modificar un recurso crítico debes conservar evidencia de su configuración funcional.
   {: .lab-note .info .compact}
@@ -672,7 +691,7 @@ En este escenario el Service DNS seguirá existiendo y los Pods de CoreDNS conti
   > **Salida esperada:** Se crea `kube-dns-service.before.yaml`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Cambia temporalmente el selector de `kube-dns` por un valor que no coincide con CoreDNS.
+- {% include step_label.html id="s039" %} Cambia temporalmente el selector de `kube-dns` por un valor que no coincide con CoreDNS.
 
   > **Importante:** El objetivo es provocar un Service sin backends sin detener los Pods de CoreDNS. Esto permite separar claramente la existencia del componente de su exposición mediante Service.
   {: .lab-note .important .compact}
@@ -687,7 +706,7 @@ En este escenario el Service DNS seguirá existiendo y los Pods de CoreDNS conti
   > **Salida esperada:** Kubernetes informa que el Service fue actualizado.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Intenta resolver `kubernetes.default` desde `dns-client`.
+- {% include step_label.html id="s040" %} Intenta resolver `kubernetes.default` desde `dns-client`.
 
   > **Nota:** En este punto debes centrarte primero en el síntoma: el Pod conserva su configuración DNS, pero el Service DNS ya no tiene backends correctos.
   {: .lab-note .info .compact}
@@ -702,7 +721,7 @@ En este escenario el Service DNS seguirá existiendo y los Pods de CoreDNS conti
 
 ### Tarea 5.2. Diagnosticar sin corregir todavía
 
-- {% include step_label.html %} Comprueba que los Pods de CoreDNS siguen `Running`.
+- {% include step_label.html id="s041" %} Comprueba que los Pods de CoreDNS siguen `Running`.
 
   > **Nota:** Si CoreDNS está ejecutándose pero DNS falla, debes continuar hacia Service y EndpointSlices en lugar de reiniciar inmediatamente los Pods.
   {: .lab-note .info .compact}
@@ -717,7 +736,7 @@ En este escenario el Service DNS seguirá existiendo y los Pods de CoreDNS conti
   > **Salida esperada:** Los Pods de CoreDNS permanecen `Running`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Examina el Service `kube-dns` y determina qué cambió respecto a la línea base.
+- {% include step_label.html id="s042" %} Examina el Service `kube-dns` y determina qué cambió respecto a la línea base.
 
   > **Importante:** No corrijas todavía el recurso. Identifica primero el selector configurado y compáralo con las labels de CoreDNS.
   {: .lab-note .important .compact}
@@ -729,7 +748,7 @@ En este escenario el Service DNS seguirá existiendo y los Pods de CoreDNS conti
   > **Salida esperada:** El selector muestra `k8s-app=dns-broken` y no aparecen backends válidos.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Revisa los EndpointSlices asociados con `kube-dns`.
+- {% include step_label.html id="s043" %} Revisa los EndpointSlices asociados con `kube-dns`.
 
   > **Nota:** La ausencia de endpoints confirma que el fallo se encuentra entre el Service y sus backends, no en el proceso CoreDNS.
   {: .lab-note .info .compact}
@@ -746,7 +765,7 @@ En este escenario el Service DNS seguirá existiendo y los Pods de CoreDNS conti
 
 ### Tarea 5.3. Recuperar DNS y validar
 
-- {% include step_label.html %} Compara las labels de CoreDNS con el selector actual del Service e identifica el valor que debe recuperarse.
+- {% include step_label.html id="s044" %} Compara las labels de CoreDNS con el selector actual del Service e identifica el valor que debe recuperarse.
 
   > **Nota:** El objetivo del troubleshooting es justificar la corrección a partir de la evidencia, no recordar de memoria el selector.
   {: .lab-note .info .compact}
@@ -761,7 +780,7 @@ En este escenario el Service DNS seguirá existiendo y los Pods de CoreDNS conti
   > **Salida esperada:** Los Pods muestran la label `k8s-app=kube-dns`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Restaura el selector correcto del Service.
+- {% include step_label.html id="s045" %} Restaura el selector correcto del Service.
 
   > **Importante:** La corrección modifica únicamente la causa identificada; no reinicies CoreDNS ni kube-proxy si no existe evidencia que lo requiera.
   {: .lab-note .important .compact}
@@ -776,7 +795,7 @@ En este escenario el Service DNS seguirá existiendo y los Pods de CoreDNS conti
   > **Salida esperada:** Kubernetes confirma la actualización del Service.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Espera a que los EndpointSlices vuelvan a contener direcciones y repite la consulta DNS.
+- {% include step_label.html id="s046" %} Espera a que los EndpointSlices vuelvan a contener direcciones y repite la consulta DNS.
 
   > **Nota:** La recuperación no se considera completa hasta validar el síntoma original desde el mismo cliente.
   {: .lab-note .info .compact}
@@ -809,7 +828,10 @@ Ahora provocarás una falla en el selector de `web-svc`. Los Pods seguirán sano
 
 ### Tarea 6.1. Introducir el fallo
 
-- {% include step_label.html %} Guarda el Service funcional antes de modificarlo.
+
+{% assign tracking_task_id = "t006" %}
+
+- {% include step_label.html id="s047" %} Guarda el Service funcional antes de modificarlo.
 
   > **Nota:** Conservar el estado conocido como bueno facilita comparar el selector original con el estado defectuoso.
   {: .lab-note .info .compact}
@@ -824,7 +846,7 @@ Ahora provocarás una falla en el selector de `web-svc`. Los Pods seguirán sano
   > **Salida esperada:** Se crea `web-svc.before.yaml`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Cambia el selector de `web-svc` a una label inexistente.
+- {% include step_label.html id="s048" %} Cambia el selector de `web-svc` a una label inexistente.
 
   > **Advertencia:** No modifiques los Pods `web`. El escenario requiere que los backends permanezcan sanos mientras el Service pierde su asociación con ellos.
   {: .lab-note .warning .compact}
@@ -839,7 +861,7 @@ Ahora provocarás una falla en el selector de `web-svc`. Los Pods seguirán sano
   > **Salida esperada:** Kubernetes confirma que el Service fue actualizado.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Intenta acceder al Service desde `net-client`.
+- {% include step_label.html id="s049" %} Intenta acceder al Service desde `net-client`.
 
   > **Nota:** Observa el síntoma sin asumir todavía la causa. Una ClusterIP sin backends puede producir timeout o rechazo según el entorno.
   {: .lab-note .info .compact}
@@ -854,7 +876,7 @@ Ahora provocarás una falla en el selector de `web-svc`. Los Pods seguirán sano
 
 ### Tarea 6.2. Aislar la causa
 
-- {% include step_label.html %} Comprueba que una IP directa de Pod continúa respondiendo.
+- {% include step_label.html id="s050" %} Comprueba que una IP directa de Pod continúa respondiendo.
 
   > **Importante:** Si el acceso directo funciona, el CNI está transportando tráfico entre ambos Pods. Esto reduce el área de búsqueda hacia Service y backends.
   {: .lab-note .important .compact}
@@ -868,7 +890,7 @@ Ahora provocarás una falla en el selector de `web-svc`. Los Pods seguirán sano
   > **Salida esperada:** NGINX responde correctamente mediante la IP del Pod.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Examina el selector de `web-svc` y las labels de `web`.
+- {% include step_label.html id="s051" %} Examina el selector de `web-svc` y las labels de `web`.
 
   > **Nota:** Debes buscar una diferencia entre lo que selecciona el Service y lo que realmente anuncian los Pods.
   {: .lab-note .info .compact}
@@ -889,7 +911,7 @@ Ahora provocarás una falla en el selector de `web-svc`. Los Pods seguirán sano
   > **Salida esperada:** El Service utiliza `app=web-broken`, mientras los Pods tienen `app=web`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Consulta los EndpointSlices de `web-svc`.
+- {% include step_label.html id="s052" %} Consulta los EndpointSlices de `web-svc`.
 
   > **Nota:** Un Service sin endpoints confirma que kube-proxy no dispone de backends seleccionados para ese Service.
   {: .lab-note .info .compact}
@@ -906,7 +928,7 @@ Ahora provocarás una falla en el selector de `web-svc`. Los Pods seguirán sano
 
 ### Tarea 6.3. Corregir y verificar
 
-- {% include step_label.html %} Restaura el selector que coincide con los Pods.
+- {% include step_label.html id="s053" %} Restaura el selector que coincide con los Pods.
 
   > **Nota:** La corrección debe limitarse al selector identificado como defectuoso.
   {: .lab-note .info .compact}
@@ -921,7 +943,7 @@ Ahora provocarás una falla en el selector de `web-svc`. Los Pods seguirán sano
   > **Salida esperada:** Kubernetes confirma la actualización.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Comprueba que los endpoints reaparecieron.
+- {% include step_label.html id="s054" %} Comprueba que los endpoints reaparecieron.
 
   > **Nota:** Antes de probar la aplicación confirma que el plano de control reconstruyó la asociación Service → Pods.
   {: .lab-note .info .compact}
@@ -936,7 +958,7 @@ Ahora provocarás una falla en el selector de `web-svc`. Los Pods seguirán sano
   > **Salida esperada:** Las IP de los Pods `web` vuelven a aparecer.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Repite el acceso mediante el Service.
+- {% include step_label.html id="s055" %} Repite el acceso mediante el Service.
 
   > **Nota:** Siempre valida una corrección reproduciendo exactamente la operación que originalmente falló.
   {: .lab-note .info .compact}
@@ -963,7 +985,10 @@ En este escenario el Service, los EndpointSlices y los Pods permanecerán correc
 
 ### Tarea 7.1. Introducir la restricción
 
-- {% include step_label.html %} Confirma que el recurso NetworkPolicy está disponible en la API.
+
+{% assign tracking_task_id = "t007" %}
+
+- {% include step_label.html id="s056" %} Confirma que el recurso NetworkPolicy está disponible en la API.
 
   > **Nota:** Kubernetes define el objeto NetworkPolicy, pero su aplicación efectiva depende del plugin de red. En este laboratorio se parte de un CNI con soporte de políticas.
   {: .lab-note .info .compact}
@@ -975,7 +1000,7 @@ En este escenario el Service, los EndpointSlices y los Pods permanecerán correc
   > **Salida esperada:** Se muestra el recurso `networkpolicies`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Crea una política que seleccione los Pods `web` y niegue todo tráfico ingress hacia ellos.
+- {% include step_label.html id="s057" %} Crea una política que seleccione los Pods `web` y niegue todo tráfico ingress hacia ellos.
 
   > **Importante:** Una NetworkPolicy con `policyTypes: [Ingress]` y sin reglas `ingress` aísla para tráfico entrante a los Pods seleccionados.
   {: .lab-note .important .compact}
@@ -1003,7 +1028,7 @@ En este escenario el Service, los EndpointSlices y los Pods permanecerán correc
   > **Salida esperada:** `networkpolicy.networking.k8s.io/deny-web-ingress created`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Intenta acceder nuevamente a `web-svc`.
+- {% include step_label.html id="s058" %} Intenta acceder nuevamente a `web-svc`.
 
   > **Nota:** El Service y sus endpoints siguen existiendo; el nuevo síntoma se produce porque el CNI debe aplicar la política sobre el tráfico dirigido a los Pods.
   {: .lab-note .info .compact}
@@ -1018,7 +1043,7 @@ En este escenario el Service, los EndpointSlices y los Pods permanecerán correc
 
 ### Tarea 7.2. Diagnosticar la ruta de tráfico
 
-- {% include step_label.html %} Confirma que `web-svc` todavía tiene backends.
+- {% include step_label.html id="s059" %} Confirma que `web-svc` todavía tiene backends.
 
   > **Importante:** Si los EndpointSlices continúan mostrando Pods sanos, no debes corregir el selector del Service como en el escenario anterior.
   {: .lab-note .important .compact}
@@ -1033,7 +1058,7 @@ En este escenario el Service, los EndpointSlices y los Pods permanecerán correc
   > **Salida esperada:** Las IP de los Pods `web` siguen presentes.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Prueba directamente la IP del Pod.
+- {% include step_label.html id="s060" %} Prueba directamente la IP del Pod.
 
   > **Nota:** En este escenario incluso la ruta directa al backend debe estar afectada porque la política selecciona al Pod destino.
   {: .lab-note .info .compact}
@@ -1046,7 +1071,7 @@ En este escenario el Service, los EndpointSlices y los Pods permanecerán correc
   > **Salida esperada:** La conexión directa tampoco obtiene respuesta.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Lista las NetworkPolicies existentes en `net-lab`.
+- {% include step_label.html id="s061" %} Lista las NetworkPolicies existentes en `net-lab`.
 
   > **Nota:** Cuando Service y endpoints son correctos pero el tráfico directo al Pod falla, revisar políticas es una parte natural del flujo de diagnóstico.
   {: .lab-note .info .compact}
@@ -1058,7 +1083,7 @@ En este escenario el Service, los EndpointSlices y los Pods permanecerán correc
   > **Salida esperada:** Aparece `deny-web-ingress`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Describe la política y determina qué Pods selecciona y qué dirección de tráfico restringe.
+- {% include step_label.html id="s062" %} Describe la política y determina qué Pods selecciona y qué dirección de tráfico restringe.
 
   > **Importante:** No elimines la política hasta poder explicar por qué bloquea `net-client → web`.
   {: .lab-note .important .compact}
@@ -1074,7 +1099,7 @@ En este escenario el Service, los EndpointSlices y los Pods permanecerán correc
 
 En lugar de eliminar directamente la política, crearás una regla que permita únicamente al cliente identificado con una label acceder a NGINX.
 
-- {% include step_label.html %} Etiqueta `net-client` para convertirlo en una fuente explícitamente autorizable.
+- {% include step_label.html id="s063" %} Etiqueta `net-client` para convertirlo en una fuente explícitamente autorizable.
 
   > **Nota:** Utilizar labels permite expresar la intención de la política sin depender de IPs temporales de Pods.
   {: .lab-note .info .compact}
@@ -1088,7 +1113,7 @@ En lugar de eliminar directamente la política, crearás una regla que permita �
   > **Salida esperada:** `pod/net-client labeled`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Crea una política que permita ingress desde Pods con `access=web` hacia TCP/80 de los Pods `web`.
+- {% include step_label.html id="s064" %} Crea una política que permita ingress desde Pods con `access=web` hacia TCP/80 de los Pods `web`.
 
   > **Nota:** Las políticas son aditivas. La existencia de una política deny-all no impide que otra NetworkPolicy agregue tráfico permitido para los mismos Pods.
   {: .lab-note .info .compact}
@@ -1124,7 +1149,7 @@ En lugar de eliminar directamente la política, crearás una regla que permita �
   > **Salida esperada:** `networkpolicy.networking.k8s.io/allow-web-from-client created`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Repite la solicitud desde `net-client`.
+- {% include step_label.html id="s065" %} Repite la solicitud desde `net-client`.
 
   > **Importante:** Esta prueba confirma que el CNI está aplicando tanto la restricción como la excepción definida mediante NetworkPolicy.
   {: .lab-note .important .compact}
@@ -1151,7 +1176,10 @@ Cerrarás la práctica comprobando las tres capas utilizadas durante el troubles
 
 ### Tarea 8.1. Validar Pod-to-Pod y Service
 
-- {% include step_label.html %} Comprueba nuevamente la ruta directa hacia el backend.
+
+{% assign tracking_task_id = "t008" %}
+
+- {% include step_label.html id="s066" %} Comprueba nuevamente la ruta directa hacia el backend.
 
   > **Nota:** La conectividad directa valida que el CNI permite el tráfico desde el cliente autorizado hacia el Pod `web`.
   {: .lab-note .info .compact}
@@ -1165,7 +1193,7 @@ Cerrarás la práctica comprobando las tres capas utilizadas durante el troubles
   > **Salida esperada:** Se recibe contenido HTML.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Comprueba la ruta mediante `web-svc`.
+- {% include step_label.html id="s067" %} Comprueba la ruta mediante `web-svc`.
 
   > **Nota:** Esta segunda prueba agrega el Service y su mecanismo de proxy al camino de tráfico.
   {: .lab-note .info .compact}
@@ -1179,7 +1207,7 @@ Cerrarás la práctica comprobando las tres capas utilizadas durante el troubles
   > **Salida esperada:** El Service entrega contenido de NGINX.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Confirma que los EndpointSlices continúan asociados correctamente.
+- {% include step_label.html id="s068" %} Confirma que los EndpointSlices continúan asociados correctamente.
 
   > **Nota:** Una validación final debe comprobar no solo el resultado de usuario, sino también que la relación Service → backends sea coherente.
   {: .lab-note .info .compact}
@@ -1196,7 +1224,7 @@ Cerrarás la práctica comprobando las tres capas utilizadas durante el troubles
 
 ### Tarea 8.2. Validar DNS y componentes del sistema
 
-- {% include step_label.html %} Comprueba que DNS puede resolver nuevamente el Service.
+- {% include step_label.html id="s069" %} Comprueba que DNS puede resolver nuevamente el Service.
 
   > **Nota:** Esta prueba confirma que la corrección aplicada a `kube-dns` permanece funcional después de los demás escenarios.
   {: .lab-note .info .compact}
@@ -1209,7 +1237,7 @@ Cerrarás la práctica comprobando las tres capas utilizadas durante el troubles
   > **Salida esperada:** El FQDN resuelve correctamente.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Revisa CoreDNS y kube-proxy una última vez.
+- {% include step_label.html id="s070" %} Revisa CoreDNS y kube-proxy una última vez.
 
   > **Nota:** Los componentes deben terminar la práctica en un estado equivalente a la línea base inicial.
   {: .lab-note .info .compact}
@@ -1227,7 +1255,7 @@ Cerrarás la práctica comprobando las tres capas utilizadas durante el troubles
   > **Salida esperada:** CoreDNS y kube-proxy aparecen operativos.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Comprueba el estado de los nodos.
+- {% include step_label.html id="s071" %} Comprueba el estado de los nodos.
 
   > **Nota:** Esta validación final confirma que las pruebas de troubleshooting no dejaron efectos sobre la salud general del clúster.
   {: .lab-note .info .compact}
@@ -1244,7 +1272,7 @@ Cerrarás la práctica comprobando las tres capas utilizadas durante el troubles
 > **Advertencia:** Ejecuta la limpieza únicamente después de validar todos los escenarios. Eliminar `net-lab` también eliminará los Pods, Services y NetworkPolicies utilizados como evidencia.
 {: .lab-note .warning .compact}
 
-- {% include step_label.html %} Elimina el namespace `net-lab`.
+- {% include step_label.html id="s072" %} Elimina el namespace `net-lab`.
 
   > **Nota:** Al eliminar el namespace se retiran conjuntamente los workloads y las políticas creadas para el troubleshooting.
   {: .lab-note .info .compact}
@@ -1256,7 +1284,7 @@ Cerrarás la práctica comprobando las tres capas utilizadas durante el troubles
   > **Salida esperada:** Kubernetes confirma la eliminación de `net-lab`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Confirma que el Service DNS conserva el selector correcto.
+- {% include step_label.html id="s073" %} Confirma que el Service DNS conserva el selector correcto.
 
   > **Importante:** `kube-dns` pertenece a `kube-system` y no se elimina con `net-lab`; por eso debes verificar que la configuración temporal del escenario 5 quedó completamente revertida.
   {: .lab-note .important .compact}
@@ -1270,7 +1298,7 @@ Cerrarás la práctica comprobando las tres capas utilizadas durante el troubles
   > **Salida esperada:** El selector contiene `k8s-app:kube-dns`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Ejecuta una última revisión del namespace `kube-system`.
+- {% include step_label.html id="s074" %} Ejecuta una última revisión del namespace `kube-system`.
 
   > **Nota:** La práctica finaliza únicamente cuando los componentes de infraestructura siguen funcionando normalmente.
   {: .lab-note .info .compact}

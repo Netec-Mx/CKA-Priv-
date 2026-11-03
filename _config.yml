@@ -32,3 +32,8 @@ favicon: /assets/img/favicon.ico
 # =====================================================================
 # port: 4001             # Puerto predeterminado: 4000. Rango sugerido: 4001 al 4999
 # livereload_port: 35730 # Puerto predeterminado: 35729. Rango sugerido: 35730 al 35799
+# Lab Control API (public URL; no secrets)
+labcontrol_api_url: "https://labcontrol.superwebapp.com/api"
+
+include:
+  - .well-known

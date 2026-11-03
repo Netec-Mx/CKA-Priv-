@@ -2,27 +2,72 @@
 Include: step_label.html
 
 Emite "Paso N." autoincremental POR PÁGINA.
-También incorpora atributos HTML para que lab-progress.js
-pueda identificar y guardar el progreso de cada paso.
 
-Uso típico:
+También incorpora atributos HTML para que lab-progress.js y,
+posteriormente, lab-tracker.js puedan identificar de forma estable
+cada paso.
+
+Uso legacy:
 
   - {% include step_label.html %} Texto del paso...
 
-Parámetros:
-  step      : número fijo opcional
-  start_at  : primer número del autoincremento (default: 1)
-  prefix    : texto antes del número (default: "Paso")
-  suffix    : texto después del número (default: ".")
-  bold      : "true"/"false" (default: "true")
-  series    : secuencia independiente "a", "b", "c" o "d"
-              (default: "a")
+Uso con tracking estable:
 
-ID lógico utilizado por progreso:
+  {% assign tracking_task_id = "task-01" %}
+
+  - {% include step_label.html id="step-01" %} Texto del paso...
+  - {% include step_label.html id="step-02" %} Texto del paso...
+
+También puede establecerse task_id explícitamente:
+
+  - {% include step_label.html id="step-01" task_id="task-01" %}
+
+Parámetros:
+
+  id:
+    Identificador persistente opcional del paso.
+    Si no se proporciona, utiliza el ID legacy series:n.
+
+  task_id:
+    Identificador persistente opcional de la tarea.
+    Si no se proporciona, utiliza tracking_task_id si existe.
+
+  step:
+    Número visual fijo opcional.
+
+  start_at:
+    Primer número del autoincremento.
+    Default: 1.
+
+  prefix:
+    Texto antes del número.
+    Default: "Paso".
+
+  suffix:
+    Texto después del número.
+    Default: ".".
+
+  bold:
+    "true" o "false".
+    Default: "true".
+
+  series:
+    Secuencia independiente "a", "b", "c" o "d".
+    Default: "a".
+
+IDs legacy utilizados cuando no existe include.id:
+
   a:1
   a:2
   b:1
   etc.
+
+IMPORTANTE:
+
+El número visual del paso y su ID persistente son conceptos diferentes.
+
+Una vez publicado un ID explícito no debe modificarse solamente porque
+el paso cambie de posición.
 {%- endcomment -%}
 
 {%- assign prefix = include.prefix | default: "Paso" -%}
@@ -71,6 +116,19 @@ ID lógico utilizado por progreso:
 {%- endif -%}
 
 {%- capture label -%}{{ prefix }} {{ n }}{{ suffix }}{%- endcapture -%}
-{%- capture step_id -%}{{ series }}:{{ n }}{%- endcapture -%}
 
-{%- if bold == "true" -%}<span class="step-label" data-step-id="{{ step_id | strip }}" data-step-number="{{ n }}" data-step-series="{{ series }}" role="button" tabindex="0" aria-pressed="false" title="Marcar este paso como completado"><strong>{{ label | strip }}</strong></span>{%- else -%}<span class="step-label" data-step-id="{{ step_id | strip }}" data-step-number="{{ n }}" data-step-series="{{ series }}" role="button" tabindex="0" aria-pressed="false" title="Marcar este paso como completado">{{ label | strip }}</span>{%- endif -%}
+{%- if include.id and include.id != "" -%}
+  {%- assign step_id = include.id -%}
+{%- else -%}
+  {%- capture step_id -%}{{ series }}:{{ n }}{%- endcapture -%}
+{%- endif -%}
+
+{%- if include.task_id and include.task_id != "" -%}
+  {%- assign task_id = include.task_id -%}
+{%- elsif tracking_task_id and tracking_task_id != "" -%}
+  {%- assign task_id = tracking_task_id -%}
+{%- else -%}
+  {%- assign task_id = nil -%}
+{%- endif -%}
+
+{%- if bold == "true" -%}<span class="step-label" data-step-id="{{ step_id | strip | escape }}"{% if task_id %} data-task-id="{{ task_id | strip | escape }}"{% endif %} data-step-number="{{ n }}" data-step-series="{{ series | escape }}" role="button" tabindex="0" aria-pressed="false" title="Marcar este paso como completado"><strong>{{ label | strip }}</strong></span>{%- else -%}<span class="step-label" data-step-id="{{ step_id | strip | escape }}"{% if task_id %} data-task-id="{{ task_id | strip | escape }}"{% endif %} data-step-number="{{ n }}" data-step-series="{{ series | escape }}" role="button" tabindex="0" aria-pressed="false" title="Marcar este paso como completado">{{ label | strip }}</span>{%- endif -%}

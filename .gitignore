@@ -46,3 +46,9 @@ instrucciones/GitHubPush-Instructores.md
 instrucciones/Instalacion-Instructores.md
 instrucciones/Instrucciones-Instructores.md
 instrucciones/EquipoDC.md
+
+# Backups de actualización técnica de Lab Control
+.labcontrol-template-backup/
+
+# Backups locales de migración LabControl
+.migration-backup-labcontrol/

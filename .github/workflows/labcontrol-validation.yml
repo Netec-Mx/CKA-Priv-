@@ -1,0 +1,20 @@
+# Copy to the *course* repository's .github/workflows/labcontrol-validation.yml
+# Temporary validation-only caller for the CKA pilot.
+# Never enable Pages deployment while an existing pages.yml deploys main.
+name: Validate CKA with central LabControl tooling
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - test/labcontrol-onboarding
+
+permissions:
+  contents: read
+
+jobs:
+  central-validation:
+    uses: jorgepas12/webpagesrepo/.github/workflows/labcontrol-reusable.yml@feat/central-course-onboarding-cka
+    with:
+      tracking_id: ckapriv
+      deploy: false
