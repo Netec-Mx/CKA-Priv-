@@ -28,7 +28,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: jorgepas12/webpagesrepo
-          ref: 0b8fc6bd8f78021f209216b1b21ec7f1b6e2d83c
+          ref: d6e0eaefa9b725207e2e3268448d7ef68951355b
           path: .central-webpagesrepo
           persist-credentials: false
 
@@ -36,6 +36,12 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '24'
+
+      - name: Prepare shared LabControl runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          node .central-webpagesrepo/scripts/prepare_course_build.mjs --target . --apply
 
       - name: Validate LabControl identity and runtime
         shell: bash
