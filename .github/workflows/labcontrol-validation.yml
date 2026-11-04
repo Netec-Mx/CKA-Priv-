@@ -18,3 +18,26 @@ jobs:
     with:
       tracking_id: ckapriv
       upload_site: true
+
+  package-pages:
+    needs: central-validation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Download validated site
+        uses: actions/download-artifact@v4
+        with:
+          name: labcontrol-validated-site
+          path: _site
+
+      - name: Verify compiled catalog and static pages
+        run: |
+          test -s "_site/labcontrol/ckapriv/course.json"
+          test -s "_site/lab1/lab1/index.html"
+          find _site -maxdepth 2 -type f | head -30
+
+      - name: Package as Pages artifact without deployment
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
