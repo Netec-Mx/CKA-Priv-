@@ -17,4 +17,3 @@ jobs:
     uses: jorgepas12/webpagesrepo/.github/workflows/labcontrol-reusable.yml@feat/central-course-onboarding-cka
     with:
       tracking_id: ckapriv
-      deploy: false
