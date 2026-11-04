@@ -57,18 +57,6 @@ jobs:
           node .central-webpagesrepo/scripts/generate_lab_manifest.mjs --all
           node .central-webpagesrepo/scripts/generate_course_catalog.mjs
 
-      - name: Optional manifest sync (only after course is linked)
-        shell: bash
-        env:
-          LABCONTROL_API_URL: ${{ vars.LABCONTROL_API_URL }}
-          LABCONTROL_SYNC_TOKEN: ${{ secrets.LABCONTROL_SYNC_TOKEN }}
-        run: |
-          if [[ -n "${LABCONTROL_API_URL}" && -n "${LABCONTROL_SYNC_TOKEN}" ]]; then
-            node .central-webpagesrepo/scripts/sync_lab_manifests.mjs --all
-          else
-            echo "LabControl machine sync not configured; catalog is still published."
-          fi
-
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
