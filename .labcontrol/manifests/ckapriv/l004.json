@@ -1,0 +1,262 @@
+{
+  "version": 1,
+  "hash": "sha256:d50fa3d8486b7714130ef15df2194664ad71e36e0b9d19241d7cb6c586ff4f7d",
+  "tasks": [
+    {
+      "taskId": "t001",
+      "title": "Preparar el escenario y reconocer el alcance de RBAC",
+      "position": 1,
+      "steps": [
+        {
+          "stepId": "s001",
+          "position": 1
+        },
+        {
+          "stepId": "s002",
+          "position": 2
+        },
+        {
+          "stepId": "s003",
+          "position": 3
+        },
+        {
+          "stepId": "s004",
+          "position": 4
+        },
+        {
+          "stepId": "s005",
+          "position": 5
+        },
+        {
+          "stepId": "s006",
+          "position": 6
+        }
+      ]
+    },
+    {
+      "taskId": "t002",
+      "title": "Crear una identidad técnica para el acceso controlado",
+      "position": 2,
+      "steps": [
+        {
+          "stepId": "s007",
+          "position": 1
+        },
+        {
+          "stepId": "s008",
+          "position": 2
+        },
+        {
+          "stepId": "s009",
+          "position": 3
+        },
+        {
+          "stepId": "s010",
+          "position": 4
+        }
+      ]
+    },
+    {
+      "taskId": "t003",
+      "title": "Definir permisos de lectura con un Role",
+      "position": 3,
+      "steps": [
+        {
+          "stepId": "s011",
+          "position": 1
+        },
+        {
+          "stepId": "s012",
+          "position": 2
+        },
+        {
+          "stepId": "s013",
+          "position": 3
+        },
+        {
+          "stepId": "s014",
+          "position": 4
+        },
+        {
+          "stepId": "s015",
+          "position": 5
+        },
+        {
+          "stepId": "s016",
+          "position": 6
+        }
+      ]
+    },
+    {
+      "taskId": "t004",
+      "title": "Asociar la identidad mediante RoleBinding",
+      "position": 4,
+      "steps": [
+        {
+          "stepId": "s017",
+          "position": 1
+        },
+        {
+          "stepId": "s018",
+          "position": 2
+        },
+        {
+          "stepId": "s019",
+          "position": 3
+        },
+        {
+          "stepId": "s020",
+          "position": 4
+        },
+        {
+          "stepId": "s021",
+          "position": 5
+        },
+        {
+          "stepId": "s022",
+          "position": 6
+        }
+      ]
+    },
+    {
+      "taskId": "t005",
+      "title": "Construir un kubeconfig temporal para la identidad",
+      "position": 5,
+      "steps": [
+        {
+          "stepId": "s023",
+          "position": 1
+        },
+        {
+          "stepId": "s024",
+          "position": 2
+        },
+        {
+          "stepId": "s025",
+          "position": 3
+        },
+        {
+          "stepId": "s026",
+          "position": 4
+        },
+        {
+          "stepId": "s027",
+          "position": 5
+        },
+        {
+          "stepId": "s028",
+          "position": 6
+        },
+        {
+          "stepId": "s029",
+          "position": 7
+        },
+        {
+          "stepId": "s030",
+          "position": 8
+        }
+      ]
+    },
+    {
+      "taskId": "t006",
+      "title": "Conceder una capacidad de lectura a nivel de clúster",
+      "position": 6,
+      "steps": [
+        {
+          "stepId": "s031",
+          "position": 1
+        },
+        {
+          "stepId": "s032",
+          "position": 2
+        },
+        {
+          "stepId": "s033",
+          "position": 3
+        },
+        {
+          "stepId": "s034",
+          "position": 4
+        },
+        {
+          "stepId": "s035",
+          "position": 5
+        }
+      ]
+    },
+    {
+      "taskId": "t007",
+      "title": "Reto: diagnosticar una asignación RBAC incorrecta",
+      "position": 7,
+      "steps": [
+        {
+          "stepId": "s036",
+          "position": 1
+        },
+        {
+          "stepId": "s037",
+          "position": 2
+        },
+        {
+          "stepId": "s038",
+          "position": 3
+        },
+        {
+          "stepId": "s039",
+          "position": 4
+        },
+        {
+          "stepId": "s040",
+          "position": 5
+        },
+        {
+          "stepId": "s041",
+          "position": 6
+        }
+      ]
+    },
+    {
+      "taskId": "t008",
+      "title": "Reto: construir acceso de privilegio mínimo",
+      "position": 8,
+      "steps": [
+        {
+          "stepId": "s042",
+          "position": 1
+        },
+        {
+          "stepId": "s043",
+          "position": 2
+        },
+        {
+          "stepId": "s044",
+          "position": 3
+        },
+        {
+          "stepId": "s045",
+          "position": 4
+        },
+        {
+          "stepId": "s046",
+          "position": 5
+        },
+        {
+          "stepId": "s047",
+          "position": 6
+        },
+        {
+          "stepId": "s048",
+          "position": 7
+        },
+        {
+          "stepId": "s049",
+          "position": 8
+        },
+        {
+          "stepId": "s050",
+          "position": 9
+        }
+      ]
+    }
+  ]
+}

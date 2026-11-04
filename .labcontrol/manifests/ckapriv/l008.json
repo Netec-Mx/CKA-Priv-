@@ -1,0 +1,239 @@
+{
+  "version": 1,
+  "hash": "sha256:d8c44be01809dcd5ac824d869ec9f56f26f815eaafea823525f4d51c3c05727f",
+  "tasks": [
+    {
+      "taskId": "t001",
+      "title": "Establecer una línea base rápida del clúster",
+      "position": 1,
+      "steps": [
+        {
+          "stepId": "s001",
+          "position": 1
+        },
+        {
+          "stepId": "s002",
+          "position": 2
+        },
+        {
+          "stepId": "s003",
+          "position": 3
+        },
+        {
+          "stepId": "s004",
+          "position": 4
+        },
+        {
+          "stepId": "s005",
+          "position": 5
+        },
+        {
+          "stepId": "s006",
+          "position": 6
+        }
+      ]
+    },
+    {
+      "taskId": "t002",
+      "title": "Escenario CKA: recuperar un nodo NotReady",
+      "position": 2,
+      "steps": [
+        {
+          "stepId": "s007",
+          "position": 1
+        },
+        {
+          "stepId": "s008",
+          "position": 2
+        },
+        {
+          "stepId": "s009",
+          "position": 3
+        },
+        {
+          "stepId": "s010",
+          "position": 4
+        },
+        {
+          "stepId": "s011",
+          "position": 5
+        },
+        {
+          "stepId": "s012",
+          "position": 6
+        },
+        {
+          "stepId": "s013",
+          "position": 7
+        }
+      ]
+    },
+    {
+      "taskId": "t003",
+      "title": "Escenario CKA: workload sin scheduling",
+      "position": 3,
+      "steps": [
+        {
+          "stepId": "s014",
+          "position": 1
+        },
+        {
+          "stepId": "s015",
+          "position": 2
+        },
+        {
+          "stepId": "s016",
+          "position": 3
+        },
+        {
+          "stepId": "s017",
+          "position": 4
+        },
+        {
+          "stepId": "s018",
+          "position": 5
+        },
+        {
+          "stepId": "s019",
+          "position": 6
+        }
+      ]
+    },
+    {
+      "taskId": "t004",
+      "title": "Escenario CKA: Service sin acceso a la aplicación",
+      "position": 4,
+      "steps": [
+        {
+          "stepId": "s020",
+          "position": 1
+        },
+        {
+          "stepId": "s021",
+          "position": 2
+        },
+        {
+          "stepId": "s022",
+          "position": 3
+        },
+        {
+          "stepId": "s023",
+          "position": 4
+        },
+        {
+          "stepId": "s024",
+          "position": 5
+        },
+        {
+          "stepId": "s025",
+          "position": 6
+        }
+      ]
+    },
+    {
+      "taskId": "t005",
+      "title": "Escenario CKA: almacenamiento persistente no disponible",
+      "position": 5,
+      "steps": [
+        {
+          "stepId": "s026",
+          "position": 1
+        },
+        {
+          "stepId": "s027",
+          "position": 2
+        },
+        {
+          "stepId": "s028",
+          "position": 3
+        },
+        {
+          "stepId": "s029",
+          "position": 4
+        },
+        {
+          "stepId": "s030",
+          "position": 5
+        },
+        {
+          "stepId": "s031",
+          "position": 6
+        }
+      ]
+    },
+    {
+      "taskId": "t006",
+      "title": "Escenario CKA: componente del control plane degradado",
+      "position": 6,
+      "steps": [
+        {
+          "stepId": "s032",
+          "position": 1
+        },
+        {
+          "stepId": "s033",
+          "position": 2
+        },
+        {
+          "stepId": "s034",
+          "position": 3
+        },
+        {
+          "stepId": "s035",
+          "position": 4
+        },
+        {
+          "stepId": "s036",
+          "position": 5
+        },
+        {
+          "stepId": "s037",
+          "position": 6
+        },
+        {
+          "stepId": "s038",
+          "position": 7
+        }
+      ]
+    },
+    {
+      "taskId": "t007",
+      "title": "Validación integral y cierre",
+      "position": 7,
+      "steps": [
+        {
+          "stepId": "s039",
+          "position": 1
+        },
+        {
+          "stepId": "s040",
+          "position": 2
+        },
+        {
+          "stepId": "s041",
+          "position": 3
+        },
+        {
+          "stepId": "s042",
+          "position": 4
+        },
+        {
+          "stepId": "s043",
+          "position": 5
+        },
+        {
+          "stepId": "s044",
+          "position": 6
+        },
+        {
+          "stepId": "s045",
+          "position": 7
+        },
+        {
+          "stepId": "s046",
+          "position": 8
+        }
+      ]
+    }
+  ]
+}

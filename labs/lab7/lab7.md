@@ -1,4 +1,8 @@
 ---
+course_id: ckapriv
+lab_id: l007
+tracking: true
+position: 7
 layout: lab
 title: "Práctica 7: Diagnóstico de almacenamiento persistente y StorageClass"
 permalink: /lab7/lab7/
@@ -38,7 +42,10 @@ next: /lab8/lab8/
 
 ### Tarea 1.1. Revisar recursos existentes
 
-- {% include step_label.html %} Consulta las StorageClasses disponibles para identificar las clases de almacenamiento configuradas y su comportamiento de aprovisionamiento.
+
+{% assign tracking_task_id = "t001" %}
+
+- {% include step_label.html id="s001" %} Consulta las StorageClasses disponibles para identificar las clases de almacenamiento configuradas y su comportamiento de aprovisionamiento.
 
   > **Nota:** Una StorageClass define características de aprovisionamiento y binding. Un clúster de laboratorio puede no tener una clase predeterminada.
   {: .lab-note .info .compact}
@@ -50,7 +57,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Se muestran las StorageClasses existentes o una lista vacía.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Consulta los PersistentVolumes para reconocer la capacidad disponible, su estado actual y la StorageClass asociada a cada volumen.
+- {% include step_label.html id="s002" %} Consulta los PersistentVolumes para reconocer la capacidad disponible, su estado actual y la StorageClass asociada a cada volumen.
 
   > **Nota:** Los PV representan capacidad de almacenamiento disponible o asignada a nivel de clúster.
   {: .lab-note .info .compact}
@@ -62,7 +69,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Se muestran los PV existentes o una lista vacía.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Consulta los PersistentVolumeClaims de todos los namespaces para identificar solicitudes de almacenamiento y su estado de binding.
+- {% include step_label.html id="s003" %} Consulta los PersistentVolumeClaims de todos los namespaces para identificar solicitudes de almacenamiento y su estado de binding.
 
   > **Nota:** Los PVC representan solicitudes de almacenamiento realizadas por workloads dentro de un namespace.
   {: .lab-note .info .compact}
@@ -76,7 +83,7 @@ next: /lab8/lab8/
 
 ### Tarea 1.2. Preparar el namespace y seleccionar un worker
 
-- {% include step_label.html %} Crea el namespace `storage-lab` para aislar los recursos de almacenamiento y mantener separados los escenarios de diagnóstico.
+- {% include step_label.html id="s004" %} Crea el namespace `storage-lab` para aislar los recursos de almacenamiento y mantener separados los escenarios de diagnóstico.
 
   > **Nota:** El namespace aislará los claims y Pods usados durante la práctica.
   {: .lab-note .info .compact}
@@ -88,7 +95,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Kubernetes confirma la creación del namespace `storage-lab`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Guarda el primer worker disponible en una variable para reutilizar su nombre al definir la afinidad del PersistentVolume local.
+- {% include step_label.html id="s005" %} Guarda el primer worker disponible en una variable para reutilizar su nombre al definir la afinidad del PersistentVolume local.
 
   > **Nota:** El PV local deberá asociarse al mismo nodo donde exista físicamente su directorio.
   {: .lab-note .info .compact}
@@ -100,7 +107,7 @@ next: /lab8/lab8/
 
   > **Salida esperada:** La variable `WORKER` queda definida con el nombre de un nodo worker.
   {: .lab-note .output .compact}
-- {% include step_label.html %} Confirma el worker seleccionado para asegurarte de que el volumen local se asociará al nodo correcto durante toda la práctica.
+- {% include step_label.html id="s006" %} Confirma el worker seleccionado para asegurarte de que el volumen local se asociará al nodo correcto durante toda la práctica.
 
   > **Importante:** Anota este nodo; la node affinity del volumen dependerá de él.
   {: .lab-note .important .compact}
@@ -115,7 +122,7 @@ next: /lab8/lab8/
 
 ### Tarea 1.3. Preparar el directorio local
 
-- {% include step_label.html %} Accede al worker seleccionado y crea `/mnt/cka-storage`, que funcionará como ruta física para el volumen local del laboratorio.
+- {% include step_label.html id="s007" %} Accede al worker seleccionado y crea `/mnt/cka-storage`, que funcionará como ruta física para el volumen local del laboratorio.
 
   > **Advertencia:** Este comando se ejecuta en el worker guardado en `$WORKER`, no en el control-plane.
   {: .lab-note .warning .compact}
@@ -127,7 +134,7 @@ next: /lab8/lab8/
 
   > **Salida esperada:** El directorio `/mnt/cka-storage` queda creado en el worker seleccionado.
   {: .lab-note .output .compact}
-- {% include step_label.html %} Ajusta los permisos del directorio para permitir que los Pods del laboratorio puedan leer y escribir sin bloqueos por permisos.
+- {% include step_label.html id="s008" %} Ajusta los permisos del directorio para permitir que los Pods del laboratorio puedan leer y escribir sin bloqueos por permisos.
 
   > **Nota:** Los permisos amplios simplifican la práctica; en producción deben definirse permisos apropiados al workload.
   {: .lab-note .info .compact}
@@ -138,7 +145,7 @@ next: /lab8/lab8/
 
   > **Salida esperada:** El comando termina sin errores y el directorio queda accesible para la práctica.
   {: .lab-note .output .compact}
-- {% include step_label.html %} Verifica que la ruta local existe y conserva los permisos esperados antes de continuar con la definición del PersistentVolume.
+- {% include step_label.html id="s009" %} Verifica que la ruta local existe y conserva los permisos esperados antes de continuar con la definición del PersistentVolume.
 
   > **Nota:** Confirmar la existencia del path evita confundir un error de ruta con un problema de Kubernetes.
   {: .lab-note .info .compact}
@@ -162,7 +169,10 @@ next: /lab8/lab8/
 
 ### Tarea 2.1. Crear una StorageClass manual
 
-- {% include step_label.html %} Regresa a Git Bash del **cka-control** y crea `storageclass.yaml` para definir una StorageClass manual sin aprovisionamiento dinámico.
+
+{% assign tracking_task_id = "t002" %}
+
+- {% include step_label.html id="s010" %} Regresa a Git Bash del **cka-control** y crea `storageclass.yaml` para definir una StorageClass manual sin aprovisionamiento dinámico.
 
   > **Nota:** `kubernetes.io/no-provisioner` indica que los PV se crearán manualmente.
   {: .lab-note .info .compact}
@@ -182,7 +192,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Se crea el archivo `storageclass.yaml` con la definición de `cka-local`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Aplica la StorageClass para registrar la clase `cka-local` y habilitar el comportamiento de binding definido en el manifiesto.
+- {% include step_label.html id="s011" %} Aplica la StorageClass para registrar la clase `cka-local` y habilitar el comportamiento de binding definido en el manifiesto.
 
   > **Nota:** `WaitForFirstConsumer` permite considerar restricciones de scheduling antes del binding definitivo.
   {: .lab-note .info .compact}
@@ -195,7 +205,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Kubernetes confirma la creación o configuración de `storageclass.storage.k8s.io/cka-local`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Revisa las propiedades de `cka-local` para confirmar el provisioner configurado y el modo de binding esperado.
+- {% include step_label.html id="s012" %} Revisa las propiedades de `cka-local` para confirmar el provisioner configurado y el modo de binding esperado.
 
   > **Nota:** Verifica especialmente el provisioner y `VOLUMEBINDINGMODE`.
   {: .lab-note .info .compact}
@@ -210,7 +220,7 @@ next: /lab8/lab8/
 
 ### Tarea 2.2. Crear el PersistentVolume
 
-- {% include step_label.html %} Crea `pv.yaml` usando el worker seleccionado para asociar el volumen local con la ruta física y el nodo correctos.
+- {% include step_label.html id="s013" %} Crea `pv.yaml` usando el worker seleccionado para asociar el volumen local con la ruta física y el nodo correctos.
 
   > **Importante:** La node affinity relaciona el PV con el nodo que contiene `/mnt/cka-storage`.
   {: .lab-note .important .compact}
@@ -245,7 +255,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Se crea `pv.yaml` con 1Gi, `ReadWriteOnce`, la ruta local y la node affinity del worker.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Aplica el PersistentVolume para registrar 1Gi de almacenamiento local disponible con la StorageClass `cka-local`.
+- {% include step_label.html id="s014" %} Aplica el PersistentVolume para registrar 1Gi de almacenamiento local disponible con la StorageClass `cka-local`.
 
   > **Nota:** El volumen queda disponible para un claim compatible.
   {: .lab-note .info .compact}
@@ -257,7 +267,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Kubernetes confirma la creación de `persistentvolume/pv-cka-local`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Comprueba el estado del PersistentVolume para confirmar que Kubernetes lo reconoce y que está disponible para un claim compatible.
+- {% include step_label.html id="s015" %} Comprueba el estado del PersistentVolume para confirmar que Kubernetes lo reconoce y que está disponible para un claim compatible.
 
   > **Nota:** Antes de tener consumidor puede aparecer `Available`.
   {: .lab-note .info .compact}
@@ -271,7 +281,7 @@ next: /lab8/lab8/
 
 ### Tarea 2.3. Crear PVC y Pod consumidor
 
-- {% include step_label.html %} Crea un PVC de 500Mi para solicitar almacenamiento compatible con la capacidad, access mode y StorageClass del PV creado.
+- {% include step_label.html id="s016" %} Crea un PVC de 500Mi para solicitar almacenamiento compatible con la capacidad, access mode y StorageClass del PV creado.
 
   > **Nota:** La capacidad y `ReadWriteOnce` son compatibles con el PV de 1Gi.
   {: .lab-note .info .compact}
@@ -299,7 +309,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Se crea y aplica `data-pvc` con una solicitud de 500Mi y `ReadWriteOnce`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Crea `pod-storage.yaml` para montar el PVC en `/data` y comprobar que el Pod puede utilizar almacenamiento persistente.
+- {% include step_label.html id="s017" %} Crea `pod-storage.yaml` para montar el PVC en `/data` y comprobar que el Pod puede utilizar almacenamiento persistente.
 
   > **Nota:** El scheduler deberá seleccionar el nodo compatible con la affinity del volumen.
   {: .lab-note .info .compact}
@@ -332,7 +342,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Se crea y aplica el Pod `storage-app` con el PVC montado en `/data`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Espera a que el Pod quede Ready y revisa el binding para confirmar la relación funcional entre PV, PVC y consumidor.
+- {% include step_label.html id="s018" %} Espera a que el Pod quede Ready y revisa el binding para confirmar la relación funcional entre PV, PVC y consumidor.
 
   > **Importante:** El estado funcional esperado es PVC `Bound`, PV `Bound` y Pod `Running`.
   {: .lab-note .important .compact}
@@ -359,7 +369,10 @@ next: /lab8/lab8/
 
 ### Tarea 3.1. Inspeccionar el PVC
 
-- {% include step_label.html %} Describe `data-pvc` para revisar estado, StorageClass, volumen enlazado y eventos relacionados con el proceso de binding.
+
+{% assign tracking_task_id = "t003" %}
+
+- {% include step_label.html id="s019" %} Describe `data-pvc` para revisar estado, StorageClass, volumen enlazado y eventos relacionados con el proceso de binding.
 
   > **Nota:** `describe` reúne estado, StorageClass, volumen enlazado y eventos de binding.
   {: .lab-note .info .compact}
@@ -371,7 +384,7 @@ next: /lab8/lab8/
   > **Salida esperada:** El PVC muestra estado `Bound`, StorageClass `cka-local` y referencia al PV asignado.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Obtén el nombre del PV asignado desde el PVC para identificar de forma directa qué volumen satisfizo la solicitud.
+- {% include step_label.html id="s020" %} Obtén el nombre del PV asignado desde el PVC para identificar de forma directa qué volumen satisfizo la solicitud.
 
   > **Nota:** `spec.volumeName` identifica directamente el volumen reclamado.
   {: .lab-note .info .compact}
@@ -383,7 +396,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Se muestra `pv-cka-local`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Revisa los eventos del namespace para detectar mensajes de binding, scheduling o montaje relevantes para el diagnóstico.
+- {% include step_label.html id="s021" %} Revisa los eventos del namespace para detectar mensajes de binding, scheduling o montaje relevantes para el diagnóstico.
 
   > **Nota:** Los eventos suelen explicar por qué un claim no enlaza o por qué un Pod no puede programarse.
   {: .lab-note .info .compact}
@@ -397,7 +410,7 @@ next: /lab8/lab8/
 
 ### Tarea 3.2. Inspeccionar el PV
 
-- {% include step_label.html %} Describe el PersistentVolume para analizar capacidad, access mode, StorageClass, ruta local y restricciones de node affinity.
+- {% include step_label.html id="s022" %} Describe el PersistentVolume para analizar capacidad, access mode, StorageClass, ruta local y restricciones de node affinity.
 
   > **Nota:** Relaciona capacidad, access mode, StorageClass, ruta local y node affinity.
   {: .lab-note .info .compact}
@@ -409,7 +422,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Se muestran capacidad, access mode, StorageClass, ruta local y node affinity del PV.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Consulta la `claimRef` para identificar el namespace y PVC que poseen actualmente el PersistentVolume seleccionado.
+- {% include step_label.html id="s023" %} Consulta la `claimRef` para identificar el namespace y PVC que poseen actualmente el PersistentVolume seleccionado.
 
   > **Nota:** `claimRef` muestra qué PVC posee actualmente el volumen.
   {: .lab-note .info .compact}
@@ -421,7 +434,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Se muestra `storage-lab/data-pvc`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Consulta la reclaim policy para conocer qué ocurrirá con el volumen y sus datos cuando el claim deje de existir.
+- {% include step_label.html id="s024" %} Consulta la reclaim policy para conocer qué ocurrirá con el volumen y sus datos cuando el claim deje de existir.
 
   > **Nota:** `Retain` conserva los datos después de liberar el claim.
   {: .lab-note .info .compact}
@@ -435,7 +448,7 @@ next: /lab8/lab8/
 
 ### Tarea 3.3. Validar persistencia
 
-- {% include step_label.html %} Lee el archivo guardado en el volumen para comprobar que el montaje es funcional y que los datos persisten dentro del PVC.
+- {% include step_label.html id="s025" %} Lee el archivo guardado en el volumen para comprobar que el montaje es funcional y que los datos persisten dentro del PVC.
 
   > **Nota:** Esto confirma que el volumen está montado y accesible desde el contenedor.
   {: .lab-note .info .compact}
@@ -447,7 +460,7 @@ next: /lab8/lab8/
   > **Salida esperada:** `cka-storage-ok`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Comprueba en qué nodo se ejecuta el Pod para verificar que coincide con la node affinity definida por el volumen local.
+- {% include step_label.html id="s026" %} Comprueba en qué nodo se ejecuta el Pod para verificar que coincide con la node affinity definida por el volumen local.
 
   > **Nota:** Debe coincidir con el nodo de la affinity del PV.
   {: .lab-note .info .compact}
@@ -459,7 +472,7 @@ next: /lab8/lab8/
   > **Salida esperada:** El Pod aparece ejecutándose en el worker asociado al volumen.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Conserva esta línea base antes del troubleshooting para comparar estados saludables contra los escenarios defectuosos posteriores.
+- {% include step_label.html id="s027" %} Conserva esta línea base antes del troubleshooting para comparar estados saludables contra los escenarios defectuosos posteriores.
 
   > **Importante:** A partir de ahora revisa siempre PVC, PV, Pod y eventos antes de corregir.
   {: .lab-note .important .compact}
@@ -487,7 +500,10 @@ next: /lab8/lab8/
 
 ### Tarea 4.1. Introducir el fallo
 
-- {% include step_label.html %} Crea un PVC que solicite `cka-fast` para provocar una incompatibilidad controlada entre el claim y la StorageClass disponible.
+
+{% assign tracking_task_id = "t004" %}
+
+- {% include step_label.html id="s028" %} Crea un PVC que solicite `cka-fast` para provocar una incompatibilidad controlada entre el claim y la StorageClass disponible.
 
   > **Nota:** Esa StorageClass no corresponde con el PV creado para esta práctica.
   {: .lab-note .info .compact}
@@ -516,7 +532,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Se crea el PVC `class-broken` solicitando la StorageClass `cka-fast`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Consulta el estado del PVC para observar cómo Kubernetes representa una solicitud válida que todavía no puede enlazarse.
+- {% include step_label.html id="s029" %} Consulta el estado del PVC para observar cómo Kubernetes representa una solicitud válida que todavía no puede enlazarse.
 
   > **Importante:** No corrijas todavía. Primero identifica por qué el claim no puede satisfacerse.
   {: .lab-note .important .compact}
@@ -530,7 +546,7 @@ next: /lab8/lab8/
 
 ### Tarea 4.2. Diagnosticar
 
-- {% include step_label.html %} Describe el PVC para revisar los eventos y detectar por qué Kubernetes no encuentra almacenamiento compatible para la solicitud.
+- {% include step_label.html id="s030" %} Describe el PVC para revisar los eventos y detectar por qué Kubernetes no encuentra almacenamiento compatible para la solicitud.
 
   > **Nota:** Revisa eventos relacionados con aprovisionamiento o ausencia de volúmenes compatibles.
   {: .lab-note .info .compact}
@@ -542,7 +558,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Los eventos indican que no existe almacenamiento compatible con la solicitud actual.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Compara la StorageClass solicitada con las existentes para confirmar que el problema proviene de una clase no disponible.
+- {% include step_label.html id="s031" %} Compara la StorageClass solicitada con las existentes para confirmar que el problema proviene de una clase no disponible.
 
   > **Nota:** El diagnóstico debe demostrar la diferencia entre `cka-fast` y `cka-local`.
   {: .lab-note .info .compact}
@@ -559,7 +575,7 @@ next: /lab8/lab8/
 
 ### Tarea 4.3. Corregir
 
-- {% include step_label.html %} Elimina el claim defectuoso para recrearlo con una StorageClass compatible sin alterar otros recursos del escenario.
+- {% include step_label.html id="s032" %} Elimina el claim defectuoso para recrearlo con una StorageClass compatible sin alterar otros recursos del escenario.
 
   > **Nota:** Lo recrearás con la StorageClass correcta.
   {: .lab-note .info .compact}
@@ -571,7 +587,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Kubernetes confirma la eliminación de `class-broken`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Genera una versión corregida del manifiesto cambiando únicamente el nombre del PVC y la StorageClass incompatible.
+- {% include step_label.html id="s033" %} Genera una versión corregida del manifiesto cambiando únicamente el nombre del PVC y la StorageClass incompatible.
 
   > **Nota:** La corrección modifica únicamente la causa identificada.
   {: .lab-note .info .compact}
@@ -583,7 +599,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Se crea `pvc-class-fixed.yaml` con `storageClassName: cka-local`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Aplica el PVC corregido y revisa su estado para confirmar que la incompatibilidad de StorageClass fue resuelta.
+- {% include step_label.html id="s034" %} Aplica el PVC corregido y revisa su estado para confirmar que la incompatibilidad de StorageClass fue resuelta.
 
   > **Nota:** Con `WaitForFirstConsumer` puede permanecer `Pending` mientras no exista un consumidor.
   {: .lab-note .info .compact}
@@ -608,7 +624,10 @@ next: /lab8/lab8/
 
 ### Tarea 5.1. Crear un PV pequeño
 
-- {% include step_label.html %} En el worker crea `/mnt/cka-storage-small` como ruta física independiente para el volumen usado en la prueba de capacidad.
+
+{% assign tracking_task_id = "t005" %}
+
+- {% include step_label.html id="s035" %} En el worker crea `/mnt/cka-storage-small` como ruta física independiente para el volumen usado en la prueba de capacidad.
 
   > **Advertencia:** El directorio debe crearse en el mismo worker asociado al PV.
   {: .lab-note .warning .compact}
@@ -624,7 +643,7 @@ next: /lab8/lab8/
   > **Salida esperada:** El directorio `/mnt/cka-storage-small` queda creado y accesible en el worker.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Regresa a Git Bash y crea un PV de 300Mi para disponer de un volumen deliberadamente menor que la solicitud posterior.
+- {% include step_label.html id="s036" %} Regresa a Git Bash y crea un PV de 300Mi para disponer de un volumen deliberadamente menor que la solicitud posterior.
 
   > **Nota:** Este volumen será insuficiente para un claim de 700Mi.
   {: .lab-note .info .compact}
@@ -664,7 +683,7 @@ next: /lab8/lab8/
 
 ### Tarea 5.2. Solicitar más capacidad
 
-- {% include step_label.html %} Crea un PVC de 700Mi para provocar una incompatibilidad de capacidad frente al PersistentVolume de 300Mi disponible.
+- {% include step_label.html id="s037" %} Crea un PVC de 700Mi para provocar una incompatibilidad de capacidad frente al PersistentVolume de 300Mi disponible.
 
   > **Importante:** Kubernetes no debe enlazar un PV cuya capacidad es inferior a la solicitada.
   {: .lab-note .important .compact}
@@ -693,7 +712,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Se crea `too-large` solicitando 700Mi.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Crea un Pod consumidor para forzar a Kubernetes a intentar resolver el binding del PVC bajo `WaitForFirstConsumer`.
+- {% include step_label.html id="s038" %} Crea un Pod consumidor para forzar a Kubernetes a intentar resolver el binding del PVC bajo `WaitForFirstConsumer`.
 
   > **Nota:** El consumidor obliga a Kubernetes a intentar resolver el binding.
   {: .lab-note .info .compact}
@@ -730,7 +749,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Se crea `capacity-test` para activar el intento de binding del claim.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Observa el estado del PVC y del Pod para identificar cómo una capacidad insuficiente afecta binding y scheduling.
+- {% include step_label.html id="s039" %} Observa el estado del PVC y del Pod para identificar cómo una capacidad insuficiente afecta binding y scheduling.
 
   > **Nota:** El claim y el Pod deben permanecer pendientes mientras no exista capacidad suficiente.
   {: .lab-note .info .compact}
@@ -747,7 +766,7 @@ next: /lab8/lab8/
 
 ### Tarea 5.3. Diagnosticar y corregir
 
-- {% include step_label.html %} Describe el PVC y compara capacidades para demostrar con evidencia que la solicitud supera el tamaño del PV disponible.
+- {% include step_label.html id="s040" %} Describe el PVC y compara capacidades para demostrar con evidencia que la solicitud supera el tamaño del PV disponible.
 
   > **Nota:** La evidencia debe mostrar que 700Mi no puede satisfacerse con un PV de 300Mi.
   {: .lab-note .info .compact}
@@ -762,7 +781,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Los eventos indican que no existe almacenamiento compatible con la solicitud actual.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Elimina el Pod y PVC defectuosos para recrear el escenario con una solicitud de capacidad compatible.
+- {% include step_label.html id="s041" %} Elimina el Pod y PVC defectuosos para recrear el escenario con una solicitud de capacidad compatible.
 
   > **Nota:** El escenario se recreará con una solicitud compatible.
   {: .lab-note .info .compact}
@@ -777,7 +796,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Kubernetes confirma la eliminación de `capacity-test` y `too-large`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Crea un claim corregido de 200Mi para demostrar que la reducción de capacidad permite una combinación compatible.
+- {% include step_label.html id="s042" %} Crea un claim corregido de 200Mi para demostrar que la reducción de capacidad permite una combinación compatible.
 
   > **Importante:** La corrección se basa en la capacidad disponible, no en reiniciar componentes.
   {: .lab-note .important .compact}
@@ -802,7 +821,10 @@ next: /lab8/lab8/
 
 ### Tarea 6.1. Introducir la incompatibilidad
 
-- {% include step_label.html %} Crea un PVC que solicite `ReadWriteMany` para provocar una incompatibilidad con los PV `ReadWriteOnce` existentes.
+
+{% assign tracking_task_id = "t006" %}
+
+- {% include step_label.html id="s043" %} Crea un PVC que solicite `ReadWriteMany` para provocar una incompatibilidad con los PV `ReadWriteOnce` existentes.
 
   > **Nota:** Los PV del laboratorio ofrecen `ReadWriteOnce`.
   {: .lab-note .info .compact}
@@ -831,7 +853,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Se crea `access-broken` solicitando `ReadWriteMany`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Consulta el estado del PVC para confirmar que la solicitud permanece sin enlazar mientras no exista un volumen compatible.
+- {% include step_label.html id="s044" %} Consulta el estado del PVC para confirmar que la solicitud permanece sin enlazar mientras no exista un volumen compatible.
 
   > **Importante:** No modifiques los PV todavía; primero compara requisitos y capacidades.
   {: .lab-note .important .compact}
@@ -845,7 +867,7 @@ next: /lab8/lab8/
 
 ### Tarea 6.2. Diagnosticar
 
-- {% include step_label.html %} Consulta el access mode solicitado para identificar exactamente qué requisito de acceso está exigiendo el claim.
+- {% include step_label.html id="s045" %} Consulta el access mode solicitado para identificar exactamente qué requisito de acceso está exigiendo el claim.
 
   > **Nota:** El claim declara explícitamente el tipo de acceso requerido.
   {: .lab-note .info .compact}
@@ -857,7 +879,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Se muestra `ReadWriteMany`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Compara los PV disponibles para verificar qué access modes ofrecen y localizar la diferencia con el PVC.
+- {% include step_label.html id="s046" %} Compara los PV disponibles para verificar qué access modes ofrecen y localizar la diferencia con el PVC.
 
   > **Nota:** Un PV `ReadWriteOnce` no satisface un claim que exige `ReadWriteMany`.
   {: .lab-note .info .compact}
@@ -869,7 +891,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Los PV disponibles muestran `ReadWriteOnce`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Revisa los eventos del PVC para complementar el diagnóstico con mensajes generados por el controlador de almacenamiento.
+- {% include step_label.html id="s047" %} Revisa los eventos del PVC para complementar el diagnóstico con mensajes generados por el controlador de almacenamiento.
 
   > **Nota:** Los eventos complementan la evidencia del mismatch.
   {: .lab-note .info .compact}
@@ -883,7 +905,7 @@ next: /lab8/lab8/
 
 ### Tarea 6.3. Corregir
 
-- {% include step_label.html %} Elimina el PVC defectuoso para recrearlo con un access mode compatible sin modificar los PersistentVolumes existentes.
+- {% include step_label.html id="s048" %} Elimina el PVC defectuoso para recrearlo con un access mode compatible sin modificar los PersistentVolumes existentes.
 
   > **Nota:** Lo recrearás con un access mode compatible.
   {: .lab-note .info .compact}
@@ -895,7 +917,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Kubernetes confirma la eliminación de `access-broken`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Genera una versión `ReadWriteOnce` del PVC modificando únicamente el requisito que causó la incompatibilidad.
+- {% include step_label.html id="s049" %} Genera una versión `ReadWriteOnce` del PVC modificando únicamente el requisito que causó la incompatibilidad.
 
   > **Nota:** Se modifica únicamente el requisito incompatible.
   {: .lab-note .info .compact}
@@ -907,7 +929,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Se crea `pvc-access-fixed.yaml` solicitando `ReadWriteOnce`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Aplica el claim corregido para confirmar que el access mode solicitado ahora coincide con los volúmenes disponibles.
+- {% include step_label.html id="s050" %} Aplica el claim corregido para confirmar que el access mode solicitado ahora coincide con los volúmenes disponibles.
 
   > **Nota:** El claim ya utiliza un modo ofrecido por los PV locales.
   {: .lab-note .info .compact}
@@ -929,7 +951,10 @@ next: /lab8/lab8/
 
 ### Tarea 7.1. Seleccionar otro worker
 
-- {% include step_label.html %} Lista los workers disponibles para identificar un segundo nodo y preparar un conflicto controlado de node affinity.
+
+{% assign tracking_task_id = "t007" %}
+
+- {% include step_label.html id="s051" %} Lista los workers disponibles para identificar un segundo nodo y preparar un conflicto controlado de node affinity.
 
   > **Nota:** Este escenario necesita un nodo diferente del que contiene el volumen local.
   {: .lab-note .info .compact}
@@ -941,7 +966,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Se muestran al menos dos workers disponibles.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Guarda un worker distinto del asociado al PV para forzar un conflicto entre el Pod y la afinidad del volumen.
+- {% include step_label.html id="s052" %} Guarda un worker distinto del asociado al PV para forzar un conflicto entre el Pod y la afinidad del volumen.
 
   > **Importante:** `$OTHER_WORKER` debe ser diferente de `$WORKER`.
   {: .lab-note .important .compact}
@@ -962,7 +987,7 @@ next: /lab8/lab8/
   > **Salida esperada:** La variable `OTHER_WORKER` queda definida con un worker diferente de `$WORKER`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Confirma ambos nombres de worker para verificar que el nodo del volumen y el nodo forzado son realmente diferentes.
+- {% include step_label.html id="s053" %} Confirma ambos nombres de worker para verificar que el nodo del volumen y el nodo forzado son realmente diferentes.
 
   > **Nota:** Si ambos nombres son iguales, no continúes porque no se producirá el conflicto esperado.
   {: .lab-note .info .compact}
@@ -979,7 +1004,7 @@ next: /lab8/lab8/
 
 ### Tarea 7.2. Provocar el conflicto
 
-- {% include step_label.html %} Crea un Pod que use `data-pvc` pero fuerce el segundo worker para provocar un conflicto real con la node affinity del PV.
+- {% include step_label.html id="s054" %} Crea un Pod que use `data-pvc` pero fuerce el segundo worker para provocar un conflicto real con la node affinity del PV.
 
   > **Advertencia:** El Pod será intencionalmente incompatible con la node affinity del PV.
   {: .lab-note .warning .compact}
@@ -1014,7 +1039,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Se crea `node-broken` utilizando `data-pvc` y forzando el nodo alterno.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Consulta el estado del Pod para observar cómo el scheduler mantiene `Pending` una carga incompatible con el volumen.
+- {% include step_label.html id="s055" %} Consulta el estado del Pod para observar cómo el scheduler mantiene `Pending` una carga incompatible con el volumen.
 
   > **Nota:** El scheduler no debe ubicarlo en un nodo incompatible con el volumen local.
   {: .lab-note .info .compact}
@@ -1026,7 +1051,7 @@ next: /lab8/lab8/
   > **Salida esperada:** El Pod `node-broken` permanece `Pending`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Describe el Pod para revisar los eventos del scheduler y localizar evidencia específica del conflicto de node affinity.
+- {% include step_label.html id="s056" %} Describe el Pod para revisar los eventos del scheduler y localizar evidencia específica del conflicto de node affinity.
 
   > **Importante:** Busca evidencia de conflicto con la node affinity del volumen.
   {: .lab-note .important .compact}
@@ -1040,7 +1065,7 @@ next: /lab8/lab8/
 
 ### Tarea 7.3. Corregir
 
-- {% include step_label.html %} Elimina el Pod defectuoso para recrearlo sin la restricción de nodo que impide utilizar el volumen local.
+- {% include step_label.html id="s057" %} Elimina el Pod defectuoso para recrearlo sin la restricción de nodo que impide utilizar el volumen local.
 
   > **Nota:** Se recreará sin forzar un nodo incompatible.
   {: .lab-note .info .compact}
@@ -1052,7 +1077,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Kubernetes confirma la eliminación de `node-broken`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Crea una versión sin `nodeSelector` para permitir que el scheduler elija el nodo compatible con la affinity del PV.
+- {% include step_label.html id="s058" %} Crea una versión sin `nodeSelector` para permitir que el scheduler elija el nodo compatible con la affinity del PV.
 
   > **Nota:** El scheduler podrá seleccionar el nodo que satisface la affinity del PV.
   {: .lab-note .info .compact}
@@ -1085,7 +1110,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Se crea y aplica `node-fixed` sin una restricción manual de nodo.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Espera a que el Pod quede Ready y confirma que fue programado en el mismo worker asociado al volumen local.
+- {% include step_label.html id="s059" %} Espera a que el Pod quede Ready y confirma que fue programado en el mismo worker asociado al volumen local.
 
   > **Nota:** El Pod debe terminar ejecutándose en el worker asociado al volumen.
   {: .lab-note .info .compact}
@@ -1112,7 +1137,10 @@ next: /lab8/lab8/
 
 ### Tarea 8.1. Confirmar persistencia
 
-- {% include step_label.html %} Lee nuevamente el archivo desde `storage-app` para confirmar que los escenarios de troubleshooting no alteraron los datos.
+
+{% assign tracking_task_id = "t008" %}
+
+- {% include step_label.html id="s060" %} Lee nuevamente el archivo desde `storage-app` para confirmar que los escenarios de troubleshooting no alteraron los datos.
 
   > **Nota:** Los escenarios de troubleshooting no deben alterar el contenido persistente original.
   {: .lab-note .info .compact}
@@ -1124,7 +1152,7 @@ next: /lab8/lab8/
   > **Salida esperada:** `cka-storage-ok`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Lee el mismo archivo desde `node-fixed` para comprobar que ambos Pods observan el contenido persistente del mismo PVC.
+- {% include step_label.html id="s061" %} Lee el mismo archivo desde `node-fixed` para comprobar que ambos Pods observan el contenido persistente del mismo PVC.
 
   > **Nota:** Ambos Pods utilizan el mismo PVC y deben observar el mismo contenido.
   {: .lab-note .info .compact}
@@ -1136,7 +1164,7 @@ next: /lab8/lab8/
   > **Salida esperada:** `cka-storage-ok`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Revisa los estados finales de PV y PVC para identificar qué recursos quedaron Bound, Pending, Available o Released.
+- {% include step_label.html id="s062" %} Revisa los estados finales de PV y PVC para identificar qué recursos quedaron Bound, Pending, Available o Released.
 
   > **Importante:** Antes de limpiar distingue recursos `Bound`, `Pending`, `Available` o `Released`.
   {: .lab-note .important .compact}
@@ -1153,7 +1181,7 @@ next: /lab8/lab8/
 
 ### Tarea 8.2. Eliminar recursos Kubernetes
 
-- {% include step_label.html %} Elimina el namespace `storage-lab` para retirar Pods y PVC sin eliminar todavía los PersistentVolumes de alcance de clúster.
+- {% include step_label.html id="s063" %} Elimina el namespace `storage-lab` para retirar Pods y PVC sin eliminar todavía los PersistentVolumes de alcance de clúster.
 
   > **Advertencia:** Los PVC se eliminarán con el namespace, pero los PV son recursos de alcance de clúster.
   {: .lab-note .warning .compact}
@@ -1165,7 +1193,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Kubernetes confirma la eliminación del namespace `storage-lab`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Revisa los PV después de eliminar los claims para observar el efecto de la política `Retain` sobre los volúmenes.
+- {% include step_label.html id="s064" %} Revisa los PV después de eliminar los claims para observar el efecto de la política `Retain` sobre los volúmenes.
 
   > **Nota:** Con política `Retain`, un PV usado puede quedar `Released`.
   {: .lab-note .info .compact}
@@ -1177,7 +1205,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Los PV usados pueden aparecer `Released` y los no usados pueden permanecer `Available`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Elimina los PersistentVolumes creados para la práctica una vez que ya revisaste su estado posterior a los claims.
+- {% include step_label.html id="s065" %} Elimina los PersistentVolumes creados para la práctica una vez que ya revisaste su estado posterior a los claims.
 
   > **Nota:** Eliminar los objetos PV no borra automáticamente los directorios locales.
   {: .lab-note .info .compact}
@@ -1191,7 +1219,7 @@ next: /lab8/lab8/
 
 ### Tarea 8.3. Eliminar StorageClass y rutas locales
 
-- {% include step_label.html %} Elimina la StorageClass `cka-local` para retirar la configuración de almacenamiento creada exclusivamente para este laboratorio.
+- {% include step_label.html id="s066" %} Elimina la StorageClass `cka-local` para retirar la configuración de almacenamiento creada exclusivamente para este laboratorio.
 
   > **Nota:** La StorageClass deja de ser necesaria al finalizar el laboratorio.
   {: .lab-note .info .compact}
@@ -1203,7 +1231,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Kubernetes confirma la eliminación de `cka-local`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} En el worker elimina únicamente las rutas creadas para la práctica después de confirmar que ya no serán utilizadas por ningún PV.
+- {% include step_label.html id="s067" %} En el worker elimina únicamente las rutas creadas para la práctica después de confirmar que ya no serán utilizadas por ningún PV.
 
   > **Advertencia:** Verifica cuidadosamente las rutas antes de utilizar `rm -rf`.
   {: .lab-note .warning .compact}
@@ -1218,7 +1246,7 @@ next: /lab8/lab8/
   > **Salida esperada:** Los directorios locales del laboratorio quedan eliminados del worker.
   {: .lab-note .output .compact}
 
-- {% include step_label.html %} Ejecuta una revisión final del clúster para confirmar que los nodos siguen saludables y que los recursos temporales fueron retirados.
+- {% include step_label.html id="s068" %} Ejecuta una revisión final del clúster para confirmar que los nodos siguen saludables y que los recursos temporales fueron retirados.
 
   > **Nota:** La práctica termina cuando los recursos temporales fueron retirados y los nodos permanecen saludables.
   {: .lab-note .info .compact}

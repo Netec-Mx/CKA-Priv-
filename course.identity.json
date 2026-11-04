@@ -1,0 +1,7 @@
+{
+  "version": 1,
+  "code": "CKA_PRIV",
+  "trackingId": "ckapriv",
+  "name": "Administración, despliegue y preparación para CKA",
+  "description": "Curso de administración y preparación CKA con 8 prácticas de Kubernetes."
+}

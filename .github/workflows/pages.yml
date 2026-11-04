@@ -1,9 +1,11 @@
-# .github/workflows/pages.yml
+# Standard course workflow: same operational flow as TRFRM_GCP_INT.
+# Installed into an adopted course by adopt_course_complete.mjs.
+# The instructor only commits/pushes this course repository.
 name: Build and Deploy Jekyll
 
 on:
   push:
-    branches: ["main"]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -12,34 +14,97 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v5
+      - name: Checkout course
+        uses: actions/checkout@v4
+
+      - name: Checkout central webpagesrepo tools
+        uses: actions/checkout@v4
+        with:
+          repository: jorgepas12/webpagesrepo
+          ref: 0b8fc6bd8f78021f209216b1b21ec7f1b6e2d83c
+          path: .central-webpagesrepo
+          persist-credentials: false
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Validate LabControl identity and runtime
+        shell: bash
+        run: |
+          set -euo pipefail
+          node .central-webpagesrepo/scripts/verify_course_runtime.mjs .
+          node .central-webpagesrepo/scripts/repair_step_ids.mjs --check --root .
+
+      - name: Generate LabControl manifests and catalog
+        shell: bash
+        run: |
+          set -euo pipefail
+          node .central-webpagesrepo/scripts/generate_lab_manifest.mjs --all
+          node .central-webpagesrepo/scripts/generate_course_catalog.mjs
+
+      - name: Optional manifest sync (only after course is linked)
+        shell: bash
+        env:
+          LABCONTROL_API_URL: ${{ vars.LABCONTROL_API_URL }}
+          LABCONTROL_SYNC_TOKEN: ${{ secrets.LABCONTROL_SYNC_TOKEN }}
+        run: |
+          if [[ -n "${LABCONTROL_API_URL}" && -n "${LABCONTROL_SYNC_TOKEN}" ]]; then
+            node .central-webpagesrepo/scripts/sync_lab_manifests.mjs --all
+          else
+            echo "LabControl machine sync not configured; catalog is still published."
+          fi
 
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: '3.3'        # OK
+          ruby-version: '3.3'
           bundler-cache: true
-
-      - name: Install dependencies
-        run: bundle install --jobs 4 --retry 3
 
       - name: Build with Jekyll
         env:
           JEKYLL_ENV: production
         run: bundle exec jekyll build --trace
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+      - name: Verify published course metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s _site/course.identity.json
+          TRACKING_ID=$(node -p 'JSON.parse(require("node:fs").readFileSync("course.identity.json","utf8")).trackingId')
+          test -s "_site/labcontrol/$TRACKING_ID/course.json"
+          node -e 'const fs=require("node:fs");const c=JSON.parse(fs.readFileSync("_site/labcontrol/"+process.argv[1]+"/course.json"));if(!c.labs?.length)throw Error("Empty catalog")' "$TRACKING_ID"
+
+      - name: Package GitHub Pages artifact (preserve verification proof)
+        shell: bash
+        run: |
+          set -euo pipefail
+          tar --dereference --hard-dereference \
+            -C ./_site \
+            --exclude=.git \
+            --exclude=.github \
+            --exclude=".[^/]*" \
+            -cf "$RUNNER_TEMP/artifact.tar" .
+          if [[ -d ./_site/.well-known ]]; then
+            tar --append -f "$RUNNER_TEMP/artifact.tar" -C ./_site .well-known
+          fi
+          tar -tf "$RUNNER_TEMP/artifact.tar" | grep -F 'labcontrol/'
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-artifact@v4
         with:
-          path: ./_site
+          name: github-pages
+          path: ${{ runner.temp }}/artifact.tar
+          retention-days: 1
+          if-no-files-found: error
 
   deploy:
     needs: build
@@ -50,4 +115,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@v4

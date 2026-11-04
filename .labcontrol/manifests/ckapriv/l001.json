@@ -1,0 +1,229 @@
+{
+  "version": 1,
+  "hash": "sha256:6a2460f6371869770dd608da1d8bb06ec6cad7dbb8a92e734a055e713f236406",
+  "tasks": [
+    {
+      "taskId": "t001",
+      "title": "Acceso al entorno y contexto administrativo",
+      "position": 1,
+      "steps": [
+        {
+          "stepId": "s001",
+          "position": 1
+        },
+        {
+          "stepId": "s002",
+          "position": 2
+        },
+        {
+          "stepId": "s003",
+          "position": 3
+        },
+        {
+          "stepId": "s004",
+          "position": 4
+        },
+        {
+          "stepId": "s005",
+          "position": 5
+        },
+        {
+          "stepId": "s006",
+          "position": 6
+        },
+        {
+          "stepId": "s007",
+          "position": 7
+        }
+      ]
+    },
+    {
+      "taskId": "t002",
+      "title": "Inspección de nodos y capacidad",
+      "position": 2,
+      "steps": [
+        {
+          "stepId": "s008",
+          "position": 1
+        },
+        {
+          "stepId": "s009",
+          "position": 2
+        },
+        {
+          "stepId": "s010",
+          "position": 3
+        },
+        {
+          "stepId": "s011",
+          "position": 4
+        },
+        {
+          "stepId": "s012",
+          "position": 5
+        },
+        {
+          "stepId": "s013",
+          "position": 6
+        },
+        {
+          "stepId": "s014",
+          "position": 7
+        },
+        {
+          "stepId": "s015",
+          "position": 8
+        },
+        {
+          "stepId": "s016",
+          "position": 9
+        },
+        {
+          "stepId": "s017",
+          "position": 10
+        }
+      ]
+    },
+    {
+      "taskId": "t003",
+      "title": "Inspección del control plane",
+      "position": 3,
+      "steps": [
+        {
+          "stepId": "s018",
+          "position": 1
+        },
+        {
+          "stepId": "s019",
+          "position": 2
+        },
+        {
+          "stepId": "s020",
+          "position": 3
+        },
+        {
+          "stepId": "s021",
+          "position": 4
+        },
+        {
+          "stepId": "s022",
+          "position": 5
+        },
+        {
+          "stepId": "s023",
+          "position": 6
+        },
+        {
+          "stepId": "s024",
+          "position": 7
+        },
+        {
+          "stepId": "s025",
+          "position": 8
+        },
+        {
+          "stepId": "s026",
+          "position": 9
+        },
+        {
+          "stepId": "s027",
+          "position": 10
+        },
+        {
+          "stepId": "s028",
+          "position": 11
+        }
+      ]
+    },
+    {
+      "taskId": "t004",
+      "title": "Inspección del worker y del runtime",
+      "position": 4,
+      "steps": [
+        {
+          "stepId": "s029",
+          "position": 1
+        },
+        {
+          "stepId": "s030",
+          "position": 2
+        },
+        {
+          "stepId": "s031",
+          "position": 3
+        },
+        {
+          "stepId": "s032",
+          "position": 4
+        },
+        {
+          "stepId": "s033",
+          "position": 5
+        },
+        {
+          "stepId": "s034",
+          "position": 6
+        },
+        {
+          "stepId": "s035",
+          "position": 7
+        },
+        {
+          "stepId": "s036",
+          "position": 8
+        },
+        {
+          "stepId": "s037",
+          "position": 9
+        },
+        {
+          "stepId": "s038",
+          "position": 10
+        }
+      ]
+    },
+    {
+      "taskId": "t005",
+      "title": "Validación de networking, DNS, storage y salud general",
+      "position": 5,
+      "steps": [
+        {
+          "stepId": "s039",
+          "position": 1
+        },
+        {
+          "stepId": "s040",
+          "position": 2
+        },
+        {
+          "stepId": "s041",
+          "position": 3
+        },
+        {
+          "stepId": "s042",
+          "position": 4
+        },
+        {
+          "stepId": "s043",
+          "position": 5
+        },
+        {
+          "stepId": "s044",
+          "position": 6
+        },
+        {
+          "stepId": "s045",
+          "position": 7
+        },
+        {
+          "stepId": "s046",
+          "position": 8
+        },
+        {
+          "stepId": "s047",
+          "position": 9
+        }
+      ]
+    }
+  ]
+}

@@ -2,7 +2,12 @@
 layout: default
 ---
 
-<article class="lab">
+<article class="lab"
+  {% if page.course_id %}data-course-id="{{ page.course_id | escape }}"{% endif %}
+  {% if page.lab_id %}data-lab-id="{{ page.lab_id | escape }}"{% endif %}
+  {% if site.labcontrol_api_url %}data-tracking-api="{{ site.labcontrol_api_url | escape }}"{% endif %}
+  data-tracking="{% if page.tracking == true %}true{% else %}false{% endif %}"
+>
 
   {% include nav.html %}
 

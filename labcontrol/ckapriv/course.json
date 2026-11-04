@@ -1,0 +1,2328 @@
+{
+  "version": 1,
+  "courseId": "ckapriv",
+  "sourceCommitSha": null,
+  "labs": [
+    {
+      "labId": "l001",
+      "number": 1,
+      "position": 1,
+      "name": "Práctica 1: Inspección completa de un clúster Kubernetes",
+      "durationMinutes": 50,
+      "contentPath": "/lab1/lab1/",
+      "content": {
+        "path": "content/l001.json",
+        "hash": "sha256:ad80222ff940ac10eb72d8ebb5933627d5fdefdaa883e665600fddc656a7da44"
+      },
+      "manifest": {
+        "version": 1,
+        "hash": "sha256:6a2460f6371869770dd608da1d8bb06ec6cad7dbb8a92e734a055e713f236406",
+        "tasks": [
+          {
+            "taskId": "t001",
+            "title": "Acceso al entorno y contexto administrativo",
+            "position": 1,
+            "steps": [
+              {
+                "stepId": "s001",
+                "position": 1
+              },
+              {
+                "stepId": "s002",
+                "position": 2
+              },
+              {
+                "stepId": "s003",
+                "position": 3
+              },
+              {
+                "stepId": "s004",
+                "position": 4
+              },
+              {
+                "stepId": "s005",
+                "position": 5
+              },
+              {
+                "stepId": "s006",
+                "position": 6
+              },
+              {
+                "stepId": "s007",
+                "position": 7
+              }
+            ]
+          },
+          {
+            "taskId": "t002",
+            "title": "Inspección de nodos y capacidad",
+            "position": 2,
+            "steps": [
+              {
+                "stepId": "s008",
+                "position": 1
+              },
+              {
+                "stepId": "s009",
+                "position": 2
+              },
+              {
+                "stepId": "s010",
+                "position": 3
+              },
+              {
+                "stepId": "s011",
+                "position": 4
+              },
+              {
+                "stepId": "s012",
+                "position": 5
+              },
+              {
+                "stepId": "s013",
+                "position": 6
+              },
+              {
+                "stepId": "s014",
+                "position": 7
+              },
+              {
+                "stepId": "s015",
+                "position": 8
+              },
+              {
+                "stepId": "s016",
+                "position": 9
+              },
+              {
+                "stepId": "s017",
+                "position": 10
+              }
+            ]
+          },
+          {
+            "taskId": "t003",
+            "title": "Inspección del control plane",
+            "position": 3,
+            "steps": [
+              {
+                "stepId": "s018",
+                "position": 1
+              },
+              {
+                "stepId": "s019",
+                "position": 2
+              },
+              {
+                "stepId": "s020",
+                "position": 3
+              },
+              {
+                "stepId": "s021",
+                "position": 4
+              },
+              {
+                "stepId": "s022",
+                "position": 5
+              },
+              {
+                "stepId": "s023",
+                "position": 6
+              },
+              {
+                "stepId": "s024",
+                "position": 7
+              },
+              {
+                "stepId": "s025",
+                "position": 8
+              },
+              {
+                "stepId": "s026",
+                "position": 9
+              },
+              {
+                "stepId": "s027",
+                "position": 10
+              },
+              {
+                "stepId": "s028",
+                "position": 11
+              }
+            ]
+          },
+          {
+            "taskId": "t004",
+            "title": "Inspección del worker y del runtime",
+            "position": 4,
+            "steps": [
+              {
+                "stepId": "s029",
+                "position": 1
+              },
+              {
+                "stepId": "s030",
+                "position": 2
+              },
+              {
+                "stepId": "s031",
+                "position": 3
+              },
+              {
+                "stepId": "s032",
+                "position": 4
+              },
+              {
+                "stepId": "s033",
+                "position": 5
+              },
+              {
+                "stepId": "s034",
+                "position": 6
+              },
+              {
+                "stepId": "s035",
+                "position": 7
+              },
+              {
+                "stepId": "s036",
+                "position": 8
+              },
+              {
+                "stepId": "s037",
+                "position": 9
+              },
+              {
+                "stepId": "s038",
+                "position": 10
+              }
+            ]
+          },
+          {
+            "taskId": "t005",
+            "title": "Validación de networking, DNS, storage y salud general",
+            "position": 5,
+            "steps": [
+              {
+                "stepId": "s039",
+                "position": 1
+              },
+              {
+                "stepId": "s040",
+                "position": 2
+              },
+              {
+                "stepId": "s041",
+                "position": 3
+              },
+              {
+                "stepId": "s042",
+                "position": 4
+              },
+              {
+                "stepId": "s043",
+                "position": 5
+              },
+              {
+                "stepId": "s044",
+                "position": 6
+              },
+              {
+                "stepId": "s045",
+                "position": 7
+              },
+              {
+                "stepId": "s046",
+                "position": 8
+              },
+              {
+                "stepId": "s047",
+                "position": 9
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "labId": "l002",
+      "number": 2,
+      "position": 2,
+      "name": "Práctica 2: Mantenimiento de nodos y reprogramación de cargas",
+      "durationMinutes": 60,
+      "contentPath": "/lab2/lab2/",
+      "content": {
+        "path": "content/l002.json",
+        "hash": "sha256:e7f79cff23d238c0eb50e208df5b8106a458b217c1f5fd3fd3c50f191617adca"
+      },
+      "manifest": {
+        "version": 1,
+        "hash": "sha256:48aa9cd465b28050067dab3dfe17773b3be389ea73935365932fb74ef3b3c649",
+        "tasks": [
+          {
+            "taskId": "t001",
+            "title": "Preparar el escenario de mantenimiento",
+            "position": 1,
+            "steps": [
+              {
+                "stepId": "s001",
+                "position": 1
+              },
+              {
+                "stepId": "s002",
+                "position": 2
+              },
+              {
+                "stepId": "s003",
+                "position": 3
+              },
+              {
+                "stepId": "s004",
+                "position": 4
+              },
+              {
+                "stepId": "s005",
+                "position": 5
+              },
+              {
+                "stepId": "s006",
+                "position": 6
+              },
+              {
+                "stepId": "s007",
+                "position": 7
+              },
+              {
+                "stepId": "s008",
+                "position": 8
+              },
+              {
+                "stepId": "s009",
+                "position": 9
+              }
+            ]
+          },
+          {
+            "taskId": "t002",
+            "title": "Aplicar cordon y validar el scheduling",
+            "position": 2,
+            "steps": [
+              {
+                "stepId": "s010",
+                "position": 1
+              },
+              {
+                "stepId": "s011",
+                "position": 2
+              },
+              {
+                "stepId": "s012",
+                "position": 3
+              },
+              {
+                "stepId": "s013",
+                "position": 4
+              },
+              {
+                "stepId": "s014",
+                "position": 5
+              },
+              {
+                "stepId": "s015",
+                "position": 6
+              },
+              {
+                "stepId": "s016",
+                "position": 7
+              },
+              {
+                "stepId": "s017",
+                "position": 8
+              },
+              {
+                "stepId": "s018",
+                "position": 9
+              }
+            ]
+          },
+          {
+            "taskId": "t003",
+            "title": "Drenar el nodo y observar la reprogramación",
+            "position": 3,
+            "steps": [
+              {
+                "stepId": "s019",
+                "position": 1
+              },
+              {
+                "stepId": "s020",
+                "position": 2
+              },
+              {
+                "stepId": "s021",
+                "position": 3
+              },
+              {
+                "stepId": "s022",
+                "position": 4
+              },
+              {
+                "stepId": "s023",
+                "position": 5
+              },
+              {
+                "stepId": "s024",
+                "position": 6
+              },
+              {
+                "stepId": "s025",
+                "position": 7
+              },
+              {
+                "stepId": "s026",
+                "position": 8
+              },
+              {
+                "stepId": "s027",
+                "position": 9
+              },
+              {
+                "stepId": "s028",
+                "position": 10
+              },
+              {
+                "stepId": "s029",
+                "position": 11
+              },
+              {
+                "stepId": "s030",
+                "position": 12
+              },
+              {
+                "stepId": "s031",
+                "position": 13
+              },
+              {
+                "stepId": "s032",
+                "position": 14
+              }
+            ]
+          },
+          {
+            "taskId": "t004",
+            "title": "Devolver el nodo al servicio",
+            "position": 4,
+            "steps": [
+              {
+                "stepId": "s033",
+                "position": 1
+              },
+              {
+                "stepId": "s034",
+                "position": 2
+              },
+              {
+                "stepId": "s035",
+                "position": 3
+              },
+              {
+                "stepId": "s036",
+                "position": 4
+              },
+              {
+                "stepId": "s037",
+                "position": 5
+              },
+              {
+                "stepId": "s038",
+                "position": 6
+              },
+              {
+                "stepId": "s039",
+                "position": 7
+              },
+              {
+                "stepId": "s040",
+                "position": 8
+              },
+              {
+                "stepId": "s041",
+                "position": 9
+              }
+            ]
+          },
+          {
+            "taskId": "t005",
+            "title": "Reto de mantenimiento administrativo",
+            "position": 5,
+            "steps": [
+              {
+                "stepId": "s042",
+                "position": 1
+              },
+              {
+                "stepId": "s043",
+                "position": 2
+              },
+              {
+                "stepId": "s044",
+                "position": 3
+              },
+              {
+                "stepId": "s045",
+                "position": 4
+              },
+              {
+                "stepId": "s046",
+                "position": 5
+              },
+              {
+                "stepId": "s047",
+                "position": 6
+              },
+              {
+                "stepId": "s048",
+                "position": 7
+              },
+              {
+                "stepId": "s049",
+                "position": 8
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "labId": "l003",
+      "number": 3,
+      "position": 3,
+      "name": "Práctica 3: Crear y validar un clúster con kubeadm y preparar nodos",
+      "durationMinutes": 60,
+      "contentPath": "/lab3/lab3/",
+      "content": {
+        "path": "content/l003.json",
+        "hash": "sha256:db2c6b2934e347ab736532eee684b7bcadcccca06625a981b6d34ef3c45d1e73"
+      },
+      "manifest": {
+        "version": 1,
+        "hash": "sha256:4794dbba083a74bbb9386d131b2563080abcc12a11eebf657d83c1b68e14dd4d",
+        "tasks": [
+          {
+            "taskId": "t001",
+            "title": "Validar el estado previo del entorno",
+            "position": 1,
+            "steps": [
+              {
+                "stepId": "s001",
+                "position": 1
+              },
+              {
+                "stepId": "s002",
+                "position": 2
+              },
+              {
+                "stepId": "s003",
+                "position": 3
+              },
+              {
+                "stepId": "s004",
+                "position": 4
+              },
+              {
+                "stepId": "s005",
+                "position": 5
+              },
+              {
+                "stepId": "s006",
+                "position": 6
+              },
+              {
+                "stepId": "s007",
+                "position": 7
+              },
+              {
+                "stepId": "s008",
+                "position": 8
+              },
+              {
+                "stepId": "s009",
+                "position": 9
+              }
+            ]
+          },
+          {
+            "taskId": "t002",
+            "title": "Generar y revisar el comando kubeadm join",
+            "position": 2,
+            "steps": [
+              {
+                "stepId": "s010",
+                "position": 1
+              },
+              {
+                "stepId": "s011",
+                "position": 2
+              },
+              {
+                "stepId": "s012",
+                "position": 3
+              },
+              {
+                "stepId": "s013",
+                "position": 4
+              },
+              {
+                "stepId": "s014",
+                "position": 5
+              },
+              {
+                "stepId": "s015",
+                "position": 6
+              },
+              {
+                "stepId": "s016",
+                "position": 7
+              },
+              {
+                "stepId": "s017",
+                "position": 8
+              },
+              {
+                "stepId": "s018",
+                "position": 9
+              }
+            ]
+          },
+          {
+            "taskId": "t003",
+            "title": "Unir cka-worker2 al clúster",
+            "position": 3,
+            "steps": [
+              {
+                "stepId": "s019",
+                "position": 1
+              },
+              {
+                "stepId": "s020",
+                "position": 2
+              },
+              {
+                "stepId": "s021",
+                "position": 3
+              },
+              {
+                "stepId": "s022",
+                "position": 4
+              },
+              {
+                "stepId": "s023",
+                "position": 5
+              },
+              {
+                "stepId": "s024",
+                "position": 6
+              },
+              {
+                "stepId": "s025",
+                "position": 7
+              },
+              {
+                "stepId": "s026",
+                "position": 8
+              },
+              {
+                "stepId": "s027",
+                "position": 9
+              },
+              {
+                "stepId": "s028",
+                "position": 10
+              },
+              {
+                "stepId": "s029",
+                "position": 11
+              },
+              {
+                "stepId": "s030",
+                "position": 12
+              },
+              {
+                "stepId": "s031",
+                "position": 13
+              },
+              {
+                "stepId": "s032",
+                "position": 14
+              }
+            ]
+          },
+          {
+            "taskId": "t004",
+            "title": "Validar kubelet, runtime y CNI en el nuevo nodo",
+            "position": 4,
+            "steps": [
+              {
+                "stepId": "s033",
+                "position": 1
+              },
+              {
+                "stepId": "s034",
+                "position": 2
+              },
+              {
+                "stepId": "s035",
+                "position": 3
+              },
+              {
+                "stepId": "s036",
+                "position": 4
+              },
+              {
+                "stepId": "s037",
+                "position": 5
+              },
+              {
+                "stepId": "s038",
+                "position": 6
+              },
+              {
+                "stepId": "s039",
+                "position": 7
+              },
+              {
+                "stepId": "s040",
+                "position": 8
+              },
+              {
+                "stepId": "s041",
+                "position": 9
+              },
+              {
+                "stepId": "s042",
+                "position": 10
+              }
+            ]
+          },
+          {
+            "taskId": "t005",
+            "title": "Verificar la integración completa del nodo",
+            "position": 5,
+            "steps": [
+              {
+                "stepId": "s043",
+                "position": 1
+              },
+              {
+                "stepId": "s044",
+                "position": 2
+              },
+              {
+                "stepId": "s045",
+                "position": 3
+              },
+              {
+                "stepId": "s046",
+                "position": 4
+              },
+              {
+                "stepId": "s047",
+                "position": 5
+              },
+              {
+                "stepId": "s048",
+                "position": 6
+              },
+              {
+                "stepId": "s049",
+                "position": 7
+              },
+              {
+                "stepId": "s050",
+                "position": 8
+              },
+              {
+                "stepId": "s051",
+                "position": 9
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "labId": "l004",
+      "number": 4,
+      "position": 4,
+      "name": "Práctica 4: Configurar acceso administrativo controlado con RBAC",
+      "durationMinutes": 40,
+      "contentPath": "/lab4/lab4/",
+      "content": {
+        "path": "content/l004.json",
+        "hash": "sha256:299351a614761eb6f743d9b8dcb2ae84c89474dd54df28eefd342c13173b0c6a"
+      },
+      "manifest": {
+        "version": 1,
+        "hash": "sha256:d50fa3d8486b7714130ef15df2194664ad71e36e0b9d19241d7cb6c586ff4f7d",
+        "tasks": [
+          {
+            "taskId": "t001",
+            "title": "Preparar el escenario y reconocer el alcance de RBAC",
+            "position": 1,
+            "steps": [
+              {
+                "stepId": "s001",
+                "position": 1
+              },
+              {
+                "stepId": "s002",
+                "position": 2
+              },
+              {
+                "stepId": "s003",
+                "position": 3
+              },
+              {
+                "stepId": "s004",
+                "position": 4
+              },
+              {
+                "stepId": "s005",
+                "position": 5
+              },
+              {
+                "stepId": "s006",
+                "position": 6
+              }
+            ]
+          },
+          {
+            "taskId": "t002",
+            "title": "Crear una identidad técnica para el acceso controlado",
+            "position": 2,
+            "steps": [
+              {
+                "stepId": "s007",
+                "position": 1
+              },
+              {
+                "stepId": "s008",
+                "position": 2
+              },
+              {
+                "stepId": "s009",
+                "position": 3
+              },
+              {
+                "stepId": "s010",
+                "position": 4
+              }
+            ]
+          },
+          {
+            "taskId": "t003",
+            "title": "Definir permisos de lectura con un Role",
+            "position": 3,
+            "steps": [
+              {
+                "stepId": "s011",
+                "position": 1
+              },
+              {
+                "stepId": "s012",
+                "position": 2
+              },
+              {
+                "stepId": "s013",
+                "position": 3
+              },
+              {
+                "stepId": "s014",
+                "position": 4
+              },
+              {
+                "stepId": "s015",
+                "position": 5
+              },
+              {
+                "stepId": "s016",
+                "position": 6
+              }
+            ]
+          },
+          {
+            "taskId": "t004",
+            "title": "Asociar la identidad mediante RoleBinding",
+            "position": 4,
+            "steps": [
+              {
+                "stepId": "s017",
+                "position": 1
+              },
+              {
+                "stepId": "s018",
+                "position": 2
+              },
+              {
+                "stepId": "s019",
+                "position": 3
+              },
+              {
+                "stepId": "s020",
+                "position": 4
+              },
+              {
+                "stepId": "s021",
+                "position": 5
+              },
+              {
+                "stepId": "s022",
+                "position": 6
+              }
+            ]
+          },
+          {
+            "taskId": "t005",
+            "title": "Construir un kubeconfig temporal para la identidad",
+            "position": 5,
+            "steps": [
+              {
+                "stepId": "s023",
+                "position": 1
+              },
+              {
+                "stepId": "s024",
+                "position": 2
+              },
+              {
+                "stepId": "s025",
+                "position": 3
+              },
+              {
+                "stepId": "s026",
+                "position": 4
+              },
+              {
+                "stepId": "s027",
+                "position": 5
+              },
+              {
+                "stepId": "s028",
+                "position": 6
+              },
+              {
+                "stepId": "s029",
+                "position": 7
+              },
+              {
+                "stepId": "s030",
+                "position": 8
+              }
+            ]
+          },
+          {
+            "taskId": "t006",
+            "title": "Conceder una capacidad de lectura a nivel de clúster",
+            "position": 6,
+            "steps": [
+              {
+                "stepId": "s031",
+                "position": 1
+              },
+              {
+                "stepId": "s032",
+                "position": 2
+              },
+              {
+                "stepId": "s033",
+                "position": 3
+              },
+              {
+                "stepId": "s034",
+                "position": 4
+              },
+              {
+                "stepId": "s035",
+                "position": 5
+              }
+            ]
+          },
+          {
+            "taskId": "t007",
+            "title": "Reto: diagnosticar una asignación RBAC incorrecta",
+            "position": 7,
+            "steps": [
+              {
+                "stepId": "s036",
+                "position": 1
+              },
+              {
+                "stepId": "s037",
+                "position": 2
+              },
+              {
+                "stepId": "s038",
+                "position": 3
+              },
+              {
+                "stepId": "s039",
+                "position": 4
+              },
+              {
+                "stepId": "s040",
+                "position": 5
+              },
+              {
+                "stepId": "s041",
+                "position": 6
+              }
+            ]
+          },
+          {
+            "taskId": "t008",
+            "title": "Reto: construir acceso de privilegio mínimo",
+            "position": 8,
+            "steps": [
+              {
+                "stepId": "s042",
+                "position": 1
+              },
+              {
+                "stepId": "s043",
+                "position": 2
+              },
+              {
+                "stepId": "s044",
+                "position": 3
+              },
+              {
+                "stepId": "s045",
+                "position": 4
+              },
+              {
+                "stepId": "s046",
+                "position": 5
+              },
+              {
+                "stepId": "s047",
+                "position": 6
+              },
+              {
+                "stepId": "s048",
+                "position": 7
+              },
+              {
+                "stepId": "s049",
+                "position": 8
+              },
+              {
+                "stepId": "s050",
+                "position": 9
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "labId": "l005",
+      "number": 5,
+      "position": 5,
+      "name": "Práctica 5: Backup y restore de etcd",
+      "durationMinutes": 60,
+      "contentPath": "/lab5/lab5/",
+      "content": {
+        "path": "content/l005.json",
+        "hash": "sha256:344f9a0d4561042465d7fd77b74cb6c536658c032fcf7c95de20a280d9ca4e04"
+      },
+      "manifest": {
+        "version": 1,
+        "hash": "sha256:cb77d59a943b4469008b29329be86729f3421a5dca8bfb85da488b172487b0e0",
+        "tasks": [
+          {
+            "taskId": "t001",
+            "title": "Identificar etcd y preparar el punto de recuperación",
+            "position": 1,
+            "steps": [
+              {
+                "stepId": "s001",
+                "position": 1
+              },
+              {
+                "stepId": "s002",
+                "position": 2
+              },
+              {
+                "stepId": "s003",
+                "position": 3
+              },
+              {
+                "stepId": "s004",
+                "position": 4
+              },
+              {
+                "stepId": "s005",
+                "position": 5
+              },
+              {
+                "stepId": "s006",
+                "position": 6
+              },
+              {
+                "stepId": "s007",
+                "position": 7
+              },
+              {
+                "stepId": "s008",
+                "position": 8
+              },
+              {
+                "stepId": "s009",
+                "position": 9
+              }
+            ]
+          },
+          {
+            "taskId": "t002",
+            "title": "Preparar herramientas, certificados y ubicación del backup",
+            "position": 2,
+            "steps": [
+              {
+                "stepId": "s010",
+                "position": 1
+              },
+              {
+                "stepId": "s011",
+                "position": 2
+              },
+              {
+                "stepId": "s012",
+                "position": 3
+              },
+              {
+                "stepId": "s013",
+                "position": 4
+              },
+              {
+                "stepId": "s014",
+                "position": 5
+              },
+              {
+                "stepId": "s015",
+                "position": 6
+              },
+              {
+                "stepId": "s016",
+                "position": 7
+              },
+              {
+                "stepId": "s017",
+                "position": 8
+              },
+              {
+                "stepId": "s018",
+                "position": 9
+              }
+            ]
+          },
+          {
+            "taskId": "t003",
+            "title": "Crear el snapshot de etcd",
+            "position": 3,
+            "steps": [
+              {
+                "stepId": "s019",
+                "position": 1
+              },
+              {
+                "stepId": "s020",
+                "position": 2
+              },
+              {
+                "stepId": "s021",
+                "position": 3
+              },
+              {
+                "stepId": "s022",
+                "position": 4
+              },
+              {
+                "stepId": "s023",
+                "position": 5
+              },
+              {
+                "stepId": "s024",
+                "position": 6
+              }
+            ]
+          },
+          {
+            "taskId": "t004",
+            "title": "Validar el snapshot",
+            "position": 4,
+            "steps": [
+              {
+                "stepId": "s025",
+                "position": 1
+              },
+              {
+                "stepId": "s026",
+                "position": 2
+              },
+              {
+                "stepId": "s027",
+                "position": 3
+              },
+              {
+                "stepId": "s028",
+                "position": 4
+              }
+            ]
+          },
+          {
+            "taskId": "t005",
+            "title": "Crear estado posterior al snapshot",
+            "position": 5,
+            "steps": [
+              {
+                "stepId": "s029",
+                "position": 1
+              },
+              {
+                "stepId": "s030",
+                "position": 2
+              },
+              {
+                "stepId": "s031",
+                "position": 3
+              },
+              {
+                "stepId": "s032",
+                "position": 4
+              },
+              {
+                "stepId": "s033",
+                "position": 5
+              }
+            ]
+          },
+          {
+            "taskId": "t006",
+            "title": "Preparar la restauración",
+            "position": 6,
+            "steps": [
+              {
+                "stepId": "s034",
+                "position": 1
+              },
+              {
+                "stepId": "s035",
+                "position": 2
+              },
+              {
+                "stepId": "s036",
+                "position": 3
+              },
+              {
+                "stepId": "s037",
+                "position": 4
+              },
+              {
+                "stepId": "s038",
+                "position": 5
+              },
+              {
+                "stepId": "s039",
+                "position": 6
+              },
+              {
+                "stepId": "s040",
+                "position": 7
+              },
+              {
+                "stepId": "s041",
+                "position": 8
+              },
+              {
+                "stepId": "s042",
+                "position": 9
+              }
+            ]
+          },
+          {
+            "taskId": "t007",
+            "title": "Restaurar etcd desde el snapshot",
+            "position": 7,
+            "steps": [
+              {
+                "stepId": "s043",
+                "position": 1
+              },
+              {
+                "stepId": "s044",
+                "position": 2
+              },
+              {
+                "stepId": "s045",
+                "position": 3
+              },
+              {
+                "stepId": "s046",
+                "position": 4
+              },
+              {
+                "stepId": "s047",
+                "position": 5
+              },
+              {
+                "stepId": "s048",
+                "position": 6
+              },
+              {
+                "stepId": "s049",
+                "position": 7
+              }
+            ]
+          },
+          {
+            "taskId": "t008",
+            "title": "Validar la recuperación del clúster",
+            "position": 8,
+            "steps": [
+              {
+                "stepId": "s050",
+                "position": 1
+              },
+              {
+                "stepId": "s051",
+                "position": 2
+              },
+              {
+                "stepId": "s052",
+                "position": 3
+              },
+              {
+                "stepId": "s053",
+                "position": 4
+              },
+              {
+                "stepId": "s054",
+                "position": 5
+              },
+              {
+                "stepId": "s055",
+                "position": 6
+              },
+              {
+                "stepId": "s056",
+                "position": 7
+              },
+              {
+                "stepId": "s057",
+                "position": 8
+              }
+            ]
+          },
+          {
+            "taskId": "t009",
+            "title": "Comprobar consistencia y cerrar la práctica",
+            "position": 9,
+            "steps": [
+              {
+                "stepId": "s058",
+                "position": 1
+              },
+              {
+                "stepId": "s059",
+                "position": 2
+              },
+              {
+                "stepId": "s060",
+                "position": 3
+              },
+              {
+                "stepId": "s061",
+                "position": 4
+              },
+              {
+                "stepId": "s062",
+                "position": 5
+              },
+              {
+                "stepId": "s063",
+                "position": 6
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "labId": "l006",
+      "number": 6,
+      "position": 6,
+      "name": "Práctica 6: Diagnóstico de CNI, kube-proxy y CoreDNS",
+      "durationMinutes": 55,
+      "contentPath": "/lab6/lab6/",
+      "content": {
+        "path": "content/l006.json",
+        "hash": "sha256:4607bb8babbb007d3aaf145fe178b663cf0d96ee99a4df8354c5c9e675193a33"
+      },
+      "manifest": {
+        "version": 1,
+        "hash": "sha256:cbf0d20242457ba59960e172aec69ca817a2ed510d55ecd1356c1fad28c02c81",
+        "tasks": [
+          {
+            "taskId": "t001",
+            "title": "Establecer la línea base de red del clúster",
+            "position": 1,
+            "steps": [
+              {
+                "stepId": "s001",
+                "position": 1
+              },
+              {
+                "stepId": "s002",
+                "position": 2
+              },
+              {
+                "stepId": "s003",
+                "position": 3
+              },
+              {
+                "stepId": "s004",
+                "position": 4
+              },
+              {
+                "stepId": "s005",
+                "position": 5
+              },
+              {
+                "stepId": "s006",
+                "position": 6
+              },
+              {
+                "stepId": "s007",
+                "position": 7
+              },
+              {
+                "stepId": "s008",
+                "position": 8
+              },
+              {
+                "stepId": "s009",
+                "position": 9
+              }
+            ]
+          },
+          {
+            "taskId": "t002",
+            "title": "Validar conectividad Pod-to-Pod y Pod-to-Service",
+            "position": 2,
+            "steps": [
+              {
+                "stepId": "s010",
+                "position": 1
+              },
+              {
+                "stepId": "s011",
+                "position": 2
+              },
+              {
+                "stepId": "s012",
+                "position": 3
+              },
+              {
+                "stepId": "s013",
+                "position": 4
+              },
+              {
+                "stepId": "s014",
+                "position": 5
+              },
+              {
+                "stepId": "s015",
+                "position": 6
+              },
+              {
+                "stepId": "s016",
+                "position": 7
+              },
+              {
+                "stepId": "s017",
+                "position": 8
+              },
+              {
+                "stepId": "s018",
+                "position": 9
+              },
+              {
+                "stepId": "s019",
+                "position": 10
+              }
+            ]
+          },
+          {
+            "taskId": "t003",
+            "title": "Validar resolución DNS desde un Pod",
+            "position": 3,
+            "steps": [
+              {
+                "stepId": "s020",
+                "position": 1
+              },
+              {
+                "stepId": "s021",
+                "position": 2
+              },
+              {
+                "stepId": "s022",
+                "position": 3
+              },
+              {
+                "stepId": "s023",
+                "position": 4
+              },
+              {
+                "stepId": "s024",
+                "position": 5
+              },
+              {
+                "stepId": "s025",
+                "position": 6
+              },
+              {
+                "stepId": "s026",
+                "position": 7
+              },
+              {
+                "stepId": "s027",
+                "position": 8
+              },
+              {
+                "stepId": "s028",
+                "position": 9
+              }
+            ]
+          },
+          {
+            "taskId": "t004",
+            "title": "Construir un flujo de diagnóstico de red",
+            "position": 4,
+            "steps": [
+              {
+                "stepId": "s029",
+                "position": 1
+              },
+              {
+                "stepId": "s030",
+                "position": 2
+              },
+              {
+                "stepId": "s031",
+                "position": 3
+              },
+              {
+                "stepId": "s032",
+                "position": 4
+              },
+              {
+                "stepId": "s033",
+                "position": 5
+              },
+              {
+                "stepId": "s034",
+                "position": 6
+              },
+              {
+                "stepId": "s035",
+                "position": 7
+              },
+              {
+                "stepId": "s036",
+                "position": 8
+              },
+              {
+                "stepId": "s037",
+                "position": 9
+              }
+            ]
+          },
+          {
+            "taskId": "t005",
+            "title": "Troubleshooting: falla de resolución DNS",
+            "position": 5,
+            "steps": [
+              {
+                "stepId": "s038",
+                "position": 1
+              },
+              {
+                "stepId": "s039",
+                "position": 2
+              },
+              {
+                "stepId": "s040",
+                "position": 3
+              },
+              {
+                "stepId": "s041",
+                "position": 4
+              },
+              {
+                "stepId": "s042",
+                "position": 5
+              },
+              {
+                "stepId": "s043",
+                "position": 6
+              },
+              {
+                "stepId": "s044",
+                "position": 7
+              },
+              {
+                "stepId": "s045",
+                "position": 8
+              },
+              {
+                "stepId": "s046",
+                "position": 9
+              }
+            ]
+          },
+          {
+            "taskId": "t006",
+            "title": "Troubleshooting: Service sin conectividad",
+            "position": 6,
+            "steps": [
+              {
+                "stepId": "s047",
+                "position": 1
+              },
+              {
+                "stepId": "s048",
+                "position": 2
+              },
+              {
+                "stepId": "s049",
+                "position": 3
+              },
+              {
+                "stepId": "s050",
+                "position": 4
+              },
+              {
+                "stepId": "s051",
+                "position": 5
+              },
+              {
+                "stepId": "s052",
+                "position": 6
+              },
+              {
+                "stepId": "s053",
+                "position": 7
+              },
+              {
+                "stepId": "s054",
+                "position": 8
+              },
+              {
+                "stepId": "s055",
+                "position": 9
+              }
+            ]
+          },
+          {
+            "taskId": "t007",
+            "title": "Troubleshooting: conectividad bloqueada por política del CNI",
+            "position": 7,
+            "steps": [
+              {
+                "stepId": "s056",
+                "position": 1
+              },
+              {
+                "stepId": "s057",
+                "position": 2
+              },
+              {
+                "stepId": "s058",
+                "position": 3
+              },
+              {
+                "stepId": "s059",
+                "position": 4
+              },
+              {
+                "stepId": "s060",
+                "position": 5
+              },
+              {
+                "stepId": "s061",
+                "position": 6
+              },
+              {
+                "stepId": "s062",
+                "position": 7
+              },
+              {
+                "stepId": "s063",
+                "position": 8
+              },
+              {
+                "stepId": "s064",
+                "position": 9
+              },
+              {
+                "stepId": "s065",
+                "position": 10
+              }
+            ]
+          },
+          {
+            "taskId": "t008",
+            "title": "Recuperar y validar completamente la red",
+            "position": 8,
+            "steps": [
+              {
+                "stepId": "s066",
+                "position": 1
+              },
+              {
+                "stepId": "s067",
+                "position": 2
+              },
+              {
+                "stepId": "s068",
+                "position": 3
+              },
+              {
+                "stepId": "s069",
+                "position": 4
+              },
+              {
+                "stepId": "s070",
+                "position": 5
+              },
+              {
+                "stepId": "s071",
+                "position": 6
+              },
+              {
+                "stepId": "s072",
+                "position": 7
+              },
+              {
+                "stepId": "s073",
+                "position": 8
+              },
+              {
+                "stepId": "s074",
+                "position": 9
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "labId": "l007",
+      "number": 7,
+      "position": 7,
+      "name": "Práctica 7: Diagnóstico de almacenamiento persistente y StorageClass",
+      "durationMinutes": 50,
+      "contentPath": "/lab7/lab7/",
+      "content": {
+        "path": "content/l007.json",
+        "hash": "sha256:b4cfcd1627e2db341fd38637245b74182edcfac855cd28a4c166dfb54b2fd418"
+      },
+      "manifest": {
+        "version": 1,
+        "hash": "sha256:b537409aff2b6681ed6869ca13617715e453ae3807317d0728afc5eb4df4de91",
+        "tasks": [
+          {
+            "taskId": "t001",
+            "title": "Establecer la línea base de almacenamiento",
+            "position": 1,
+            "steps": [
+              {
+                "stepId": "s001",
+                "position": 1
+              },
+              {
+                "stepId": "s002",
+                "position": 2
+              },
+              {
+                "stepId": "s003",
+                "position": 3
+              },
+              {
+                "stepId": "s004",
+                "position": 4
+              },
+              {
+                "stepId": "s005",
+                "position": 5
+              },
+              {
+                "stepId": "s006",
+                "position": 6
+              },
+              {
+                "stepId": "s007",
+                "position": 7
+              },
+              {
+                "stepId": "s008",
+                "position": 8
+              },
+              {
+                "stepId": "s009",
+                "position": 9
+              }
+            ]
+          },
+          {
+            "taskId": "t002",
+            "title": "Crear StorageClass, PV, PVC y Pod",
+            "position": 2,
+            "steps": [
+              {
+                "stepId": "s010",
+                "position": 1
+              },
+              {
+                "stepId": "s011",
+                "position": 2
+              },
+              {
+                "stepId": "s012",
+                "position": 3
+              },
+              {
+                "stepId": "s013",
+                "position": 4
+              },
+              {
+                "stepId": "s014",
+                "position": 5
+              },
+              {
+                "stepId": "s015",
+                "position": 6
+              },
+              {
+                "stepId": "s016",
+                "position": 7
+              },
+              {
+                "stepId": "s017",
+                "position": 8
+              },
+              {
+                "stepId": "s018",
+                "position": 9
+              }
+            ]
+          },
+          {
+            "taskId": "t003",
+            "title": "Construir el flujo de diagnóstico",
+            "position": 3,
+            "steps": [
+              {
+                "stepId": "s019",
+                "position": 1
+              },
+              {
+                "stepId": "s020",
+                "position": 2
+              },
+              {
+                "stepId": "s021",
+                "position": 3
+              },
+              {
+                "stepId": "s022",
+                "position": 4
+              },
+              {
+                "stepId": "s023",
+                "position": 5
+              },
+              {
+                "stepId": "s024",
+                "position": 6
+              },
+              {
+                "stepId": "s025",
+                "position": 7
+              },
+              {
+                "stepId": "s026",
+                "position": 8
+              },
+              {
+                "stepId": "s027",
+                "position": 9
+              }
+            ]
+          },
+          {
+            "taskId": "t004",
+            "title": "Troubleshooting: StorageClass incompatible",
+            "position": 4,
+            "steps": [
+              {
+                "stepId": "s028",
+                "position": 1
+              },
+              {
+                "stepId": "s029",
+                "position": 2
+              },
+              {
+                "stepId": "s030",
+                "position": 3
+              },
+              {
+                "stepId": "s031",
+                "position": 4
+              },
+              {
+                "stepId": "s032",
+                "position": 5
+              },
+              {
+                "stepId": "s033",
+                "position": 6
+              },
+              {
+                "stepId": "s034",
+                "position": 7
+              }
+            ]
+          },
+          {
+            "taskId": "t005",
+            "title": "Troubleshooting: capacidad insuficiente",
+            "position": 5,
+            "steps": [
+              {
+                "stepId": "s035",
+                "position": 1
+              },
+              {
+                "stepId": "s036",
+                "position": 2
+              },
+              {
+                "stepId": "s037",
+                "position": 3
+              },
+              {
+                "stepId": "s038",
+                "position": 4
+              },
+              {
+                "stepId": "s039",
+                "position": 5
+              },
+              {
+                "stepId": "s040",
+                "position": 6
+              },
+              {
+                "stepId": "s041",
+                "position": 7
+              },
+              {
+                "stepId": "s042",
+                "position": 8
+              }
+            ]
+          },
+          {
+            "taskId": "t006",
+            "title": "Troubleshooting: access mode incompatible",
+            "position": 6,
+            "steps": [
+              {
+                "stepId": "s043",
+                "position": 1
+              },
+              {
+                "stepId": "s044",
+                "position": 2
+              },
+              {
+                "stepId": "s045",
+                "position": 3
+              },
+              {
+                "stepId": "s046",
+                "position": 4
+              },
+              {
+                "stepId": "s047",
+                "position": 5
+              },
+              {
+                "stepId": "s048",
+                "position": 6
+              },
+              {
+                "stepId": "s049",
+                "position": 7
+              },
+              {
+                "stepId": "s050",
+                "position": 8
+              }
+            ]
+          },
+          {
+            "taskId": "t007",
+            "title": "Troubleshooting: conflicto de node affinity",
+            "position": 7,
+            "steps": [
+              {
+                "stepId": "s051",
+                "position": 1
+              },
+              {
+                "stepId": "s052",
+                "position": 2
+              },
+              {
+                "stepId": "s053",
+                "position": 3
+              },
+              {
+                "stepId": "s054",
+                "position": 4
+              },
+              {
+                "stepId": "s055",
+                "position": 5
+              },
+              {
+                "stepId": "s056",
+                "position": 6
+              },
+              {
+                "stepId": "s057",
+                "position": 7
+              },
+              {
+                "stepId": "s058",
+                "position": 8
+              },
+              {
+                "stepId": "s059",
+                "position": 9
+              }
+            ]
+          },
+          {
+            "taskId": "t008",
+            "title": "Validar recuperación y limpiar",
+            "position": 8,
+            "steps": [
+              {
+                "stepId": "s060",
+                "position": 1
+              },
+              {
+                "stepId": "s061",
+                "position": 2
+              },
+              {
+                "stepId": "s062",
+                "position": 3
+              },
+              {
+                "stepId": "s063",
+                "position": 4
+              },
+              {
+                "stepId": "s064",
+                "position": 5
+              },
+              {
+                "stepId": "s065",
+                "position": 6
+              },
+              {
+                "stepId": "s066",
+                "position": 7
+              },
+              {
+                "stepId": "s067",
+                "position": 8
+              },
+              {
+                "stepId": "s068",
+                "position": 9
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "labId": "l008",
+      "number": 8,
+      "position": 8,
+      "name": "Práctica 8: Troubleshooting integral tipo CKA",
+      "durationMinutes": 75,
+      "contentPath": "/lab8/lab8/",
+      "content": {
+        "path": "content/l008.json",
+        "hash": "sha256:9db8d95a9905041cc6883b4de4564a4627ad02aca88bea4f38686f1103c620ea"
+      },
+      "manifest": {
+        "version": 1,
+        "hash": "sha256:d8c44be01809dcd5ac824d869ec9f56f26f815eaafea823525f4d51c3c05727f",
+        "tasks": [
+          {
+            "taskId": "t001",
+            "title": "Establecer una línea base rápida del clúster",
+            "position": 1,
+            "steps": [
+              {
+                "stepId": "s001",
+                "position": 1
+              },
+              {
+                "stepId": "s002",
+                "position": 2
+              },
+              {
+                "stepId": "s003",
+                "position": 3
+              },
+              {
+                "stepId": "s004",
+                "position": 4
+              },
+              {
+                "stepId": "s005",
+                "position": 5
+              },
+              {
+                "stepId": "s006",
+                "position": 6
+              }
+            ]
+          },
+          {
+            "taskId": "t002",
+            "title": "Escenario CKA: recuperar un nodo NotReady",
+            "position": 2,
+            "steps": [
+              {
+                "stepId": "s007",
+                "position": 1
+              },
+              {
+                "stepId": "s008",
+                "position": 2
+              },
+              {
+                "stepId": "s009",
+                "position": 3
+              },
+              {
+                "stepId": "s010",
+                "position": 4
+              },
+              {
+                "stepId": "s011",
+                "position": 5
+              },
+              {
+                "stepId": "s012",
+                "position": 6
+              },
+              {
+                "stepId": "s013",
+                "position": 7
+              }
+            ]
+          },
+          {
+            "taskId": "t003",
+            "title": "Escenario CKA: workload sin scheduling",
+            "position": 3,
+            "steps": [
+              {
+                "stepId": "s014",
+                "position": 1
+              },
+              {
+                "stepId": "s015",
+                "position": 2
+              },
+              {
+                "stepId": "s016",
+                "position": 3
+              },
+              {
+                "stepId": "s017",
+                "position": 4
+              },
+              {
+                "stepId": "s018",
+                "position": 5
+              },
+              {
+                "stepId": "s019",
+                "position": 6
+              }
+            ]
+          },
+          {
+            "taskId": "t004",
+            "title": "Escenario CKA: Service sin acceso a la aplicación",
+            "position": 4,
+            "steps": [
+              {
+                "stepId": "s020",
+                "position": 1
+              },
+              {
+                "stepId": "s021",
+                "position": 2
+              },
+              {
+                "stepId": "s022",
+                "position": 3
+              },
+              {
+                "stepId": "s023",
+                "position": 4
+              },
+              {
+                "stepId": "s024",
+                "position": 5
+              },
+              {
+                "stepId": "s025",
+                "position": 6
+              }
+            ]
+          },
+          {
+            "taskId": "t005",
+            "title": "Escenario CKA: almacenamiento persistente no disponible",
+            "position": 5,
+            "steps": [
+              {
+                "stepId": "s026",
+                "position": 1
+              },
+              {
+                "stepId": "s027",
+                "position": 2
+              },
+              {
+                "stepId": "s028",
+                "position": 3
+              },
+              {
+                "stepId": "s029",
+                "position": 4
+              },
+              {
+                "stepId": "s030",
+                "position": 5
+              },
+              {
+                "stepId": "s031",
+                "position": 6
+              }
+            ]
+          },
+          {
+            "taskId": "t006",
+            "title": "Escenario CKA: componente del control plane degradado",
+            "position": 6,
+            "steps": [
+              {
+                "stepId": "s032",
+                "position": 1
+              },
+              {
+                "stepId": "s033",
+                "position": 2
+              },
+              {
+                "stepId": "s034",
+                "position": 3
+              },
+              {
+                "stepId": "s035",
+                "position": 4
+              },
+              {
+                "stepId": "s036",
+                "position": 5
+              },
+              {
+                "stepId": "s037",
+                "position": 6
+              },
+              {
+                "stepId": "s038",
+                "position": 7
+              }
+            ]
+          },
+          {
+            "taskId": "t007",
+            "title": "Validación integral y cierre",
+            "position": 7,
+            "steps": [
+              {
+                "stepId": "s039",
+                "position": 1
+              },
+              {
+                "stepId": "s040",
+                "position": 2
+              },
+              {
+                "stepId": "s041",
+                "position": 3
+              },
+              {
+                "stepId": "s042",
+                "position": 4
+              },
+              {
+                "stepId": "s043",
+                "position": 5
+              },
+              {
+                "stepId": "s044",
+                "position": 6
+              },
+              {
+                "stepId": "s045",
+                "position": 7
+              },
+              {
+                "stepId": "s046",
+                "position": 8
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

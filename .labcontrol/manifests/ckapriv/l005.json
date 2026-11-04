@@ -1,0 +1,321 @@
+{
+  "version": 1,
+  "hash": "sha256:cb77d59a943b4469008b29329be86729f3421a5dca8bfb85da488b172487b0e0",
+  "tasks": [
+    {
+      "taskId": "t001",
+      "title": "Identificar etcd y preparar el punto de recuperación",
+      "position": 1,
+      "steps": [
+        {
+          "stepId": "s001",
+          "position": 1
+        },
+        {
+          "stepId": "s002",
+          "position": 2
+        },
+        {
+          "stepId": "s003",
+          "position": 3
+        },
+        {
+          "stepId": "s004",
+          "position": 4
+        },
+        {
+          "stepId": "s005",
+          "position": 5
+        },
+        {
+          "stepId": "s006",
+          "position": 6
+        },
+        {
+          "stepId": "s007",
+          "position": 7
+        },
+        {
+          "stepId": "s008",
+          "position": 8
+        },
+        {
+          "stepId": "s009",
+          "position": 9
+        }
+      ]
+    },
+    {
+      "taskId": "t002",
+      "title": "Preparar herramientas, certificados y ubicación del backup",
+      "position": 2,
+      "steps": [
+        {
+          "stepId": "s010",
+          "position": 1
+        },
+        {
+          "stepId": "s011",
+          "position": 2
+        },
+        {
+          "stepId": "s012",
+          "position": 3
+        },
+        {
+          "stepId": "s013",
+          "position": 4
+        },
+        {
+          "stepId": "s014",
+          "position": 5
+        },
+        {
+          "stepId": "s015",
+          "position": 6
+        },
+        {
+          "stepId": "s016",
+          "position": 7
+        },
+        {
+          "stepId": "s017",
+          "position": 8
+        },
+        {
+          "stepId": "s018",
+          "position": 9
+        }
+      ]
+    },
+    {
+      "taskId": "t003",
+      "title": "Crear el snapshot de etcd",
+      "position": 3,
+      "steps": [
+        {
+          "stepId": "s019",
+          "position": 1
+        },
+        {
+          "stepId": "s020",
+          "position": 2
+        },
+        {
+          "stepId": "s021",
+          "position": 3
+        },
+        {
+          "stepId": "s022",
+          "position": 4
+        },
+        {
+          "stepId": "s023",
+          "position": 5
+        },
+        {
+          "stepId": "s024",
+          "position": 6
+        }
+      ]
+    },
+    {
+      "taskId": "t004",
+      "title": "Validar el snapshot",
+      "position": 4,
+      "steps": [
+        {
+          "stepId": "s025",
+          "position": 1
+        },
+        {
+          "stepId": "s026",
+          "position": 2
+        },
+        {
+          "stepId": "s027",
+          "position": 3
+        },
+        {
+          "stepId": "s028",
+          "position": 4
+        }
+      ]
+    },
+    {
+      "taskId": "t005",
+      "title": "Crear estado posterior al snapshot",
+      "position": 5,
+      "steps": [
+        {
+          "stepId": "s029",
+          "position": 1
+        },
+        {
+          "stepId": "s030",
+          "position": 2
+        },
+        {
+          "stepId": "s031",
+          "position": 3
+        },
+        {
+          "stepId": "s032",
+          "position": 4
+        },
+        {
+          "stepId": "s033",
+          "position": 5
+        }
+      ]
+    },
+    {
+      "taskId": "t006",
+      "title": "Preparar la restauración",
+      "position": 6,
+      "steps": [
+        {
+          "stepId": "s034",
+          "position": 1
+        },
+        {
+          "stepId": "s035",
+          "position": 2
+        },
+        {
+          "stepId": "s036",
+          "position": 3
+        },
+        {
+          "stepId": "s037",
+          "position": 4
+        },
+        {
+          "stepId": "s038",
+          "position": 5
+        },
+        {
+          "stepId": "s039",
+          "position": 6
+        },
+        {
+          "stepId": "s040",
+          "position": 7
+        },
+        {
+          "stepId": "s041",
+          "position": 8
+        },
+        {
+          "stepId": "s042",
+          "position": 9
+        }
+      ]
+    },
+    {
+      "taskId": "t007",
+      "title": "Restaurar etcd desde el snapshot",
+      "position": 7,
+      "steps": [
+        {
+          "stepId": "s043",
+          "position": 1
+        },
+        {
+          "stepId": "s044",
+          "position": 2
+        },
+        {
+          "stepId": "s045",
+          "position": 3
+        },
+        {
+          "stepId": "s046",
+          "position": 4
+        },
+        {
+          "stepId": "s047",
+          "position": 5
+        },
+        {
+          "stepId": "s048",
+          "position": 6
+        },
+        {
+          "stepId": "s049",
+          "position": 7
+        }
+      ]
+    },
+    {
+      "taskId": "t008",
+      "title": "Validar la recuperación del clúster",
+      "position": 8,
+      "steps": [
+        {
+          "stepId": "s050",
+          "position": 1
+        },
+        {
+          "stepId": "s051",
+          "position": 2
+        },
+        {
+          "stepId": "s052",
+          "position": 3
+        },
+        {
+          "stepId": "s053",
+          "position": 4
+        },
+        {
+          "stepId": "s054",
+          "position": 5
+        },
+        {
+          "stepId": "s055",
+          "position": 6
+        },
+        {
+          "stepId": "s056",
+          "position": 7
+        },
+        {
+          "stepId": "s057",
+          "position": 8
+        }
+      ]
+    },
+    {
+      "taskId": "t009",
+      "title": "Comprobar consistencia y cerrar la práctica",
+      "position": 9,
+      "steps": [
+        {
+          "stepId": "s058",
+          "position": 1
+        },
+        {
+          "stepId": "s059",
+          "position": 2
+        },
+        {
+          "stepId": "s060",
+          "position": 3
+        },
+        {
+          "stepId": "s061",
+          "position": 4
+        },
+        {
+          "stepId": "s062",
+          "position": 5
+        },
+        {
+          "stepId": "s063",
+          "position": 6
+        }
+      ]
+    }
+  ]
+}
