@@ -35,7 +35,14 @@ jobs:
         run: |
           test -s "_site/labcontrol/ckapriv/course.json"
           test -s "_site/lab1/lab1/index.html"
-          find _site -maxdepth 2 -type f | head -30
+          test -s "_site/assets/js/lab-progress.js"
+          test -s "_site/assets/js/lab-tracker.js"
+          for number in 1 2 3 4 5 6 7 8; do
+            lab_id=$(printf 'l%03d' "$number")
+            test -s "_site/labcontrol/ckapriv/content/${lab_id}.json"
+          done
+          node -e 'const fs=require("node:fs");const c=JSON.parse(fs.readFileSync("_site/labcontrol/ckapriv/course.json","utf8"));if(c.courseId!=="ckapriv"||c.labs.length!==8)throw Error("Catálogo CKA incompleto");'
+          echo "OK: catálogo, 8 snapshots, runtime JS y HTML compilados"
 
       - name: Package as Pages artifact without deployment
         uses: actions/upload-pages-artifact@v4
