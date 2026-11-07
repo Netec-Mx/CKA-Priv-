@@ -86,18 +86,10 @@ Comprobarás qué contexto utiliza kubectl y qué endpoint representa el clúste
 
 - {% include step_label.html id="s004" %} Consulta el contexto activo de kubectl.
 
-  ```bash
-  kubectl config current-context
-  ```
-
   > **Salida esperada:** Se muestra `kubernetes-admin@kubernetes`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s005" %} Lista los contextos disponibles y confirma cuál está marcado como actual.
-
-  ```bash
-  kubectl config get-contexts
-  ```
 
   > **Salida esperada:** El contexto activo aparece marcado con `*` y referencia al clúster y usuario administrativos configurados.
   {: .lab-note .output .compact}
@@ -108,20 +100,10 @@ Confirmarás que kubectl puede comunicarse con el API Server y revisarás las ve
 
 - {% include step_label.html id="s006" %} Comprueba que kubectl puede localizar el API Server y CoreDNS.
 
-  ```bash
-  kubectl cluster-info
-  ```
-
   > **Salida esperada:** Se muestran las direcciones del Kubernetes control plane y del servicio CoreDNS sin errores de conexión.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s007" %} Consulta las versiones de kubectl, kubeadm y kubelet instaladas en el control plane.
-
-  ```bash
-  kubectl version --client
-  kubeadm version -o short
-  kubelet --version
-  ```
 
   > **Salida esperada:** Las herramientas reportan versiones de Kubernetes v1.35.x; en el entorno preparado se utiliza v1.35.8.
   {: .lab-note .output .compact}
@@ -147,27 +129,15 @@ Identificarás qué nodos pertenecen actualmente al clúster y compararás su ro
 
 - {% include step_label.html id="s008" %} Lista los nodos registrados en el clúster.
 
-  ```bash
-  kubectl get nodes
-  ```
-
   > **Salida esperada:** Aparecen `cka-control` y `cka-worker1` en estado `Ready`. `cka-worker2` no debe aparecer todavía.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s009" %} Amplía la consulta para observar IP interna, sistema operativo y container runtime.
 
-  ```bash
-  kubectl get nodes -o wide
-  ```
-
   > **Salida esperada:** `cka-control` utiliza `10.10.10.10` y `cka-worker1` utiliza `10.10.10.11`; ambos reportan containerd como runtime.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s010" %} Consulta las columnas de labels más comunes sin modificar ningún nodo.
-
-  ```bash
-  kubectl get nodes --show-labels
-  ```
 
   > **Salida esperada:** Se observan labels del sistema, arquitectura, hostname y rol del control plane.
   {: .lab-note .output .compact}
@@ -178,39 +148,20 @@ Usarás `kubectl describe` para localizar las secciones que un administrador con
 
 - {% include step_label.html id="s011" %} Obtén la descripción completa de `cka-worker1`.
 
-  ```bash
-  kubectl describe node cka-worker1
-  ```
-
   > **Nota:** No es necesario memorizar toda la salida. Localiza las secciones `Labels`, `Taints`, `Conditions`, `Capacity`, `Allocatable`, `System Info`, `Allocated resources` y `Events`.
   {: .lab-note .info .compact}
 
 - {% include step_label.html id="s012" %} Extrae únicamente las condiciones del nodo para facilitar su lectura.
-
-  ```bash
-  kubectl get node cka-worker1 \
-    -o jsonpath='{range .status.conditions[*]}{.type}{"="}{.status}{"\n"}{end}'
-  ```
 
   > **Salida esperada:** `Ready=True` y las condiciones de presión relevantes, como `MemoryPressure`, `DiskPressure` y `PIDPressure`, deben aparecer en `False` en un nodo sano.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s013" %} Consulta la capacidad total del nodo.
 
-  ```bash
-  kubectl get node cka-worker1 \
-    -o jsonpath='{.status.capacity}{"\n"}'
-  ```
-
   > **Salida esperada:** Se muestran recursos como `cpu`, `memory`, `pods` y almacenamiento efímero disponibles físicamente en el nodo.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s014" %} Consulta los recursos asignables a Pods después de las reservas del sistema.
-
-  ```bash
-  kubectl get node cka-worker1 \
-    -o jsonpath='{.status.allocatable}{"\n"}'
-  ```
 
   > **Salida esperada:** Se muestran los valores `Allocatable`, que pueden ser menores a `Capacity` y representan lo que Kubernetes puede asignar a las cargas.
   {: .lab-note .output .compact}
@@ -221,29 +172,15 @@ Compararás características administrativas de ambos tipos de nodo para reconoc
 
 - {% include step_label.html id="s015" %} Revisa los labels asociados específicamente al rol del control plane.
 
-  ```bash
-  kubectl get node cka-control --show-labels
-  ```
-
   > **Salida esperada:** Se identifica el label `node-role.kubernetes.io/control-plane` entre los labels de `cka-control`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s016" %} Consulta los taints configurados en el control plane.
 
-  ```bash
-  kubectl get node cka-control \
-    -o jsonpath='{.spec.taints}{"\n"}'
-  ```
-
   > **Salida esperada:** Debe observarse el taint administrativo que evita programar cargas normales en el control plane, salvo que exista una toleration compatible.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s017" %} Compara los taints del worker.
-
-  ```bash
-  kubectl get node cka-worker1 \
-    -o jsonpath='{.spec.taints}{"\n"}'
-  ```
 
   > **Salida esperada:** En el estado base del laboratorio, `cka-worker1` no debe presentar el taint de `control-plane`.
   {: .lab-note .output .compact}
@@ -268,29 +205,15 @@ Localizarás los componentes del control plane dentro de `kube-system` y verific
 
 - {% include step_label.html id="s018" %} Lista los Pods del namespace `kube-system` con información de nodo e IP.
 
-  ```bash
-  kubectl get pods -n kube-system -o wide
-  ```
-
   > **Salida esperada:** Se observan `kube-apiserver-cka-control`, `kube-controller-manager-cka-control`, `kube-scheduler-cka-control` y `etcd-cka-control`, además de CoreDNS, kube-proxy y Calico.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s019" %} Filtra los Pods que representan los cuatro componentes principales del control plane.
 
-  ```bash
-  kubectl get pods -n kube-system \
-    -l tier=control-plane -o wide
-  ```
-
   > **Salida esperada:** Se muestran los static Pods del control plane que utilizan el label `tier=control-plane`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s020" %} Comprueba el estado individual de etcd mediante su label de componente.
-
-  ```bash
-  kubectl get pod -n kube-system \
-    -l component=etcd -o wide
-  ```
 
   > **Salida esperada:** `etcd-cka-control` aparece `1/1 Running` sobre `cka-control`.
   {: .lab-note .output .compact}
@@ -301,29 +224,15 @@ Inspeccionarás la ubicación que kubeadm utiliza para los manifiestos estático
 
 - {% include step_label.html id="s021" %} Lista los manifiestos estáticos presentes en el control plane.
 
-  ```bash
-  sudo ls -l /etc/kubernetes/manifests/
-  ```
-
   > **Salida esperada:** Existen `etcd.yaml`, `kube-apiserver.yaml`, `kube-controller-manager.yaml` y `kube-scheduler.yaml`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s022" %} Identifica la imagen utilizada por el kube-apiserver sin editar el manifiesto.
 
-  ```bash
-  sudo grep -n 'image:' \
-    /etc/kubernetes/manifests/kube-apiserver.yaml
-  ```
-
   > **Salida esperada:** Se muestra la imagen del `kube-apiserver` correspondiente a la versión Kubernetes del clúster.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s023" %} Identifica el directorio de datos configurado para etcd.
-
-  ```bash
-  sudo grep -n -- '--data-dir' \
-    /etc/kubernetes/manifests/etcd.yaml
-  ```
 
   > **Salida esperada:** El manifiesto muestra el parámetro `--data-dir` utilizado por etcd para almacenar sus datos.
   {: .lab-note .output .compact}
@@ -334,27 +243,15 @@ Usarás `crictl` para observar los contenedores que containerd mantiene en ejecu
 
 - {% include step_label.html id="s024" %} Lista los contenedores administrados por el runtime en `cka-control`.
 
-  ```bash
-  sudo crictl ps
-  ```
-
   > **Salida esperada:** Aparecen contenedores como `kube-apiserver`, `etcd`, `kube-scheduler`, `kube-controller-manager`, `coredns`, `kube-proxy` y componentes de Calico.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s025" %} Localiza específicamente el contenedor del API Server.
 
-  ```bash
-  sudo crictl ps | grep kube-apiserver
-  ```
-
   > **Salida esperada:** Se muestra un contenedor `Running` asociado al Pod `kube-apiserver-cka-control`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s026" %} Localiza específicamente el contenedor de etcd.
-
-  ```bash
-  sudo crictl ps | grep etcd
-  ```
 
   > **Salida esperada:** Se muestra un contenedor `Running` asociado al Pod `etcd-cka-control`.
   {: .lab-note .output .compact}
@@ -365,18 +262,10 @@ Consultarás directamente los endpoints de salud expuestos por el API Server par
 
 - {% include step_label.html id="s027" %} Consulta el endpoint resumido de readiness.
 
-  ```bash
-  kubectl get --raw='/readyz'
-  ```
-
   > **Salida esperada:** El API Server responde `ok`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s028" %} Consulta las verificaciones detalladas de readiness.
-
-  ```bash
-  kubectl get --raw='/readyz?verbose'
-  ```
 
   > **Salida esperada:** Las verificaciones internas aparecen como exitosas y la respuesta final confirma que el API Server está listo.
   {: .lab-note .output .compact}
@@ -401,27 +290,15 @@ Abrirás una sesión independiente en el worker y comprobarás que kubelet está
 
 - {% include step_label.html id="s029" %} Sal de la sesión del control plane.
 
-  ```bash
-  exit
-  ```
-
   > **Salida esperada:** Regresas a la terminal de Windows desde la que iniciaste la conexión SSH.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s030" %} Conéctate a `cka-worker1` mediante SSH.
 
-  ```bash
-  ssh worker1@192.168.10.101
-  ```
-
   > **Salida esperada:** La sesión inicia en `cka-worker1` con el usuario asignado al worker.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s031" %} Comprueba el estado del servicio kubelet.
-
-  ```bash
-  systemctl status kubelet --no-pager
-  ```
 
   > **Salida esperada:** El servicio aparece `active (running)`.
   {: .lab-note .output .compact}
@@ -432,36 +309,20 @@ Validarás el servicio del runtime y usarás `crictl` para identificar Pods y co
 
 - {% include step_label.html id="s032" %} Consulta los mensajes recientes de kubelet.
 
-  ```bash
-  sudo journalctl -u kubelet -n 20 --no-pager
-  ```
-
   > **Salida esperada:** Se muestran eventos recientes del kubelet sin un patrón continuo de errores que impida su operación.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s033" %} Comprueba que containerd está activo.
-
-  ```bash
-  systemctl status containerd --no-pager
-  ```
 
   > **Salida esperada:** `containerd.service` aparece `active (running)`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s034" %} Lista los contenedores que el runtime mantiene activos en el worker.
 
-  ```bash
-  sudo crictl ps
-  ```
-
   > **Salida esperada:** Se observan contenedores de infraestructura como `calico-node` y `kube-proxy`, además de cualquier workload actualmente programado en el nodo.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s035" %} Lista los Pod sandboxes conocidos por el runtime.
-
-  ```bash
-  sudo crictl pods
-  ```
 
   > **Salida esperada:** Se muestran los sandboxes de Pods activos en `cka-worker1`, incluyendo componentes de `kube-system` ejecutados en ese nodo.
   {: .lab-note .output .compact}
@@ -472,27 +333,15 @@ Compararás los archivos presentes en un worker con los del control plane para i
 
 - {% include step_label.html id="s036" %} Lista el contenido del directorio `/etc/kubernetes` del worker.
 
-  ```bash
-  sudo ls -l /etc/kubernetes/
-  ```
-
   > **Salida esperada:** Se observan archivos asociados al kubelet, pero no los cuatro manifiestos estáticos del control plane.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s037" %} Confirma que el directorio de manifiestos del control plane no contiene componentes estáticos en este worker.
 
-  ```bash
-  sudo ls -l /etc/kubernetes/manifests/ 2>/dev/null || true
-  ```
-
   > **Salida esperada:** El directorio puede existir vacío o no contener `kube-apiserver.yaml`, `etcd.yaml`, `kube-controller-manager.yaml` ni `kube-scheduler.yaml`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s038" %} Revisa los archivos principales administrados por kubelet.
-
-  ```bash
-  sudo ls -l /var/lib/kubelet/
-  ```
 
   > **Salida esperada:** Se identifican archivos y directorios como `config.yaml`, `pki`, `pods` y otros elementos utilizados por kubelet.
   {: .lab-note .output .compact}
@@ -517,33 +366,15 @@ Comprobarás que los componentes responsables de la red de Pods y del procesamie
 
 - {% include step_label.html id="s039" %} Regresa al control plane desde Windows.
 
-  ```bash
-  exit
-  ```
-  ```bash
-  ssh control@192.168.10.100
-  ```
-
   > **Salida esperada:** El prompt vuelve a corresponder a `control@cka-control`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s040" %} Comprueba el DaemonSet de Calico y sus Pods.
 
-  ```bash
-  kubectl get daemonset calico-node -n kube-system
-  ```
-  ```bash
-  kubectl get pods -n kube-system -l k8s-app=calico-node -o wide
-  ```
-
   > **Salida esperada:** El DaemonSet reporta dos instancias disponibles y los Pods `calico-node` aparecen `1/1 Running` sobre `cka-control` y `cka-worker1`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s041" %} Comprueba el DaemonSet de kube-proxy.
-
-  ```bash
-  kubectl get daemonset kube-proxy -n kube-system
-  ```
 
   > **Salida esperada:** Los valores `DESIRED`, `CURRENT`, `READY` y `AVAILABLE` son coherentes con los nodos actualmente unidos al clúster.
   {: .lab-note .output .compact}
@@ -554,18 +385,10 @@ Verificarás que Kubernetes dispone de un servicio DNS interno y que las réplic
 
 - {% include step_label.html id="s042" %} Revisa el Deployment de CoreDNS.
 
-  ```bash
-  kubectl get deployment coredns -n kube-system
-  ```
-
   > **Salida esperada:** Las réplicas configuradas aparecen disponibles y listas.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s043" %} Consulta el Service utilizado por los Pods para resolución DNS interna.
-
-  ```bash
-  kubectl get service kube-dns -n kube-system
-  ```
 
   > **Salida esperada:** Se muestra el Service `kube-dns` con una `CLUSTER-IP`; en el entorno base se utiliza `10.96.0.10`.
   {: .lab-note .output .compact}
@@ -576,21 +399,10 @@ Identificarás la StorageClass predeterminada y comprobarás si existen volúmen
 
 - {% include step_label.html id="s044" %} Lista las StorageClasses configuradas.
 
-  ```bash
-  kubectl get storageclass
-  ```
-
   > **Salida esperada:** `local-path` aparece como StorageClass predeterminada.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s045" %} Revisa los PV y PVC existentes sin crear recursos nuevos.
-
-  ```bash
-  kubectl get pv
-  ```
-  ```bash
-  kubectl get pvc -A
-  ```
 
   > **Salida esperada:** Puede no existir ningún PV o PVC todavía; lo importante es que las consultas se completen sin errores.
   {: .lab-note .output .compact}
@@ -601,24 +413,10 @@ Cerrarás la práctica con una revisión de nodos, Pods, eventos recientes y rea
 
 - {% include step_label.html id="s046" %} Revisa de forma consolidada nodos, Pods del sistema y eventos recientes.
 
-  ```bash
-  kubectl get nodes -o wide
-  ```
-  ```bash
-  kubectl get pods -n kube-system -o wide
-  ```
-  ```bash
-  kubectl get events -A --sort-by=.lastTimestamp | tail -n 20
-  ```
-
   > **Salida esperada:** `cka-control` y `cka-worker1` permanecen `Ready`; los componentes críticos están `Running` y no existe un error activo que comprometa la operación del clúster.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s047" %} Realiza la verificación final del API Server.
-
-  ```bash
-  kubectl get --raw='/readyz'
-  ```
 
   > **Salida esperada:** El API Server responde `ok`.
   {: .lab-note .output .compact}
