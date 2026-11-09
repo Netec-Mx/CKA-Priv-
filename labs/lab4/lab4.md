@@ -55,18 +55,10 @@ Antes de modificar RBAC, verificarás que kubectl apunta al clúster esperado y 
 
 - {% include step_label.html id="s001" %} Muestra el contexto activo de kubectl para identificar qué credencial administrativa utilizarás durante la configuración inicial.
 
-  ```bash
-  kubectl config current-context
-  ```
-
   > **Salida esperada:** Se muestra el nombre del contexto configurado para el clúster CKA.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s002" %} Consulta los nodos y confirma que el control plane y los workers disponibles se encuentran en estado `Ready`.
-
-  ```bash
-  kubectl get nodes -o wide
-  ```
 
   > **Salida esperada:** Los nodos esperados aparecen en estado `Ready`; no continúes si algún nodo requerido por el laboratorio permanece `NotReady`.
   {: .lab-note .output .compact}
@@ -77,27 +69,15 @@ Crearás un namespace exclusivo para la práctica y un Deployment que después s
 
 - {% include step_label.html id="s003" %} Crea el namespace `lab4` para aislar los recursos y las políticas namespaced de este laboratorio.
 
-  ```bash
-  kubectl create namespace lab4
-  ```
-
   > **Salida esperada:** Kubernetes responde `namespace/lab4 created`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s004" %} Crea el Deployment `web` con dos réplicas de NGINX dentro de `lab4`.
 
-  ```bash
-  kubectl create deployment web --image=nginx:1.29-alpine --replicas=2 -n lab4
-  ```
-
   > **Salida esperada:** Kubernetes responde `deployment.apps/web created`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s005" %} Espera a que las dos réplicas del Deployment estén disponibles antes de comenzar las pruebas de autorización.
-
-  ```bash
-  kubectl rollout status deployment/web -n lab4 --timeout=90s
-  ```
 
   > **Salida esperada:** El rollout finaliza correctamente y el Deployment informa que está disponible.
   {: .lab-note .output .compact}
@@ -110,14 +90,6 @@ Compararás dos alcances distintos porque esa diferencia determina si debes util
 {: .lab-note .important .compact}
 
 - {% include step_label.html id="s006" %} Lista los Pods de `lab4` y después consulta los nodos para observar un recurso namespaced y uno de alcance de clúster.
-
-  ```bash
-  kubectl get pods -n lab4
-  ```
-
-  ```bash
-  kubectl get nodes
-  ```
 
   > **Salida esperada:** Los Pods se consultan dentro de `lab4`, mientras que los nodos se muestran sin utilizar un namespace.
   {: .lab-note .output .compact}
@@ -143,18 +115,10 @@ Un ServiceAccount proporciona una identidad reconocible por la API de Kubernetes
 
 - {% include step_label.html id="s007" %} Crea el ServiceAccount `lab4-operator` dentro del namespace `lab4`.
 
-  ```bash
-  kubectl create serviceaccount lab4-operator -n lab4
-  ```
-
   > **Salida esperada:** Kubernetes responde `serviceaccount/lab4-operator created`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s008" %} Consulta el ServiceAccount para confirmar su namespace y existencia antes de asociarle permisos.
-
-  ```bash
-  kubectl get serviceaccount lab4-operator -n lab4
-  ```
 
   > **Salida esperada:** Se muestra `lab4-operator` dentro del namespace `lab4`.
   {: .lab-note .output .compact}
@@ -168,18 +132,10 @@ Utilizarás impersonación para preguntar al API Server qué podría hacer el Se
 
 - {% include step_label.html id="s009" %} Comprueba si `lab4-operator` puede listar Pods dentro de su propio namespace antes de crear una política RBAC.
 
-  ```bash
-  kubectl auth can-i list pods -n lab4 --as=system:serviceaccount:lab4:lab4-operator
-  ```
-
   > **Salida esperada:** El resultado es `no`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s010" %} Comprueba también si la misma identidad puede consultar nodos, recurso que no pertenece a ningún namespace.
-
-  ```bash
-  kubectl auth can-i list nodes --as=system:serviceaccount:lab4:lab4-operator
-  ```
 
   > **Salida esperada:** El resultado es `no`.
   {: .lab-note .output .compact}
@@ -204,14 +160,6 @@ Crearás el archivo dentro del workspace para conservar evidencia de la polític
 
 - {% include step_label.html id="s011" %} Crea el directorio `workspace/lab4` desde la raíz del repositorio y entra en él.
 
-  ```bash
-  mkdir -p workspace/lab4
-  ```
-
-  ```bash
-  cd workspace/lab4
-  ```
-
   > **Salida esperada:** La terminal queda ubicada en `cka-labs/workspace/lab4`.
   {: .lab-note .output .compact}
 
@@ -219,23 +167,6 @@ Crearás el archivo dentro del workspace para conservar evidencia de la polític
 
   > **Importante:** Los Pods pertenecen al core API group, representado por `""`; los Deployments pertenecen a `apps`. Los verbos `get`, `list` y `watch` permiten lectura sin conceder creación, modificación o eliminación.
   {: .lab-note .important .compact}
-
-  ```bash
-  cat > role-reader.yaml <<'EOF'
-  apiVersion: rbac.authorization.k8s.io/v1
-  kind: Role
-  metadata:
-    name: workload-reader
-    namespace: lab4
-  rules:
-    - apiGroups: [""]
-      resources: ["pods"]
-      verbs: ["get", "list", "watch"]
-    - apiGroups: ["apps"]
-      resources: ["deployments"]
-      verbs: ["get", "list", "watch"]
-  EOF
-  ```
 
   > **Salida esperada:** Se crea `workspace/lab4/role-reader.yaml` con dos reglas de lectura.
   {: .lab-note .output .compact}
@@ -246,18 +177,10 @@ Antes de crearlo en el clúster comprobarás que el manifiesto puede ser procesa
 
 - {% include step_label.html id="s013" %} Ejecuta una validación client-side del manifiesto sin crear todavía el Role.
 
-  ```bash
-  kubectl apply --dry-run=client -f role-reader.yaml
-  ```
-
   > **Salida esperada:** kubectl muestra `role.rbac.authorization.k8s.io/workload-reader created (dry run)`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s014" %} Aplica el manifiesto para registrar el Role `workload-reader` dentro de `lab4`.
-
-  ```bash
-  kubectl apply -f role-reader.yaml
-  ```
 
   > **Salida esperada:** Kubernetes responde `role.rbac.authorization.k8s.io/workload-reader created`.
   {: .lab-note .output .compact}
@@ -268,18 +191,10 @@ Revisarás el objeto creado para relacionar el YAML con la forma en que Kubernet
 
 - {% include step_label.html id="s015" %} Describe el Role y localiza los recursos y verbos concedidos por cada regla.
 
-  ```bash
-  kubectl describe role workload-reader -n lab4
-  ```
-
   > **Salida esperada:** Se muestran permisos `get`, `list` y `watch` sobre `pods` y `deployments`, sin verbos de escritura.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s016" %} Confirma que crear Pods no forma parte de las reglas definidas en el Role.
-
-  ```bash
-  kubectl auth can-i create pods -n lab4 --as=system:serviceaccount:lab4:lab4-operator
-  ```
 
   > **Salida esperada:** El resultado continúa siendo `no`, porque todavía no existe un binding y además el Role no concede `create`.
   {: .lab-note .output .compact}
@@ -304,21 +219,10 @@ Generarás el binding mediante kubectl y después inspeccionarás su referencia 
 
 - {% include step_label.html id="s017" %} Asocia el Role `workload-reader` con el ServiceAccount `lab4-operator` mediante un RoleBinding namespaced.
 
-  ```bash
-  kubectl create rolebinding lab4-operator-reader \
-    --role=workload-reader \
-    --serviceaccount=lab4:lab4-operator \
-    -n lab4
-  ```
-
   > **Salida esperada:** Kubernetes responde `rolebinding.rbac.authorization.k8s.io/lab4-operator-reader created`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s018" %} Describe el RoleBinding para comprobar el `RoleRef` y el ServiceAccount configurado como sujeto.
-
-  ```bash
-  kubectl describe rolebinding lab4-operator-reader -n lab4
-  ```
 
   > **Salida esperada:** `RoleRef` apunta a `workload-reader` y el sujeto corresponde a `lab4-operator` del namespace `lab4`.
   {: .lab-note .output .compact}
@@ -329,18 +233,10 @@ Ahora que existe la asociación, las acciones incluidas en el Role deben cambiar
 
 - {% include step_label.html id="s019" %} Verifica que el ServiceAccount ya puede listar Pods dentro de `lab4`.
 
-  ```bash
-  kubectl auth can-i list pods -n lab4 --as=system:serviceaccount:lab4:lab4-operator
-  ```
-
   > **Salida esperada:** El resultado es `yes`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s020" %} Verifica que también puede consultar Deployments dentro del mismo namespace.
-
-  ```bash
-  kubectl auth can-i get deployments.apps -n lab4 --as=system:serviceaccount:lab4:lab4-operator
-  ```
 
   > **Salida esperada:** El resultado es `yes`.
   {: .lab-note .output .compact}
@@ -354,18 +250,10 @@ Validar una política de privilegio mínimo también implica probar explícitame
 
 - {% include step_label.html id="s021" %} Comprueba que el ServiceAccount no puede eliminar Pods en `lab4`.
 
-  ```bash
-  kubectl auth can-i delete pods -n lab4 --as=system:serviceaccount:lab4:lab4-operator
-  ```
-
   > **Salida esperada:** El resultado es `no`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s022" %} Comprueba que tampoco puede listar Pods en el namespace `kube-system`.
-
-  ```bash
-  kubectl auth can-i list pods -n kube-system --as=system:serviceaccount:lab4:lab4-operator
-  ```
 
   > **Salida esperada:** El resultado es `no`, demostrando que el RoleBinding solo tiene efecto dentro de `lab4`.
   {: .lab-note .output .compact}
@@ -393,18 +281,10 @@ El token será utilizado únicamente durante esta práctica y no se escribirá m
 
 - {% include step_label.html id="s023" %} Solicita un token con duración de 30 minutos y guárdalo temporalmente en la variable `LAB4_TOKEN`.
 
-  ```bash
-  LAB4_TOKEN=$(kubectl create token lab4-operator -n lab4 --duration=30m)
-  ```
-
   > **Salida esperada:** La variable queda cargada con un token temporal; el comando no necesita imprimirlo en pantalla.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s024" %} Confirma únicamente que la variable contiene datos sin revelar la credencial.
-
-  ```bash
-  test -n "$LAB4_TOKEN" && echo "Token temporal cargado"
-  ```
 
   > **Salida esperada:** Se muestra `Token temporal cargado`.
   {: .lab-note .output .compact}
@@ -415,46 +295,20 @@ Partirás de la configuración del contexto actual para conservar endpoint y cer
 
 - {% include step_label.html id="s025" %} Guarda el nombre del contexto y del clúster actual para reutilizar su configuración de conexión.
 
-  ```bash
-  CURRENT_CONTEXT=$(kubectl config current-context)
-  ```
-
-  ```bash
-  CURRENT_CLUSTER=$(kubectl config view -o jsonpath="{.contexts[?(@.name==\"${CURRENT_CONTEXT}\")].context.cluster}")
-  ```
-
   > **Salida esperada:** `CURRENT_CONTEXT` y `CURRENT_CLUSTER` identifican el contexto administrativo y el clúster al que apunta.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s026" %} Crea un kubeconfig independiente que contenga únicamente la configuración activa de conexión al clúster.
-
-  ```bash
-  kubectl config view --raw --minify > lab4-operator.kubeconfig
-  ```
 
   > **Salida esperada:** Se crea `lab4-operator.kubeconfig` dentro de `workspace/lab4`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s027" %} Agrega al kubeconfig una credencial denominada `lab4-operator` utilizando el token temporal.
 
-  ```bash
-  kubectl config set-credentials lab4-operator \
-    --token="$LAB4_TOKEN" \
-    --kubeconfig=lab4-operator.kubeconfig
-  ```
-
   > **Salida esperada:** kubectl informa que el usuario `lab4-operator` fue configurado.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s028" %} Crea el contexto `lab4-operator` usando esa credencial y establece `lab4` como namespace predeterminado.
-
-  ```bash
-  kubectl config set-context lab4-operator \
-    --cluster="$CURRENT_CLUSTER" \
-    --user=lab4-operator \
-    --namespace=lab4 \
-    --kubeconfig=lab4-operator.kubeconfig
-  ```
 
   > **Salida esperada:** kubectl informa que el contexto `lab4-operator` fue creado.
   {: .lab-note .output .compact}
@@ -465,18 +319,10 @@ Comprobarás que el comportamiento observado mediante impersonación coincide co
 
 - {% include step_label.html id="s029" %} Lista los Pods utilizando exclusivamente el nuevo kubeconfig y el contexto `lab4-operator`.
 
-  ```bash
-  kubectl --kubeconfig=lab4-operator.kubeconfig --context=lab4-operator get pods
-  ```
-
   > **Salida esperada:** Se muestran los Pods del Deployment `web`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s030" %} Intenta consultar nodos utilizando el mismo kubeconfig para comprobar que el acceso cluster-scoped continúa restringido.
-
-  ```bash
-  kubectl --kubeconfig=lab4-operator.kubeconfig --context=lab4-operator get nodes
-  ```
 
   > **Salida esperada:** La solicitud es rechazada con `Forbidden`, porque todavía no se ha concedido permiso para leer `nodes`.
   {: .lab-note .output .compact}
@@ -501,19 +347,6 @@ El nuevo permiso será deliberadamente estrecho: solo lectura de nodos mediante 
 
 - {% include step_label.html id="s031" %} Crea `clusterrole-node-reader.yaml` con una regla de lectura sobre el recurso `nodes`.
 
-  ```bash
-  cat > clusterrole-node-reader.yaml <<'EOF'
-  apiVersion: rbac.authorization.k8s.io/v1
-  kind: ClusterRole
-  metadata:
-    name: lab4-node-reader
-  rules:
-    - apiGroups: [""]
-      resources: ["nodes"]
-      verbs: ["get", "list"]
-  EOF
-  ```
-
   > **Salida esperada:** Se crea el manifiesto local del ClusterRole sin incluir permisos de escritura.
   {: .lab-note .output .compact}
 
@@ -535,12 +368,6 @@ Para que el permiso sea efectivo sobre un recurso cluster-scoped utilizarás un 
 
 - {% include step_label.html id="s033" %} Crea el ClusterRoleBinding que asigna `lab4-node-reader` al ServiceAccount `lab4-operator`.
 
-  ```bash
-  kubectl create clusterrolebinding lab4-operator-node-reader \
-    --clusterrole=lab4-node-reader \
-    --serviceaccount=lab4:lab4-operator
-  ```
-
   > **Salida esperada:** Kubernetes responde `clusterrolebinding.rbac.authorization.k8s.io/lab4-operator-node-reader created`.
   {: .lab-note .output .compact}
 
@@ -550,18 +377,10 @@ Comprobarás que solo cambió la capacidad cluster-scoped que acabas de conceder
 
 - {% include step_label.html id="s034" %} Verifica mediante autorización que la identidad ahora puede listar nodos.
 
-  ```bash
-  kubectl auth can-i list nodes --as=system:serviceaccount:lab4:lab4-operator
-  ```
-
   > **Salida esperada:** El resultado es `yes`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s035" %} Repite la consulta de nodos utilizando el kubeconfig temporal para probar el permiso con autenticación real.
-
-  ```bash
-  kubectl --kubeconfig=lab4-operator.kubeconfig --context=lab4-operator get nodes
-  ```
 
   > **Salida esperada:** Se muestran los nodos del clúster sin error `Forbidden`.
   {: .lab-note .output .compact}
@@ -586,56 +405,16 @@ Crearás un segundo ServiceAccount, un Role y un RoleBinding con una inconsisten
 
 - {% include step_label.html id="s036" %} Crea el ServiceAccount `support-agent`, que será la identidad que debe recibir acceso de lectura a ConfigMaps.
 
-  ```bash
-  kubectl create serviceaccount support-agent -n lab4
-  ```
-
   > **Salida esperada:** Kubernetes responde `serviceaccount/support-agent created`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s037" %} Crea un ConfigMap de referencia para disponer de un recurso que el agente deberá consultar.
 
-  ```bash
-  kubectl create configmap app-settings --from-literal=environment=training -n lab4
-  ```
-
   > **Salida esperada:** Kubernetes responde `configmap/app-settings created`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html id="s038" %} Aplica el siguiente manifiesto.
+- {% include step_label.html id="s038" %} Crea el Role y RoleBinding en el archivo llamado `broken-rbac.yaml` en el namespace lab4 que asigna el rol configmap-reader con permisos get y list de configmaps al ServiceAccount support-viewer con el nombre support-configmap-reader y aplicalo.
 
-
-  ```bash
-  cat > broken-rbac.yaml <<'EOF'
-  apiVersion: rbac.authorization.k8s.io/v1
-  kind: Role
-  metadata:
-    name: configmap-reader
-    namespace: lab4
-  rules:
-    - apiGroups: [""]
-      resources: ["configmaps"]
-      verbs: ["get", "list"]
-  ---
-  apiVersion: rbac.authorization.k8s.io/v1
-  kind: RoleBinding
-  metadata:
-    name: support-configmap-reader
-    namespace: lab4
-  subjects:
-    - kind: ServiceAccount
-      name: support-viewer
-      namespace: lab4
-  roleRef:
-    apiGroup: rbac.authorization.k8s.io
-    kind: Role
-    name: configmap-reader
-  EOF
-  ```
-
-  ```bash
-  kubectl apply -f broken-rbac.yaml
-  ```
 
   > **Salida esperada:** El Role y el RoleBinding se crean correctamente; Kubernetes no considera inválido que el nombre del sujeto no corresponda a la identidad que pretendes autorizar.
   {: .lab-note .output .compact}
@@ -645,10 +424,6 @@ Crearás un segundo ServiceAccount, un Role y un RoleBinding con una inconsisten
 A partir de aquí no recibirás comandos de corrección. Utiliza inspección de RBAC, `kubectl auth can-i` y los comandos de ayuda que consideres necesarios.
 
 - {% include step_label.html id="s039" %} Comprueba si `support-agent` puede obtener ConfigMaps en `lab4` y confirma que la autorización falla.
-
-  ```bash
-  kubectl auth can-i get configmaps -n lab4 --as=system:serviceaccount:lab4:support-agent
-  ```
 
   > **Salida esperada:** El resultado es `no`.
   {: .lab-note .output .compact}
@@ -662,18 +437,10 @@ Las siguientes pruebas indican qué debe cumplirse, pero no proporcionan el coma
 
 - {% include step_label.html id="s040" %} Ejecuta nuevamente la comprobación de lectura después de aplicar tu corrección.
 
-  ```bash
-  kubectl auth can-i get configmaps -n lab4 --as=system:serviceaccount:lab4:support-agent
-  ```
-
   > **Salida esperada:** El resultado ahora es `yes`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s041" %} Verifica que el agente no recibió permiso para eliminar ConfigMaps.
-
-  ```bash
-  kubectl auth can-i delete configmaps -n lab4 --as=system:serviceaccount:lab4:support-agent
-  ```
 
   > **Salida esperada:** El resultado es `no`.
   {: .lab-note .output .compact}
@@ -698,10 +465,6 @@ La identidad ya se proporciona para que el reto se concentre en diseñar la auto
 
 - {% include step_label.html id="s042" %} Crea el ServiceAccount `audit-reader` dentro del namespace `lab4`.
 
-  ```bash
-  kubectl create serviceaccount audit-reader -n lab4
-  ```
-
   > **Salida esperada:** Kubernetes responde `serviceaccount/audit-reader created`.
   {: .lab-note .output .compact}
 
@@ -723,40 +486,20 @@ Utiliza estas pruebas como criterios de aceptación. Si alguna respuesta no coin
 
 - {% include step_label.html id="s044" %} Comprueba que el auditor puede listar Pods dentro de `lab4`.
 
-  ```bash
-  kubectl auth can-i list pods -n lab4 --as=system:serviceaccount:lab4:audit-reader
-  ```
-
   > **Salida esperada:** El resultado es `yes`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s045" %} Comprueba que el auditor puede obtener Deployments dentro de `lab4`.
-
-  ```bash
-  kubectl auth can-i get deployments.apps -n lab4 --as=system:serviceaccount:lab4:audit-reader
-  ```
 
   > **Salida esperada:** El resultado es `yes`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s046" %} Comprueba que el auditor no puede eliminar Pods ni consultar Secrets.
 
-  ```bash
-  kubectl auth can-i delete pods -n lab4 --as=system:serviceaccount:lab4:audit-reader
-  ```
-
-  ```bash
-  kubectl auth can-i get secrets -n lab4 --as=system:serviceaccount:lab4:audit-reader
-  ```
-
   > **Salida esperada:** Ambos comandos responden `no`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s047" %} Comprueba que el auditor tampoco puede listar Pods fuera de `lab4`.
-
-  ```bash
-  kubectl auth can-i list pods -n kube-system --as=system:serviceaccount:lab4:audit-reader
-  ```
 
   > **Salida esperada:** El resultado es `no`.
   {: .lab-note .output .compact}
@@ -766,31 +509,15 @@ Utiliza estas pruebas como criterios de aceptación. Si alguna respuesta no coin
 
 - {% include step_label.html id="s048" %} Elimina el ClusterRoleBinding y el ClusterRole creados específicamente para el acceso a nodos.
 
-  ```bash
-  kubectl delete clusterrolebinding lab4-operator-node-reader
-  ```
-
-  ```bash
-  kubectl delete clusterrole lab4-node-reader
-  ```
-
   > **Salida esperada:** Kubernetes confirma la eliminación de ambos objetos cluster-scoped.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s049" %} Elimina el namespace `lab4` y conserva los manifiestos locales como evidencia de la práctica.
 
-  ```bash
-  kubectl delete namespace lab4 --wait=true
-  ```
-
   > **Salida esperada:** Kubernetes responde `namespace "lab4" deleted`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s050" %} Elimina de la sesión de Git Bash la variable que contenía el token temporal.
-
-  ```bash
-  unset LAB4_TOKEN
-  ```
 
   > **Salida esperada:** La variable deja de existir en la sesión actual; `workspace/lab4` permanece disponible con los manifiestos creados.
   {: .lab-note .output .compact}

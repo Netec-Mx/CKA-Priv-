@@ -92,18 +92,10 @@ Comprobarás que los dos nodos actualmente unidos están disponibles y revisará
   > **Nota:** La comparación con esta salida te permitirá distinguir posteriormente un cambio de scheduling de una falla real del nodo.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get nodes -o wide
-  ```
-
   > **Salida esperada:** `cka-control` y `cka-worker1` aparecen `Ready`; `cka-worker2` no aparece porque todavía no está unido.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s005" %} Verifica que `cka-worker1` inicia la práctica disponible para scheduling y sin taints que alteren el escenario.
-
-  ```bash
-  kubectl describe node cka-worker1 | grep -E 'Taints:|Unschedulable:'
-  ```
 
   > **Salida esperada:** El nodo no está marcado como unschedulable y no presenta un taint administrativo que impida programar la carga del laboratorio.
   {: .lab-note .output .compact}
@@ -112,10 +104,6 @@ Comprobarás que los dos nodos actualmente unidos están disponibles y revisará
 
   > **Importante:** No elimines este taint. La práctica utilizará una `toleration` específica para permitir reprogramación temporal sin alterar la configuración administrativa del nodo.
   {: .lab-note .important .compact}
-
-  ```bash
-  kubectl describe node cka-control | grep -A2 '^Taints:'
-  ```
 
   {: .lab-note .important .compact}
 
@@ -126,75 +114,20 @@ Comprobarás que los dos nodos actualmente unidos están disponibles y revisará
 
 Crearás un Deployment con tres réplicas, afinidad preferida hacia cka-worker1 y toleration para que pueda reprogramarse en cka-control cuando el worker entre en mantenimiento.
 
-- {% include step_label.html id="s007" %} Aísla todos los recursos temporales de la práctica en un namespace dedicado para facilitar validación y limpieza.
+- {% include step_label.html id="s007" %} Aísla todos los recursos temporales de la práctica en un namespace dedicado `lab2` para facilitar validación y limpieza.
 
   > **Nota:** Mantener los recursos de laboratorio en un namespace propio reduce el riesgo de confundirlos con componentes del sistema durante `drain`.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl create namespace lab2
-  ```
 
   > **Salida esperada:** Se confirma la creación del namespace `lab2`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s008" %} Construye el Deployment de prueba con tres réplicas, preferencia por `cka-worker1` y toleration para el control plane.
 
-  > **Nota:** `preferredDuringSchedulingIgnoredDuringExecution` expresa una preferencia, no una obligación. Por eso las réplicas pueden migrar a `cka-control` cuando el worker deje de estar disponible para nuevas asignaciones.
+  > **Nota:** `preferredDuringSchedulingIgnoredDuringExecution` expresa una preferencia, no una obligación. Por eso las réplicas pueden migrar a `cka-control` cuando el worker deje de estar disponible para nuevas asignaciones. Puedes usar la imagen de ejemplo: `nginx:1.27-alpine`
   {: .lab-note .info .compact}
 
-  ```bash
-  cat > lab2-app.yaml <<'EOF'
-  apiVersion: apps/v1
-  kind: Deployment
-  metadata:
-    name: maintenance-app
-    namespace: lab2
-  spec:
-    replicas: 3
-    selector:
-      matchLabels:
-        app: maintenance-app
-    template:
-      metadata:
-        labels:
-          app: maintenance-app
-      spec:
-        tolerations:
-          - key: node-role.kubernetes.io/control-plane
-            operator: Exists
-            effect: NoSchedule
-        affinity:
-          nodeAffinity:
-            preferredDuringSchedulingIgnoredDuringExecution:
-              - weight: 100
-                preference:
-                  matchExpressions:
-                    - key: kubernetes.io/hostname
-                      operator: In
-                      values:
-                        - cka-worker1
-        containers:
-          - name: web
-            image: nginx:1.27-alpine
-            ports:
-              - containerPort: 80
-  EOF
-  ```
-
 - {% include step_label.html id="s009" %} Aplica el manifiesto y confirma que el Deployment alcanza tres réplicas disponibles antes de iniciar el mantenimiento.
-
-  ```bash
-  kubectl apply -f lab2-app.yaml
-  ```
-
-  ```bash
-  kubectl rollout status deployment/maintenance-app -n lab2 --timeout=120s
-  ```
-
-  ```bash
-  kubectl get pods -n lab2 -o wide
-  ```
 
   > **Salida esperada:** El Deployment queda disponible con tres réplicas y, en condiciones normales, los Pods se programan preferentemente en `cka-worker1`.
   {: .lab-note .output .compact}
@@ -223,10 +156,6 @@ Aplicarás cordon al worker y comprobarás la diferencia entre el estado operati
   > **Nota:** `cordon` no apaga el nodo ni expulsa Pods. Únicamente cambia `spec.unschedulable` para bloquear nuevas asignaciones.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl cordon cka-worker1
-  ```
-
   > **Salida esperada:** kubectl confirma que `cka-worker1` fue marcado como cordoned.
   {: .lab-note .output .compact}
 
@@ -235,18 +164,10 @@ Aplicarás cordon al worker y comprobarás la diferencia entre el estado operati
   > **Importante:** `Ready,SchedulingDisabled` no significa que el nodo esté fallando; indica `Ready=True` y scheduling deshabilitado administrativamente.
   {: .lab-note .important .compact}
 
-  ```bash
-  kubectl get nodes
-  ```
-
   > **Salida esperada:** `cka-worker1` aparece como `Ready,SchedulingDisabled`; el nodo sigue sano, pero ya no acepta nuevas asignaciones.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s012" %} Confirma directamente en el objeto Node que el cambio de `cordon` quedó registrado como `Unschedulable: true`.
-
-  ```bash
-  kubectl describe node cka-worker1 | grep 'Unschedulable:'
-  ```
 
   > **Salida esperada:** Se muestra `Unschedulable: true`.
   {: .lab-note .output .compact}
@@ -260,29 +181,7 @@ Crearás un Pod que tolera el control plane. Como cka-worker1 está cordoned, el
   > **Nota:** Sin esta toleration el Pod podría quedar `Pending`, porque actualmente sólo `cka-control` y `cka-worker1` forman parte del clúster.
   {: .lab-note .info .compact}
 
-  ```bash
-  cat > lab2-cordon-test.yaml <<'EOF'
-  apiVersion: v1
-  kind: Pod
-  metadata:
-    name: cordon-test
-    namespace: lab2
-  spec:
-    tolerations:
-      - key: node-role.kubernetes.io/control-plane
-        operator: Exists
-        effect: NoSchedule
-    containers:
-      - name: web
-        image: nginx:1.27-alpine
-  EOF
-  ```
-
 - {% include step_label.html id="s014" %} Envía el Pod al API Server para que el scheduler seleccione un nodo disponible bajo las condiciones actuales.
-
-  ```bash
-  kubectl apply -f lab2-cordon-test.yaml
-  ```
 
   > **Salida esperada:** Se crea el Pod `cordon-test`.
   {: .lab-note .output .compact}
@@ -291,14 +190,6 @@ Crearás un Pod que tolera el control plane. Como cka-worker1 está cordoned, el
 
   > **Nota:** La columna `NODE` es la evidencia que relaciona el estado `SchedulingDisabled` con la decisión del scheduler.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl wait --for=condition=Ready pod/cordon-test -n lab2 --timeout=120s
-  ```
-
-  ```bash
-  kubectl get pod cordon-test -n lab2 -o wide
-  ```
 
   > **Salida esperada:** El Pod queda `Running` en `cka-control`, porque `cka-worker1` no acepta nuevas cargas mientras permanece cordoned.
   {: .lab-note .output .compact}
@@ -312,27 +203,15 @@ Revisarás la aplicación previa para comprobar que cordon cambia el scheduling 
   > **Nota:** Este paso demuestra la diferencia operacional clave: `cordon` evita nuevas asignaciones, mientras que `drain` intenta evacuar cargas existentes.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get pods -n lab2 -l app=maintenance-app -o wide
-  ```
-
   > **Salida esperada:** Los Pods existentes continúan ejecutándose; los que estaban en `cka-worker1` no fueron expulsados por `cordon`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s017" %} Inspecciona los eventos para observar la decisión de scheduling y relacionarla con el estado administrativo del worker.
 
-  ```bash
-  kubectl get events -n lab2 --sort-by=.lastTimestamp
-  ```
-
   > **Salida esperada:** Los eventos muestran la creación y asignación del Pod temporal y de los Pods de la aplicación sin fallas persistentes.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s018" %} Elimina únicamente el Pod de comprobación para dejar activa sólo la carga que será utilizada durante el `drain`.
-
-  ```bash
-  kubectl delete pod cordon-test -n lab2
-  ```
 
   > **Salida esperada:** El Pod `cordon-test` se elimina y el Deployment `maintenance-app` permanece activo.
   {: .lab-note .output .compact}
@@ -360,10 +239,6 @@ Confirmarás qué cargas existen en el worker, ejecutarás el drenado con la opc
   > **Importante:** Antes de ejecutar `drain`, revisa qué Pods existen en el nodo. Esto permite anticipar objetos que podrían bloquear la evacuación.
   {: .lab-note .important .compact}
 
-  ```bash
-  kubectl get pods -A -o wide --field-selector spec.nodeName=cka-worker1
-  ```
-
   > **Salida esperada:** Se observan Pods del Deployment de laboratorio y Pods de infraestructura como `calico-node` y `kube-proxy`.
   {: .lab-note .output .compact}
 
@@ -372,21 +247,9 @@ Confirmarás qué cargas existen en el worker, ejecutarás el drenado con la opc
   > **Nota:** `drain` no elimina Pods de DaemonSets porque éstos representan normalmente agentes por nodo, como CNI o `kube-proxy`; por ello utilizarás `--ignore-daemonsets`.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get daemonsets -A
-  ```
-
-  {: .lab-note .info .compact}
-
 - {% include step_label.html id="s021" %} Drena `cka-worker1` para evacuar las cargas administradas y preparar el nodo para una intervención.
 
   > **Importante:** Usa únicamente `--ignore-daemonsets`. No agregues `--force` ni `--delete-emptydir-data` si el comando no los solicita; en un escenario CKA debes interpretar primero la causa de cualquier bloqueo.
-  {: .lab-note .important .compact}
-
-  ```bash
-  kubectl drain cka-worker1 --ignore-daemonsets
-  ```
-
   {: .lab-note .important .compact}
 
   > **Salida esperada:** Los Pods administrados que pueden ser desalojados son evicted y el comando finaliza indicando que el nodo fue drained.
@@ -396,10 +259,6 @@ Confirmarás qué cargas existen en el worker, ejecutarás el drenado con la opc
 
   > **Nota:** `drain` aplica el equivalente de un `cordon` como parte del proceso; el nodo debe permanecer `SchedulingDisabled` hasta ejecutar `uncordon`.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get nodes
-  ```
 
   > **Salida esperada:** `cka-worker1` permanece `Ready,SchedulingDisabled`.
   {: .lab-note .output .compact}
@@ -413,18 +272,10 @@ Revisarás los Pods recreados por el Deployment y verificarás que el scheduler 
   > **Nota:** Kubernetes no “mueve” un Pod existente; el controlador crea Pods nuevos para recuperar el estado deseado después de la eviction.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get pods -n lab2 -l app=maintenance-app -o wide -w
-  ```
-
   > **Nota:** Presiona `Ctrl+C` cuando las tres réplicas aparezcan `Running`.
   {: .lab-note .info .compact}
 
 - {% include step_label.html id="s024" %} Verifica que las nuevas réplicas fueron programadas en `cka-control`, el único nodo schedulable que tolera la carga.
-
-  ```bash
-  kubectl get pods -n lab2 -l app=maintenance-app -o wide
-  ```
 
   > **Salida esperada:** Las tres réplicas están `Running` y se encuentran en `cka-control` mientras el worker está drenado.
   {: .lab-note .output .compact}
@@ -434,18 +285,10 @@ Revisarás los Pods recreados por el Deployment y verificarás que el scheduler 
   > **Nota:** Esta validación diferencia la continuidad declarativa de un Deployment del ciclo de vida individual de sus Pods.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get deployment maintenance-app -n lab2
-  ```
-
   > **Salida esperada:** `READY`, `UP-TO-DATE` y `AVAILABLE` convergen en `3`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s026" %} Revisa los eventos para reconstruir cronológicamente la eviction y posterior programación de los reemplazos.
-
-  ```bash
-  kubectl get events -n lab2 --sort-by=.lastTimestamp
-  ```
 
   > **Salida esperada:** Los eventos permiten relacionar la eliminación de Pods anteriores con la creación y programación de sus reemplazos.
   {: .lab-note .output .compact}
@@ -459,27 +302,15 @@ Comprobarás que las cargas de infraestructura administradas por DaemonSets perm
   > **Nota:** Los Pods de DaemonSets permanecen porque su presencia está ligada al nodo y fueron excluidos explícitamente del drain.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get pods -A -o wide --field-selector spec.nodeName=cka-worker1
-  ```
-
   > **Salida esperada:** Los Pods del Deployment ya no están en el worker, pero continúan Pods de DaemonSets como `calico-node` y `kube-proxy`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s028" %} Comprueba el `ownerReference` de `kube-proxy` para demostrar que Kubernetes lo administra mediante un DaemonSet.
 
-  ```bash
-  kubectl get pod -n kube-system -l k8s-app=kube-proxy     --field-selector spec.nodeName=cka-worker1     -o jsonpath='{range .items[*]}{.metadata.name}{" -> "}{.metadata.ownerReferences[0].kind}{"\n"}{end}'
-  ```
-
   > **Salida esperada:** El owner se identifica como `DaemonSet`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s029" %} Relaciona el Pod observado con el estado deseado del DaemonSet `kube-proxy`.
-
-  ```bash
-  kubectl get daemonset kube-proxy -n kube-system
-  ```
 
   > **Salida esperada:** El DaemonSet mantiene una instancia por cada nodo unido que corresponde a su selector.
   {: .lab-note .output .compact}
@@ -490,18 +321,10 @@ Confirmarás que el control plane y la aplicación siguen operativos mientras ck
 
 - {% include step_label.html id="s030" %} Verifica que el mantenimiento del worker no afecta la disponibilidad del API Server del control plane.
 
-  ```bash
-  kubectl get --raw='/readyz'
-  ```
-
   > **Salida esperada:** El API Server responde `ok`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s031" %} Confirma que la aplicación mantiene todas sus réplicas disponibles mientras el worker permanece drenado.
-
-  ```bash
-  kubectl get pods -n lab2 -o wide
-  ```
 
   > **Salida esperada:** Las tres réplicas de `maintenance-app` permanecen `Running` sin Pods `Pending`.
   {: .lab-note .output .compact}
@@ -510,10 +333,6 @@ Confirmarás que el control plane y la aplicación siguen operativos mientras ck
 
   > **Importante:** Un nodo drenado puede seguir completamente sano. `Ready=True` y `SchedulingDisabled` describen dos dimensiones distintas del estado.
   {: .lab-note .important .compact}
-
-  ```bash
-  kubectl get node cka-worker1 -o jsonpath='{.status.conditions[?(@.type=="Ready")].status}{"\n"}'
-  ```
 
   > **Salida esperada:** Se muestra `True`; drain afecta la colocación de cargas, no convierte por sí mismo al nodo en NotReady.
   {: .lab-note .output .compact}
@@ -541,27 +360,15 @@ Harás que el worker vuelva a aceptar nuevas cargas y comprobarás que el nodo c
   > **Nota:** `uncordon` no obliga a que los Pods existentes regresen al worker; sólo vuelve a habilitarlo como candidato para nuevas asignaciones.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl uncordon cka-worker1
-  ```
-
   > **Salida esperada:** kubectl informa que `cka-worker1` fue uncordoned.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s034" %} Verifica que `SchedulingDisabled` desapareció y que ambos nodos continúan `Ready`.
 
-  ```bash
-  kubectl get nodes
-  ```
-
   > **Salida esperada:** `cka-control` y `cka-worker1` aparecen `Ready` y ya no se muestra `SchedulingDisabled`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s035" %} Confirma en el objeto Node que `spec.unschedulable` volvió a su estado normal.
-
-  ```bash
-  kubectl describe node cka-worker1 | grep 'Unschedulable:'
-  ```
 
   > **Salida esperada:** Se muestra `Unschedulable: false`.
   {: .lab-note .output .compact}
@@ -575,27 +382,15 @@ Recrearás las réplicas del Deployment para observar que el scheduler vuelve a 
   > **Nota:** No estás “moviendo” los Pods del control plane. El reinicio genera un nuevo ReplicaSet y nuevas decisiones de scheduling.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl rollout restart deployment/maintenance-app -n lab2
-  ```
-
   > **Salida esperada:** Kubernetes confirma el reinicio del Deployment.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s037" %} Espera a que la sustitución controlada de réplicas termine antes de evaluar su ubicación.
 
-  ```bash
-  kubectl rollout status deployment/maintenance-app -n lab2 --timeout=120s
-  ```
-
   > **Salida esperada:** El rollout termina correctamente sin réplicas no disponibles.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s038" %} Comprueba la columna `NODE` y valida el efecto de la afinidad preferida una vez restaurado el worker.
-
-  ```bash
-  kubectl get pods -n lab2 -l app=maintenance-app -o wide
-  ```
 
   > **Salida esperada:** El scheduler vuelve a preferir `cka-worker1` para las réplicas nuevas, de acuerdo con la afinidad definida.
   {: .lab-note .output .compact}
@@ -606,27 +401,15 @@ Confirmarás que el clúster y la aplicación se encuentran estables antes de re
 
 - {% include step_label.html id="s039" %} Establece una nueva línea base antes del reto: ambos nodos deben estar sanos y aceptar scheduling.
 
-  ```bash
-  kubectl get nodes -o wide
-  ```
-
   > **Salida esperada:** Ambos nodos unidos están `Ready` y schedulable.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s040" %} Verifica que el Deployment haya convergido y que no queden réplicas indisponibles antes del escenario sin guía.
 
-  ```bash
-  kubectl get deployment maintenance-app -n lab2
-  ```
-
   > **Salida esperada:** Las tres réplicas están disponibles.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s041" %} Descarta problemas de scheduling pendientes antes de iniciar el reto administrativo.
-
-  ```bash
-  kubectl get pods -n lab2 --field-selector=status.phase=Pending
-  ```
 
   > **Salida esperada:** No se muestran Pods pendientes.
   {: .lab-note .output .compact}

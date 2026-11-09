@@ -64,18 +64,10 @@ Establecerás una línea base desde cka-control para confirmar que sólo existen
 
 - {% include step_label.html id="s002" %} Verifica que actualmente sólo `cka-control` y `cka-worker1` forman parte del clúster.
 
-  ```bash
-  kubectl get nodes -o wide
-  ```
-
   > **Salida esperada:** Se muestran dos nodos en estado `Ready`; `cka-worker2` todavía no aparece.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s003" %} Confirma que el API Server está listo antes de iniciar el proceso de incorporación.
-
-  ```bash
-  kubectl get --raw='/readyz'
-  ```
 
   > **Salida esperada:** El API Server responde `ok`.
   {: .lab-note .output .compact}
@@ -98,30 +90,10 @@ Comprobarás que el worker tiene runtime, binarios, red y configuración de kern
   > **Importante:** kubelet requiere una configuración compatible con la gestión de memoria y networking del clúster. Si estos valores no son correctos, el join puede completarse parcialmente y dejar el nodo sin funcionar correctamente.
   {: .lab-note .important .compact}
 
-  ```bash
-  swapon --show
-  ```
-
-  ```bash
-  sysctl net.ipv4.ip_forward net.bridge.bridge-nf-call-iptables
-  ```
-
   > **Salida esperada:** `swapon --show` no devuelve dispositivos activos y ambos parámetros de kernel muestran valor `1`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s006" %} Comprueba que containerd y las herramientas Kubernetes están instaladas con las versiones esperadas.
-
-  ```bash
-  systemctl is-active containerd
-  ```
-
-  ```bash
-  kubeadm version -o short
-  ```
-
-  ```bash
-  kubelet --version
-  ```
 
   > **Salida esperada:** containerd está `active` y kubeadm/kubelet corresponden a Kubernetes `v1.35.8`.
   {: .lab-note .output .compact}
@@ -135,27 +107,15 @@ Identificarás por qué kubelet todavía no puede trabajar como miembro del clú
   > **Nota:** En un worker preparado pero aún no unido, kubelet puede aparecer inactivo o reiniciándose porque todavía no dispone de la configuración generada por kubeadm.
   {: .lab-note .info .compact}
 
-  ```bash
-  systemctl status kubelet --no-pager
-  ```
-
   > **Salida esperada:** kubelet puede mostrar estado `inactive`, `failed` o intentos de reinicio; este comportamiento es esperado antes de `kubeadm join`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s008" %} Comprueba que aún no existe el kubeconfig que identifica al kubelet ante el API Server.
 
-  ```bash
-  sudo test -f /etc/kubernetes/kubelet.conf && echo "kubelet.conf existe" || echo "kubelet.conf aún no existe"
-  ```
-
   > **Salida esperada:** Se muestra `kubelet.conf aún no existe`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s009" %} Revisa los mensajes recientes de kubelet para relacionar el estado del servicio con la falta de configuración.
-
-  ```bash
-  sudo journalctl -u kubelet -n 15 --no-pager
-  ```
 
   > **Salida esperada:** Pueden aparecer referencias a archivos de configuración ausentes, como `/var/lib/kubelet/config.yaml`; esto cambiará después del join.
   {: .lab-note .output .compact}
@@ -181,18 +141,10 @@ Consultarás los tokens existentes para entender su función y evitar depender d
 
 - {% include step_label.html id="s010" %} Regresa a la terminal de `cka-control`.
 
-  ```bash
-  hostname
-  ```
-
   > **Salida esperada:** Se muestra `cka-control`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s011" %} Consulta los tokens de bootstrap que existen actualmente.
-
-  ```bash
-  sudo kubeadm token list
-  ```
 
   > **Nota:** Los tokens de kubeadm son credenciales temporales utilizadas durante el descubrimiento y bootstrap inicial del nodo; no sustituyen las credenciales permanentes del kubelet.
   {: .lab-note .info .compact}
@@ -201,10 +153,6 @@ Consultarás los tokens existentes para entender su función y evitar depender d
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s012" %} Confirma el endpoint del API Server que será utilizado por el nuevo worker.
-
-  ```bash
-  kubectl cluster-info
-  ```
 
   > **Salida esperada:** El control plane de Kubernetes se anuncia mediante el endpoint configurado para el clúster.
   {: .lab-note .output .compact}
@@ -218,10 +166,6 @@ Generarás un token nuevo junto con el hash de descubrimiento requerido para val
   > **Importante:** No reutilices comandos antiguos guardados en notas. El token puede haber expirado y el endpoint debe corresponder al clúster actual.
   {: .lab-note .important .compact}
 
-  ```bash
-  sudo kubeadm token create --print-join-command
-  ```
-
   > **Salida esperada:** Se muestra un comando similar a `kubeadm join 10.10.10.10:6443 --token ... --discovery-token-ca-cert-hash sha256:...`.
   {: .lab-note .output .compact}
 
@@ -229,10 +173,6 @@ Generarás un token nuevo junto con el hash de descubrimiento requerido para val
 
   > **Nota:** El `--discovery-token-ca-cert-hash` permite que el worker verifique la CA del clúster y evita confiar ciegamente en cualquier API Server que responda en la dirección indicada.
   {: .lab-note .info .compact}
-
-  ```bash
-  sudo kubeadm token list
-  ```
 
   > **Salida esperada:** El token recién creado aparece como válido y con un tiempo de expiración definido.
   {: .lab-note .output .compact}
@@ -251,18 +191,10 @@ Comprobarás desde cka-worker2 que el endpoint privado del API Server es alcanza
 
 - {% include step_label.html id="s016" %} Vuelve a la sesión de `cka-worker2` y confirma su hostname.
 
-  ```bash
-  hostname
-  ```
-
   > **Salida esperada:** Se muestra `cka-worker2`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s017" %} Comprueba conectividad IP hacia la dirección privada del control plane.
-
-  ```bash
-  ping -c 3 10.10.10.10
-  ```
 
   > **Salida esperada:** Se reciben respuestas desde `10.10.10.10` sin pérdida significativa.
   {: .lab-note .output .compact}
@@ -271,10 +203,6 @@ Comprobarás desde cka-worker2 que el endpoint privado del API Server es alcanza
 
   > **Nota:** El join depende de alcanzar el API Server por TCP/6443. Validarlo antes ayuda a separar problemas de red de problemas propios de kubeadm.
   {: .lab-note .info .compact}
-
-  ```bash
-  timeout 3 bash -c '</dev/tcp/10.10.10.10/6443' && echo "API Server accesible" || echo "No accesible"
-  ```
 
   > **Salida esperada:** Se muestra `API Server accesible`.
   {: .lab-note .output .compact}
@@ -299,18 +227,10 @@ Utilizarás el comando recién generado para iniciar el proceso de descubrimient
 
 - {% include step_label.html id="s019" %} Confirma una última vez que estás trabajando en `cka-worker2`.
 
-  ```bash
-  hostname
-  ```
-
   > **Salida esperada:** Se muestra `cka-worker2`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s020" %} Verifica que el nodo aún no contiene un kubelet.conf generado por una unión anterior.
-
-  ```bash
-  sudo test -f /etc/kubernetes/kubelet.conf && echo "Revisar estado previo" || echo "Nodo preparado para join"
-  ```
 
   > **Salida esperada:** Se muestra `Nodo preparado para join`.
   {: .lab-note .output .compact}
@@ -319,10 +239,6 @@ Utilizarás el comando recién generado para iniciar el proceso de descubrimient
 
   > **Importante:** Sustituye el ejemplo por el comando real obtenido en la Tarea 2. No escribas manualmente un token o hash ficticio.
   {: .lab-note .important .compact}
-
-  ```bash
-  sudo kubeadm join 10.10.10.10:6443 --token <TOKEN_REAL> --discovery-token-ca-cert-hash sha256:<HASH_REAL>
-  ```
 
   > **Salida esperada:** kubeadm completa las verificaciones previas, realiza el bootstrap y muestra un mensaje indicando que el nodo se unió correctamente al clúster.
   {: .lab-note .output .compact}
@@ -341,27 +257,15 @@ Compararás el estado del worker antes y después del join para identificar los 
 
 - {% include step_label.html id="s023" %} Comprueba que ahora existe `/etc/kubernetes/kubelet.conf`.
 
-  ```bash
-  sudo ls -l /etc/kubernetes/kubelet.conf
-  ```
-
   > **Salida esperada:** El archivo existe y fue generado durante el proceso de join.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s024" %} Verifica que kubeadm creó la configuración principal utilizada por kubelet.
 
-  ```bash
-  sudo ls -l /var/lib/kubelet/config.yaml
-  ```
-
   > **Salida esperada:** El archivo `/var/lib/kubelet/config.yaml` existe.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s025" %} Revisa los argumentos dinámicos con los que kubeadm inicia kubelet.
-
-  ```bash
-  sudo cat /var/lib/kubelet/kubeadm-flags.env
-  ```
 
   > **Nota:** Este archivo permite observar parámetros que kubeadm entrega a kubelet, incluida la integración con el runtime mediante CRI.
   {: .lab-note .info .compact}
@@ -370,10 +274,6 @@ Compararás el estado del worker antes y después del join para identificar los 
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s026" %} Confirma que el servicio kubelet ahora permanece activo después de recibir su configuración.
-
-  ```bash
-  systemctl is-active kubelet
-  ```
 
   > **Salida esperada:** El resultado es `active`.
   {: .lab-note .output .compact}
@@ -384,10 +284,6 @@ Observarás cómo el nuevo objeto Node aparece en Kubernetes y distinguirás el 
 
 - {% include step_label.html id="s027" %} Regresa a `cka-control` y lista los nodos inmediatamente después del join.
 
-  ```bash
-  kubectl get nodes -o wide
-  ```
-
   > **Nota:** Durante los primeros segundos `cka-worker2` puede aparecer `NotReady` mientras el CNI y otros componentes por nodo se inicializan. Esto no implica que el join haya fallado.
   {: .lab-note .info .compact}
 
@@ -396,18 +292,10 @@ Observarás cómo el nuevo objeto Node aparece en Kubernetes y distinguirás el 
 
 - {% include step_label.html id="s028" %} Inspecciona las condiciones del nuevo nodo para identificar qué información reporta kubelet.
 
-  ```bash
-  kubectl describe node cka-worker2 | sed -n '/Conditions:/,/Addresses:/p'
-  ```
-
   > **Salida esperada:** Se muestran condiciones como `MemoryPressure`, `DiskPressure`, `PIDPressure` y `Ready`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s029" %} Espera hasta que Kubernetes marque el nodo como Ready.
-
-  ```bash
-  kubectl wait --for=condition=Ready node/cka-worker2 --timeout=180s
-  ```
 
   > **Salida esperada:** Se confirma que `node/cka-worker2` cumple la condición `Ready`.
   {: .lab-note .output .compact}
@@ -418,27 +306,15 @@ Validarás que Kubernetes registró correctamente hostname, IP privada, versión
 
 - {% include step_label.html id="s030" %} Consulta la vista ampliada de los tres nodos.
 
-  ```bash
-  kubectl get nodes -o wide
-  ```
-
   > **Salida esperada:** Se muestran `cka-control`, `cka-worker1` y `cka-worker2` en estado `Ready`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s031" %} Obtén la IP interna registrada para `cka-worker2`.
 
-  ```bash
-  kubectl get node cka-worker2 -o jsonpath='{.status.addresses[?(@.type=="InternalIP")].address}{"\n"}'
-  ```
-
   > **Salida esperada:** Se muestra `10.10.10.12`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s032" %} Confirma la versión de kubelet y el runtime reportados por el nodo.
-
-  ```bash
-  kubectl get node cka-worker2 -o jsonpath='{.status.nodeInfo.kubeletVersion}{" | "}{.status.nodeInfo.containerRuntimeVersion}{"\n"}'
-  ```
 
   > **Salida esperada:** Se muestra kubelet `v1.35.8` y `containerd://2.2.2`.
   {: .lab-note .output .compact}
@@ -463,18 +339,10 @@ Confirmarás que el servicio mantiene comunicación estable con el control plane
 
 - {% include step_label.html id="s033" %} En `cka-worker2`, verifica nuevamente que kubelet está activo.
 
-  ```bash
-  systemctl status kubelet --no-pager
-  ```
-
   > **Salida esperada:** El servicio aparece `active (running)`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s034" %} Revisa los mensajes recientes del servicio después del join.
-
-  ```bash
-  sudo journalctl -u kubelet -n 20 --no-pager
-  ```
 
   > **Nota:** Pueden existir mensajes informativos transitorios durante el arranque, pero ya no deberían repetirse los errores causados por la ausencia de `/var/lib/kubelet/config.yaml`.
   {: .lab-note .info .compact}
@@ -483,10 +351,6 @@ Confirmarás que el servicio mantiene comunicación estable con el control plane
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s035" %} Confirma que el kubeconfig de kubelet hace referencia al clúster y a las credenciales generadas durante bootstrap.
-
-  ```bash
-  sudo grep -E 'server:|client-certificate:|client-key:' /etc/kubernetes/kubelet.conf
-  ```
 
   > **Salida esperada:** Se observa el endpoint del API Server y referencias a credenciales de cliente.
   {: .lab-note .output .compact}
@@ -497,39 +361,23 @@ Comprobarás que kubelet puede utilizar containerd y que los contenedores de inf
 
 - {% include step_label.html id="s036" %} Confirma que containerd permanece activo después de unir el nodo.
 
-  ```bash
-  systemctl is-active containerd
-  ```
-
   > **Salida esperada:** El resultado es `active`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html id="s037" %} Comprueba que crictl utiliza el endpoint configurado de containerd sin advertencias de endpoints por defecto.
+- {% include step_label.html id="s037" %} Comprueba que crictl utiliza el endpoint configurado de containerd sin advertencias de endpoints por defecto. Sino existe instala `crictl`.
 
   > **Nota:** `/etc/crictl.yaml` ya fue preparado en el entorno base para apuntar directamente a `unix:///run/containerd/containerd.sock`.
   {: .lab-note .info .compact}
-
-  ```bash
-  sudo crictl ps
-  ```
 
   > **Salida esperada:** Se muestran contenedores administrados por el runtime y no aparece la advertencia de endpoints CRI predeterminados.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s038" %} Identifica los sandboxes de Pods que containerd mantiene en el nuevo worker.
 
-  ```bash
-  sudo crictl pods
-  ```
-
   > **Salida esperada:** Aparecen sandboxes asociados a componentes como `calico-node` y `kube-proxy`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s039" %} Desde `cka-control` verifica que kubelet reporta a Kubernetes el mismo runtime que acabas de consultar localmente.
-
-  ```bash
-  kubectl get node cka-worker2 -o jsonpath='{.status.nodeInfo.containerRuntimeVersion}{"\n"}'
-  ```
 
   > **Salida esperada:** Kubernetes reporta `containerd://2.2.2`.
   {: .lab-note .output .compact}
@@ -540,10 +388,6 @@ Comprobarás que los DaemonSets de infraestructura extendieron automáticamente 
 
 - {% include step_label.html id="s040" %} Desde `cka-control`, consulta los Pods de Calico y verifica su distribución.
 
-  ```bash
-  kubectl get pods -n kube-system -l k8s-app=calico-node -o wide
-  ```
-
   > **Nota:** Al ser un DaemonSet, `calico-node` crea automáticamente una instancia en cada nodo Linux que coincide con su selector.
   {: .lab-note .info .compact}
 
@@ -552,18 +396,10 @@ Comprobarás que los DaemonSets de infraestructura extendieron automáticamente 
 
 - {% include step_label.html id="s041" %} Comprueba que kube-proxy también tiene una instancia en el nuevo worker.
 
-  ```bash
-  kubectl get pods -n kube-system -l k8s-app=kube-proxy -o wide
-  ```
-
   > **Salida esperada:** Se observa un Pod de `kube-proxy` `Running` en cada uno de los tres nodos.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s042" %} Verifica que ambos DaemonSets alcanzaron el número esperado de instancias listas.
-
-  ```bash
-  kubectl get daemonset calico-node kube-proxy -n kube-system
-  ```
 
   > **Salida esperada:** `DESIRED`, `CURRENT`, `READY` y `AVAILABLE` convergen en `3` para ambos DaemonSets.
   {: .lab-note .output .compact}
@@ -591,43 +427,15 @@ Crearás un Pod de validación dirigido al nuevo nodo para comprobar que schedul
   > **Nota:** El selector se utiliza sólo para esta validación. Permite demostrar explícitamente que el nuevo worker acepta una carga de usuario.
   {: .lab-note .info .compact}
 
-  ```bash
-  cat > lab3-node-test.yaml <<'EOF'
-  apiVersion: v1
-  kind: Pod
-  metadata:
-    name: worker2-test
-  spec:
-    nodeSelector:
-      kubernetes.io/hostname: cka-worker2
-    containers:
-      - name: test
-        image: busybox:1.36
-        command: ["sh", "-c", "sleep 3600"]
-  EOF
-  ```
-
   > **Salida esperada:** El archivo `lab3-node-test.yaml` queda creado.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s044" %} Crea el Pod y espera a que alcance la condición Ready.
 
-  ```bash
-  kubectl apply -f lab3-node-test.yaml
-  ```
-
-  ```bash
-  kubectl wait --for=condition=Ready pod/worker2-test --timeout=120s
-  ```
-
   > **Salida esperada:** Kubernetes confirma que `worker2-test` está Ready.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s045" %} Comprueba que el Pod fue realmente programado en cka-worker2 y recibió una IP del CNI.
-
-  ```bash
-  kubectl get pod worker2-test -o wide
-  ```
 
   > **Salida esperada:** La columna `NODE` muestra `cka-worker2` y el Pod tiene una dirección IP asignada por Calico.
   {: .lab-note .output .compact}
@@ -638,10 +446,6 @@ Utilizarás el Pod recién creado para comprobar que CoreDNS y la red del clúst
 
 - {% include step_label.html id="s046" %} Resuelve el nombre DNS del servicio Kubernetes desde el Pod ubicado en cka-worker2.
 
-  ```bash
-  kubectl exec worker2-test -- nslookup kubernetes.default.svc.cluster.local
-  ```
-
   > **Nota:** Esta prueba recorre varias capas a la vez: Pod, CNI, servicio kube-dns/CoreDNS y resolución del Service `kubernetes`.
   {: .lab-note .info .compact}
 
@@ -650,18 +454,10 @@ Utilizarás el Pod recién creado para comprobar que CoreDNS y la red del clúst
 
 - {% include step_label.html id="s047" %} Comprueba que CoreDNS permanece disponible después de incorporar el nuevo nodo.
 
-  ```bash
-  kubectl get deployment coredns -n kube-system
-  ```
-
   > **Salida esperada:** El Deployment de CoreDNS mantiene sus réplicas disponibles.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s048" %} Revisa que no existan eventos de error persistentes asociados al Pod de validación.
-
-  ```bash
-  kubectl get events --sort-by=.lastTimestamp | tail -n 15
-  ```
 
   > **Salida esperada:** Los eventos recientes muestran scheduling y arranque correctos del Pod sin errores repetitivos.
   {: .lab-note .output .compact}
@@ -675,35 +471,15 @@ Cerrarás la práctica verificando el clúster de tres nodos y eliminando solame
   > **Importante:** No elimines `cka-worker2` del clúster. A partir de este punto será parte de la infraestructura utilizada por las siguientes prácticas.
   {: .lab-note .important .compact}
 
-  ```bash
-  kubectl delete pod worker2-test
-  ```
-
-  ```bash
-  rm -f lab3-node-test.yaml
-  ```
-
   > **Salida esperada:** El Pod temporal se elimina y el nodo permanece unido.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s050" %} Valida el estado final de los tres nodos y confirma que todos están schedulable.
 
-  ```bash
-  kubectl get nodes -o wide
-  ```
-
   > **Salida esperada:** `cka-control`, `cka-worker1` y `cka-worker2` aparecen `Ready`; ningún worker muestra `SchedulingDisabled`.
   {: .lab-note .output .compact}
 
 - {% include step_label.html id="s051" %} Realiza una última comprobación del API Server y de los Pods de sistema.
-
-  ```bash
-  kubectl get --raw='/readyz'
-  ```
-
-  ```bash
-  kubectl get pods -n kube-system -o wide
-  ```
 
   > **Salida esperada:** El API Server responde `ok` y los componentes esenciales de `kube-system` permanecen operativos.
   {: .lab-note .output .compact}

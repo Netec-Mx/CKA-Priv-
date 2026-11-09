@@ -63,32 +63,18 @@ Primero confirmarás el estado general del clúster y localizarás el nodo que e
   > **Nota:** Este paso confirma que el clúster está operativo y permite identificar el nodo que ejecuta el control plane.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get nodes -o wide
-  ```
-
   > **Salida esperada:** El nodo control-plane y los workers aparecen en estado `Ready`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html id="s002" %} Guarda automáticamente el nombre del nodo control-plane en una variable.
+- {% include step_label.html id="s002" %} Guarda automáticamente el nombre del nodo control-plane en una variable **CONTROL_PLANE**.
 
   > **Nota:** Guardar el nombre evita escribirlo manualmente en pasos posteriores y reduce errores de selección.
   {: .lab-note .info .compact}
-
-  ```bash
-  CONTROL_PLANE=$(kubectl get nodes \
-    -l node-role.kubernetes.io/control-plane \
-    -o jsonpath='{.items[0].metadata.name}')
-  ```
 
 - {% include step_label.html id="s003" %} Muestra la variable para confirmar qué nodo usarás durante la práctica.
 
   > **Nota:** Verifica el valor antes de continuar para asegurarte de que trabajarás sobre el nodo correcto.
   {: .lab-note .info .compact}
-
-  ```bash
-  echo "$CONTROL_PLANE"
-  ```
 
   > **Salida esperada:** Se muestra el nombre del nodo control-plane.
   {: .lab-note .output .compact}
@@ -105,10 +91,6 @@ Ahora revisarás la configuración local del nodo control-plane.
   > **Nota:** Este archivo define cómo kubelet ejecuta etcd como static Pod en el nodo control-plane.
   {: .lab-note .info .compact}
 
-  ```bash
-  sudo ls -l /etc/kubernetes/manifests/etcd.yaml
-  ```
-
   > **Salida esperada:** Se muestra `/etc/kubernetes/manifests/etcd.yaml`.
   {: .lab-note .output .compact}
 
@@ -117,12 +99,6 @@ Ahora revisarás la configuración local del nodo control-plane.
   > **Nota:** Estos valores permiten reconocer la ubicación de los datos y la configuración que deberá conservarse durante la restauración.
   {: .lab-note .info .compact}
 
-  ```bash
-  sudo grep -E -- \
-    '--name=|--data-dir=|--listen-client-urls=|--advertise-client-urls=|--initial-cluster=' \
-    /etc/kubernetes/manifests/etcd.yaml
-  ```
-
   > **Salida esperada:** Se observan parámetros como `--data-dir=/var/lib/etcd` y los endpoints de cliente y peer.
   {: .lab-note .output .compact}
 
@@ -130,10 +106,6 @@ Ahora revisarás la configuración local del nodo control-plane.
 
   > **Nota:** La consulta confirma desde Kubernetes que etcd está activo y asociado al control-plane.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get pods -n kube-system -l component=etcd -o wide
-  ```
 
   > **Salida esperada:** El Pod de etcd aparece `Running`.
   {: .lab-note .output .compact}
@@ -150,10 +122,6 @@ Crearás información antes del snapshot. Este recurso será tu evidencia de que
   > **Nota:** Este namespace formará parte del estado almacenado en el snapshot y servirá como referencia durante la recuperación.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl create namespace etcd-before
-  ```
-
   > **Salida esperada:** `namespace/etcd-before created`.
   {: .lab-note .output .compact}
 
@@ -162,12 +130,6 @@ Crearás información antes del snapshot. Este recurso será tu evidencia de que
   > **Nota:** El ConfigMap funciona como marcador para comprobar posteriormente que el estado previo al snapshot fue recuperado.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl create configmap recovery-marker \
-    --from-literal=state=before-snapshot \
-    -n etcd-before
-  ```
-
   > **Salida esperada:** `configmap/recovery-marker created`.
   {: .lab-note .output .compact}
 
@@ -175,12 +137,6 @@ Crearás información antes del snapshot. Este recurso será tu evidencia de que
 
   > **Nota:** Esta validación establece el contenido exacto que deberá reaparecer después del restore.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get configmap recovery-marker \
-    -n etcd-before \
-    -o jsonpath='{.data.state}{"\n"}'
-  ```
 
   > **Salida esperada:** `before-snapshot`.
   {: .lab-note .output .compact}
@@ -210,10 +166,6 @@ etcd utiliza TLS. Antes de conectarte directamente debes conocer el endpoint y u
   > **Nota:** Confirma que la herramienta usada para crear el snapshot está disponible en el nodo.
   {: .lab-note .info .compact}
 
-  ```bash
-  etcdctl version
-  ```
-
   > **Salida esperada:** Se muestra la versión de `etcdctl`.
   {: .lab-note .output .compact}
 
@@ -221,10 +173,6 @@ etcd utiliza TLS. Antes de conectarte directamente debes conocer el endpoint y u
 
   > **Nota:** Confirma que la herramienta usada para validar y restaurar snapshots está disponible.
   {: .lab-note .info .compact}
-
-  ```bash
-  etcdutl version
-  ```
 
   > **Salida esperada:** Se muestra la versión de `etcdutl`.
   {: .lab-note .output .compact}
@@ -234,10 +182,6 @@ etcd utiliza TLS. Antes de conectarte directamente debes conocer el endpoint y u
   > **Nota:** Verifica que el shell puede localizar ambos ejecutables desde el PATH.
   {: .lab-note .info .compact}
 
-  ```bash
-  command -v etcdctl && command -v etcdutl
-  ```
-
   > **Salida esperada:** Se muestran las rutas de `etcdctl` y `etcdutl`.
   {: .lab-note .output .compact}
 
@@ -246,29 +190,16 @@ etcd utiliza TLS. Antes de conectarte directamente debes conocer el endpoint y u
 > **Advertencia:** Los certificados utilizados en este procedimiento permiten autenticarse contra etcd. No los copies fuera del nodo ni los agregues a repositorios.
 {: .lab-note .warning .compact}
 
-- {% include step_label.html id="s013" %} **CONTROL-PLANE:** Define las variables con el endpoint y los certificados.
+- {% include step_label.html id="s013" %} **CONTROL-PLANE:** Define las variables con el endpoint y los certificados. **ETCD_ENDPOINT**, **ETCD_CACERT**, **ETCD_CERT**, **ETCD_KEY**
 
   > **Nota:** Estas variables concentran los parámetros TLS necesarios para autenticarse directamente contra etcd.
   {: .lab-note .info .compact}
 
-  ```bash
-  export ETCD_ENDPOINT="https://127.0.0.1:2379"
-  export ETCD_CACERT="/etc/kubernetes/pki/etcd/ca.crt"
-  export ETCD_CERT="/etc/kubernetes/pki/etcd/healthcheck-client.crt"
-  export ETCD_KEY="/etc/kubernetes/pki/etcd/healthcheck-client.key"
-  ```
 
 - {% include step_label.html id="s014" %} **CONTROL-PLANE:** Confirma que los archivos realmente existen.
 
   > **Nota:** Valida las rutas de certificados antes de intentar una conexión TLS.
   {: .lab-note .info .compact}
-
-  ```bash
-  sudo ls -l \
-    "$ETCD_CACERT" \
-    "$ETCD_CERT" \
-    "$ETCD_KEY"
-  ```
 
   > **Salida esperada:** Los tres archivos son visibles.
   {: .lab-note .output .compact}
@@ -277,15 +208,6 @@ etcd utiliza TLS. Antes de conectarte directamente debes conocer el endpoint y u
 
   > **Nota:** Antes del backup debes confirmar que el miembro etcd responde correctamente.
   {: .lab-note .info .compact}
-
-  ```bash
-  sudo etcdctl \
-    --endpoints="$ETCD_ENDPOINT" \
-    --cacert="$ETCD_CACERT" \
-    --cert="$ETCD_CERT" \
-    --key="$ETCD_KEY" \
-    endpoint health
-  ```
 
   > **Salida esperada:** El endpoint informa que está saludable.
   {: .lab-note .output .compact}
@@ -300,27 +222,15 @@ etcd utiliza TLS. Antes de conectarte directamente debes conocer el endpoint y u
   > **Nota:** El snapshot se guardará fuera del directorio activo de etcd para mantener separado el respaldo.
   {: .lab-note .info .compact}
 
-  ```bash
-  sudo mkdir -p /opt/cka-backups
-  ```
-
-- {% include step_label.html id="s017" %} **CONTROL-PLANE:** Define el nombre del archivo de snapshot.
+- {% include step_label.html id="s017" %} **CONTROL-PLANE:** Define el nombre del archivo de snapshot, en una variable llamada **SNAPSHOT**
 
   > **Nota:** La variable simplifica los comandos posteriores y reduce errores al repetir la ruta.
   {: .lab-note .info .compact}
-
-  ```bash
-  export SNAPSHOT="/opt/cka-backups/etcd-lab5.db"
-  ```
 
 - {% include step_label.html id="s018" %} **CONTROL-PLANE:** Asegúrate de no sobrescribir un snapshot previo.
 
   > **Nota:** Evitar sobrescrituras protege respaldos anteriores que podrían ser necesarios.
   {: .lab-note .info .compact}
-
-  ```bash
-  sudo test ! -e "$SNAPSHOT" && echo "Ruta de snapshot disponible"
-  ```
 
   > **Salida esperada:** `Ruta de snapshot disponible`.
   {: .lab-note .output .compact}
@@ -346,10 +256,6 @@ Ahora generarás una copia coherente de la base de datos mientras etcd continúa
   > **Nota:** Registrar el momento del backup ayuda a identificar con precisión el punto de recuperación.
   {: .lab-note .info .compact}
 
-  ```bash
-  date -Is | sudo tee /opt/cka-backups/etcd-lab5.timestamp
-  ```
-
   > **Salida esperada:** Se muestra una fecha en formato ISO 8601.
   {: .lab-note .output .compact}
 
@@ -357,15 +263,6 @@ Ahora generarás una copia coherente de la base de datos mientras etcd continúa
 
   > **Nota:** Realiza una última validación antes de solicitar el snapshot.
   {: .lab-note .info .compact}
-
-  ```bash
-  sudo etcdctl \
-    --endpoints="$ETCD_ENDPOINT" \
-    --cacert="$ETCD_CACERT" \
-    --cert="$ETCD_CERT" \
-    --key="$ETCD_KEY" \
-    endpoint health
-  ```
 
   > **Salida esperada:** etcd responde como saludable.
   {: .lab-note .output .compact}
@@ -380,15 +277,6 @@ Ahora generarás una copia coherente de la base de datos mientras etcd continúa
   > **Nota:** etcdctl solicitará una copia consistente del estado confirmado por etcd en ese momento.
   {: .lab-note .info .compact}
 
-  ```bash
-  sudo etcdctl \
-    --endpoints="$ETCD_ENDPOINT" \
-    --cacert="$ETCD_CACERT" \
-    --cert="$ETCD_CERT" \
-    --key="$ETCD_KEY" \
-    snapshot save "$SNAPSHOT"
-  ```
-
   > **Salida esperada:** etcdctl confirma que el snapshot fue guardado.
   {: .lab-note .output .compact}
 
@@ -396,10 +284,6 @@ Ahora generarás una copia coherente de la base de datos mientras etcd continúa
 
   > **Nota:** Comprueba que el snapshot existe físicamente y contiene datos.
   {: .lab-note .info .compact}
-
-  ```bash
-  sudo ls -lh "$SNAPSHOT"
-  ```
 
   > **Salida esperada:** Se muestra `/opt/cka-backups/etcd-lab5.db`.
   {: .lab-note .output .compact}
@@ -414,20 +298,10 @@ Ahora generarás una copia coherente de la base de datos mientras etcd continúa
   > **Nota:** Conservar una copia intacta permite repetir la restauración sin reutilizar el mismo archivo de trabajo.
   {: .lab-note .info .compact}
 
-  ```bash
-  sudo cp "$SNAPSHOT" /opt/cka-backups/etcd-lab5-original.db
-  ```
-
 - {% include step_label.html id="s024" %} **CONTROL-PLANE:** Compara los hashes.
 
   > **Nota:** Hashes idénticos confirman que ambas copias contienen exactamente la misma información.
   {: .lab-note .info .compact}
-
-  ```bash
-  sudo sha256sum \
-    /opt/cka-backups/etcd-lab5.db \
-    /opt/cka-backups/etcd-lab5-original.db
-  ```
 
   > **Salida esperada:** Ambos hashes son idénticos.
   {: .lab-note .output .compact}
@@ -451,14 +325,10 @@ Un archivo existente no garantiza que el respaldo sea utilizable. Antes de resta
 
 {% assign tracking_task_id = "t004" %}
 
-- {% include step_label.html id="s025" %} **CONTROL-PLANE:** Consulta el snapshot en formato tabla.
+- {% include step_label.html id="s025" %} **CONTROL-PLANE:** Consulta el snapshot en formato tabla con **etcdctl**
 
   > **Nota:** La metadata permite comprobar que el archivo puede ser leído antes de depender de él para una recuperación.
   {: .lab-note .info .compact}
-
-  ```bash
-  sudo etcdutl snapshot status "$SNAPSHOT" --write-out=table
-  ```
 
   > **Salida esperada:** Se muestran `HASH`, `REVISION`, `TOTAL KEYS` y `TOTAL SIZE`.
   {: .lab-note .output .compact}
@@ -467,11 +337,6 @@ Un archivo existente no garantiza que el respaldo sea utilizable. Antes de resta
 
   > **Nota:** El formato JSON conserva evidencia estructurada del snapshot para revisiones posteriores.
   {: .lab-note .info .compact}
-
-  ```bash
-  sudo etcdutl snapshot status "$SNAPSHOT" --write-out=json \
-    | sudo tee /opt/cka-backups/etcd-lab5-status.json
-  ```
 
   > **Salida esperada:** Se crea `etcd-lab5-status.json`.
   {: .lab-note .output .compact}
@@ -483,10 +348,6 @@ Un archivo existente no garantiza que el respaldo sea utilizable. Antes de resta
   > **Nota:** Confirma que el marcador previo al backup sigue disponible antes de modificar el estado del clúster.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get configmap recovery-marker -n etcd-before
-  ```
-
   > **Salida esperada:** `recovery-marker` existe.
   {: .lab-note .output .compact}
 
@@ -494,12 +355,6 @@ Un archivo existente no garantiza que el respaldo sea utilizable. Antes de resta
 
   > **Nota:** Este valor será comparado con el resultado después de la restauración.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get configmap recovery-marker \
-    -n etcd-before \
-    -o jsonpath='{.data.state}{"\n"}'
-  ```
 
   > **Salida esperada:** `before-snapshot`.
   {: .lab-note .output .compact}
@@ -528,10 +383,6 @@ Ahora generarás información que **no** existe dentro del backup.
   > **Nota:** Este objeto se crea después del snapshot y debe desaparecer cuando el estado sea restaurado.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl create namespace etcd-after
-  ```
-
   > **Salida esperada:** `namespace/etcd-after created`.
   {: .lab-note .output .compact}
 
@@ -540,12 +391,6 @@ Ahora generarás información que **no** existe dentro del backup.
   > **Nota:** El segundo marcador representa información que no existe dentro del snapshot.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl create configmap recovery-marker \
-    --from-literal=state=after-snapshot \
-    -n etcd-after
-  ```
-
   > **Salida esperada:** `configmap/recovery-marker created`.
   {: .lab-note .output .compact}
 
@@ -553,12 +398,6 @@ Ahora generarás información que **no** existe dentro del backup.
 
   > **Nota:** Verifica que el estado posterior al backup quedó realmente almacenado antes de iniciar la recuperación.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get configmap recovery-marker \
-    -n etcd-after \
-    -o jsonpath='{.data.state}{"\n"}'
-  ```
 
   > **Salida esperada:** `after-snapshot`.
   {: .lab-note .output .compact}
@@ -570,10 +409,6 @@ Ahora generarás información que **no** existe dentro del backup.
   > **Nota:** Esta consulta establece claramente el estado actual antes del restore.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get namespaces etcd-before etcd-after
-  ```
-
   > **Salida esperada:** Ambos namespaces aparecen `Active`.
   {: .lab-note .output .compact}
 
@@ -581,11 +416,6 @@ Ahora generarás información que **no** existe dentro del backup.
 
   > **Nota:** La comparación conjunta permite distinguir los datos anteriores y posteriores al snapshot.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get configmaps -A \
-    --field-selector metadata.name=recovery-marker
-  ```
 
   > **Salida esperada:** Se observan los marcadores en `etcd-before` y `etcd-after`.
   {: .lab-note .output .compact}
@@ -614,45 +444,22 @@ Antes de restaurar necesitas conocer la identidad y configuración peer del miem
   > **Nota:** El nombre del miembro restaurado debe coincidir con la configuración utilizada por el etcd actual.
   {: .lab-note .info .compact}
 
-  ```bash
-  export ETCD_NAME=$(sudo awk -F= \
-    '/--name=/{gsub(/[", ]/,"",$2); print $2; exit}' \
-    /etc/kubernetes/manifests/etcd.yaml)
-  ```
-
 - {% include step_label.html id="s035" %} **CONTROL-PLANE:** Extrae la configuración `initial-cluster`.
 
   > **Nota:** Este valor describe la membresía y las URLs peer utilizadas por el clúster etcd.
   {: .lab-note .info .compact}
-
-  ```bash
-  export ETCD_INITIAL_CLUSTER=$(sudo sed -n \
-  's/^[[:space:]]*-[[:space:]]*--initial-cluster=//p' \
-  /etc/kubernetes/manifests/etcd.yaml)
-  ```
 
 - {% include step_label.html id="s036" %} **CONTROL-PLANE:** Extrae la URL peer anunciada.
 
   > **Nota:** La URL peer se reutilizará para reconstruir correctamente la identidad del miembro.
   {: .lab-note .info .compact}
 
-  ```bash
-  export ETCD_PEER_URL=$(sudo awk -F= \
-    '/--initial-advertise-peer-urls=/{gsub(/[", ]/,"",$2); print $2; exit}' \
-    /etc/kubernetes/manifests/etcd.yaml)
-  ```
-
 - {% include step_label.html id="s037" %} **CONTROL-PLANE:** Muestra los valores obtenidos.
 
   > **Nota:** Revisar los parámetros antes del restore ayuda a detectar valores vacíos o incorrectos.
   {: .lab-note .info .compact}
 
-  ```bash
-  printf 'NAME=%s\nINITIAL_CLUSTER=%s\nPEER_URL=%s\n' \
-    "$ETCD_NAME" "$ETCD_INITIAL_CLUSTER" "$ETCD_PEER_URL"
-  ```
-
-  > **Salida esperada:** Los valores coinciden con el static Pod actual.
+  > **Salida esperada:** Los valores coinciden con el static Pod actual. **NAME=cka-control**, **INITIAL_CLUSTER=cka-control=https://10.10.10.10:2380**, **PEER_URL=https://10.10.10.10:2380**
   {: .lab-note .output .compact}
 
 ### Tarea 6.2. Proteger el manifiesto original
@@ -664,11 +471,6 @@ Antes de restaurar necesitas conocer la identidad y configuración peer del miem
 
   > **Nota:** Guardar una copia permite recuperar rápidamente la configuración previa si fuera necesario.
   {: .lab-note .info .compact}
-
-  ```bash
-  sudo cp /etc/kubernetes/manifests/etcd.yaml \
-    /opt/cka-backups/etcd.yaml.before-restore
-  ```
 
 - {% include step_label.html id="s039" %} **CONTROL-PLANE:** Verifica la copia.
 
@@ -684,23 +486,15 @@ Antes de restaurar necesitas conocer la identidad y configuración peer del miem
 
 ### Tarea 6.3. Definir el directorio restaurado
 
-- {% include step_label.html id="s040" %} **CONTROL-PLANE:** Define un directorio nuevo para el restore.
+- {% include step_label.html id="s040" %} **CONTROL-PLANE:** Define un directorio nuevo para el restore, crea la variable **RESTORE_DIR**
 
   > **Nota:** La restauración se realizará en una ruta distinta para evitar sobrescribir de inmediato los datos activos.
   {: .lab-note .info .compact}
-
-  ```bash
-  export RESTORE_DIR="/var/lib/etcd-restore"
-  ```
 
 - {% include step_label.html id="s041" %} **CONTROL-PLANE:** Comprueba que no exista una restauración previa.
 
   > **Nota:** etcdutl debe trabajar sobre un destino limpio para evitar mezclar información de restauraciones anteriores.
   {: .lab-note .info .compact}
-
-  ```bash
-  sudo test ! -e "$RESTORE_DIR" && echo "Directorio de restore disponible"
-  ```
 
   > **Salida esperada:** `Directorio de restore disponible`.
   {: .lab-note .output .compact}
@@ -709,10 +503,6 @@ Antes de restaurar necesitas conocer la identidad y configuración peer del miem
 
   > **Nota:** Este control confirma que la base de datos actual todavía no ha sido alterada.
   {: .lab-note .info .compact}
-
-  ```bash
-  sudo ls -ld /var/lib/etcd
-  ```
 
   > **Salida esperada:** `/var/lib/etcd` existe.
   {: .lab-note .output .compact}
@@ -744,16 +534,6 @@ Esta es la fase más sensible de la práctica. Primero crearás el nuevo directo
   > **Nota:** etcdutl reconstruirá un nuevo directorio de datos usando el contenido almacenado en el snapshot.
   {: .lab-note .info .compact}
 
-  ```bash
-  sudo etcdutl snapshot restore "$SNAPSHOT" \
-    --data-dir="$RESTORE_DIR" \
-    --name="$ETCD_NAME" \
-    --initial-cluster="$ETCD_INITIAL_CLUSTER" \
-    --initial-advertise-peer-urls="$ETCD_PEER_URL" \
-    --bump-revision=1000000000 \
-    --mark-compacted
-  ```
-
   > **Salida esperada:** La restauración finaliza sin errores.
   {: .lab-note .output .compact}
 
@@ -761,10 +541,6 @@ Esta es la fase más sensible de la práctica. Primero crearás el nuevo directo
 
   > **Nota:** La presencia de `member`, `snap` y `wal` confirma que se generó una estructura de datos utilizable por etcd.
   {: .lab-note .info .compact}
-
-  ```bash
-  sudo find "$RESTORE_DIR" -maxdepth 2 -type d -print
-  ```
 
   > **Salida esperada:** Aparecen directorios como `member`, `member/snap` y `member/wal`.
   {: .lab-note .output .compact}
@@ -779,11 +555,6 @@ Esta es la fase más sensible de la práctica. Primero crearás el nuevo directo
   > **Nota:** Debes identificar exactamente el `hostPath` que conecta los datos del host con el contenedor etcd.
   {: .lab-note .info .compact}
 
-  ```bash
-  sudo grep -n -A3 -B2 'etcd-data' \
-    /etc/kubernetes/manifests/etcd.yaml
-  ```
-
   > **Salida esperada:** El `hostPath` muestra `path: /var/lib/etcd`.
   {: .lab-note .output .compact}
 
@@ -792,21 +563,10 @@ Esta es la fase más sensible de la práctica. Primero crearás el nuevo directo
   > **Nota:** Este cambio hará que kubelet recree etcd utilizando los datos restaurados en lugar de los originales.
   {: .lab-note .info .compact}
 
-  ```bash
-  sudo sed -i \
-    's#path: /var/lib/etcd$#path: /var/lib/etcd-restore#' \
-    /etc/kubernetes/manifests/etcd.yaml
-  ```
-
 - {% include step_label.html id="s047" %} **CONTROL-PLANE:** Confirma el cambio.
 
   > **Nota:** Verifica la ruta antes de esperar el reinicio para evitar iniciar etcd con un directorio equivocado.
   {: .lab-note .info .compact}
-
-  ```bash
-  sudo grep -n -A3 -B2 'etcd-data' \
-    /etc/kubernetes/manifests/etcd.yaml
-  ```
 
   > **Salida esperada:** El `hostPath` muestra `/var/lib/etcd-restore`.
   {: .lab-note .output .compact}
@@ -821,17 +581,6 @@ Esta es la fase más sensible de la práctica. Primero crearás el nuevo directo
   > **Nota:** crictl permite comprobar el contenedor incluso cuando el API Server todavía no está disponible.
   {: .lab-note .info .compact}
 
-  ```bash
-  until sudo crictl ps --name etcd | grep -q etcd; do
-    echo "Esperando que etcd reinicie..."
-    sleep 2
-  done
-  ```
-  ```bash
-  sudo crictl ps --name etcd
-  sudo crictl ps -a --name etcd
-  ```
-
   > **Salida esperada:** Aparece un contenedor etcd en ejecución.
   {: .lab-note .output .compact}
 
@@ -839,15 +588,6 @@ Esta es la fase más sensible de la práctica. Primero crearás el nuevo directo
 
   > **Nota:** Primero se valida etcd directamente; después se comprobará la recuperación del resto de Kubernetes.
   {: .lab-note .info .compact}
-
-  ```bash
-  sudo etcdctl \
-    --endpoints="$ETCD_ENDPOINT" \
-    --cacert="$ETCD_CACERT" \
-    --cert="$ETCD_CERT" \
-    --key="$ETCD_KEY" \
-    endpoint health
-  ```
 
   > **Salida esperada:** El endpoint aparece saludable.
   {: .lab-note .output .compact}
@@ -876,10 +616,6 @@ Una vez que etcd está saludable, comprobarás que el API Server y el resto del 
   > **Nota:** El endpoint `readyz` confirma que el API Server volvió a estar preparado para atender solicitudes.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get --raw='/readyz'
-  ```
-
   > **Salida esperada:** `ok`.
   {: .lab-note .output .compact}
 
@@ -888,10 +624,6 @@ Una vez que etcd está saludable, comprobarás que el API Server y el resto del 
   > **Nota:** La respuesta confirma que el API Server puede leer nuevamente el estado almacenado en etcd.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get nodes
-  ```
-
   > **Salida esperada:** Los nodos aparecen y convergen a `Ready`.
   {: .lab-note .output .compact}
 
@@ -899,10 +631,6 @@ Una vez que etcd está saludable, comprobarás que el API Server y el resto del 
 
   > **Nota:** Esta revisión permite comprobar que los componentes del control plane y servicios del clúster se están estabilizando.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get pods -n kube-system -o wide
-  ```
 
   > **Salida esperada:** Los componentes principales están `Running` o progresan hacia ese estado.
   {: .lab-note .output .compact}
@@ -917,10 +645,6 @@ Una vez que etcd está saludable, comprobarás que el API Server y el resto del 
   > **Nota:** La existencia del namespace demuestra que se recuperó información presente al momento del snapshot.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get namespace etcd-before
-  ```
-
   > **Salida esperada:** `etcd-before` aparece `Active`.
   {: .lab-note .output .compact}
 
@@ -929,12 +653,6 @@ Una vez que etcd está saludable, comprobarás que el API Server y el resto del 
   > **Nota:** El valor debe coincidir con el registrado antes del backup.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get configmap recovery-marker \
-    -n etcd-before \
-    -o jsonpath='{.data.state}{"\n"}'
-  ```
-
   > **Salida esperada:** `before-snapshot`.
   {: .lab-note .output .compact}
 
@@ -942,10 +660,6 @@ Una vez que etcd está saludable, comprobarás que el API Server y el resto del 
 
   > **Nota:** Su ausencia confirma que el clúster regresó a un punto anterior a la creación de ese namespace.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get namespace etcd-after
-  ```
 
   > **Salida esperada:** Kubernetes responde `NotFound`.
   {: .lab-note .output .compact}
@@ -957,12 +671,6 @@ Una vez que etcd está saludable, comprobarás que el API Server y el resto del 
   > **Nota:** Los eventos ayudan a detectar errores persistentes posteriores a la recuperación.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get events -A \
-    --sort-by='.lastTimestamp' \
-    | tail -n 20
-  ```
-
   > **Salida esperada:** Puede haber eventos de reinicio, pero no fallos persistentes del control plane.
   {: .lab-note .output .compact}
 
@@ -970,10 +678,6 @@ Una vez que etcd está saludable, comprobarás que el API Server y el resto del 
 
   > **Nota:** Esta es una validación final de que etcd permanece estable desde la perspectiva de Kubernetes.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get pods -n kube-system -l component=etcd
-  ```
 
   > **Salida esperada:** El Pod de etcd aparece `Running`.
   {: .lab-note .output .compact}
@@ -999,11 +703,6 @@ Finalizarás comparando el estado recuperado y conservando los archivos necesari
   > **Nota:** La consulta resume qué marcador permanece después del restore.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get configmaps -A \
-    --field-selector metadata.name=recovery-marker
-  ```
-
   > **Salida esperada:** Solo aparece el marcador de `etcd-before`.
   {: .lab-note .output .compact}
 
@@ -1012,10 +711,6 @@ Finalizarás comparando el estado recuperado y conservando los archivos necesari
   > **Nota:** La respuesta `NotFound` confirma que los datos posteriores al backup no forman parte del estado recuperado.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get configmap recovery-marker -n etcd-after
-  ```
-
   > **Salida esperada:** `NotFound`.
   {: .lab-note .output .compact}
 
@@ -1023,14 +718,6 @@ Finalizarás comparando el estado recuperado y conservando los archivos necesari
 
   > **Nota:** El objetivo final es recuperar tanto los datos como la operación normal del clúster.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get nodes
-  ```
-
-  ```bash
-  kubectl get pods -n kube-system
-  ```
 
   > **Salida esperada:** Los nodos están `Ready` y los componentes principales están operativos.
   {: .lab-note .output .compact}
@@ -1045,10 +732,6 @@ Finalizarás comparando el estado recuperado y conservando los archivos necesari
   > **Nota:** Solo se retira el recurso de prueba; los archivos de respaldo se conservan.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl delete namespace etcd-before
-  ```
-
   > **Salida esperada:** Kubernetes confirma la eliminación del namespace.
   {: .lab-note .output .compact}
 
@@ -1057,10 +740,6 @@ Finalizarás comparando el estado recuperado y conservando los archivos necesari
   > **Nota:** Comprueba que la evidencia del backup y del procedimiento sigue disponible.
   {: .lab-note .info .compact}
 
-  ```bash
-  sudo ls -lh /opt/cka-backups/
-  ```
-
   > **Salida esperada:** Se muestran los archivos generados durante la práctica.
   {: .lab-note .output .compact}
 
@@ -1068,11 +747,6 @@ Finalizarás comparando el estado recuperado y conservando los archivos necesari
 
   > **Nota:** La ruta debe seguir apuntando al directorio restaurado que contiene el estado recuperado.
   {: .lab-note .info .compact}
-
-  ```bash
-  sudo grep -n -A3 -B2 'etcd-data' \
-    /etc/kubernetes/manifests/etcd.yaml
-  ```
 
   > **Salida esperada:** El `hostPath` muestra `/var/lib/etcd-restore`.
   {: .lab-note .output .compact}

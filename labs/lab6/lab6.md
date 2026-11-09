@@ -60,10 +60,6 @@ Antes de diagnosticar una falla necesitas conocer el estado normal del entorno. 
   > **Nota:** Una condición `NotReady` puede producir síntomas de red que no están relacionados directamente con CNI, kube-proxy o CoreDNS. Por eso primero se valida la salud general.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get nodes -o wide
-  ```
-
   > **Salida esperada:** Los nodos utilizados en la práctica aparecen en estado `Ready`.
   {: .lab-note .output .compact}
 
@@ -72,11 +68,6 @@ Antes de diagnosticar una falla necesitas conocer el estado normal del entorno. 
   > **Nota:** `NetworkUnavailable` ayuda a detectar si Kubernetes considera que existe un problema con la red del nodo.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get nodes \
-    -o custom-columns='NAME:.metadata.name,READY:.status.conditions[?(@.type=="Ready")].status,NETWORK_UNAVAILABLE:.status.conditions[?(@.type=="NetworkUnavailable")].status'
-  ```
-
   > **Salida esperada:** `READY` aparece como `True`; `NETWORK_UNAVAILABLE` normalmente aparece `False` o vacío según el CNI.
   {: .lab-note .output .compact}
 
@@ -84,11 +75,6 @@ Antes de diagnosticar una falla necesitas conocer el estado normal del entorno. 
 
   > **Nota:** Las direcciones de nodo forman parte del camino utilizado para comunicación entre hosts y pueden ayudar a diferenciar problemas de red física de problemas dentro del clúster.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get nodes \
-    -o custom-columns='NAME:.metadata.name,INTERNAL-IP:.status.addresses[?(@.type=="InternalIP")].address'
-  ```
 
   > **Salida esperada:** Cada nodo muestra una `InternalIP`.
   {: .lab-note .output .compact}
@@ -100,10 +86,6 @@ Antes de diagnosticar una falla necesitas conocer el estado normal del entorno. 
   > **Importante:** No asumas que todos los CNIs utilizan los mismos nombres de Pods. Identifica el plugin realmente desplegado en tu clúster.
   {: .lab-note .important .compact}
 
-  ```bash
-  kubectl get pods -n kube-system -o wide
-  ```
-
   > **Salida esperada:** CoreDNS y kube-proxy aparecen operativos, junto con los Pods correspondientes al CNI instalado.
   {: .lab-note .output .compact}
 
@@ -112,12 +94,6 @@ Antes de diagnosticar una falla necesitas conocer el estado normal del entorno. 
   > **Nota:** kube-proxy suele ejecutarse como DaemonSet para mantener la programación de tráfico de Services en cada nodo.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get pods -n kube-system \
-    -l k8s-app=kube-proxy \
-    -o wide
-  ```
-
   > **Salida esperada:** Existe un Pod de kube-proxy por cada nodo donde deba ejecutarse.
   {: .lab-note .output .compact}
 
@@ -125,12 +101,6 @@ Antes de diagnosticar una falla necesitas conocer el estado normal del entorno. 
 
   > **Nota:** Kubernetes conserva la etiqueta `k8s-app=kube-dns` por compatibilidad, aunque la implementación sea CoreDNS.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get pods -n kube-system \
-    -l k8s-app=kube-dns \
-    -o wide
-  ```
 
   > **Salida esperada:** Los Pods de CoreDNS aparecen en estado `Running`.
   {: .lab-note .output .compact}
@@ -142,13 +112,6 @@ Antes de diagnosticar una falla necesitas conocer el estado normal del entorno. 
   > **Nota:** En Kubernetes actuales kube-proxy puede trabajar con implementaciones distintas. La forma correcta de diagnosticarlo es consultar su configuración en lugar de asumir el modo.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get configmap kube-proxy \
-    -n kube-system \
-    -o jsonpath='{.data.config\.conf}' \
-    | grep -E '^[[:space:]]*mode:'
-  ```
-
   > **Salida esperada:** Se muestra el valor de `mode`; si aparece vacío, kube-proxy utilizará el comportamiento determinado por su configuración y versión.
   {: .lab-note .output .compact}
 
@@ -157,10 +120,6 @@ Antes de diagnosticar una falla necesitas conocer el estado normal del entorno. 
   > **Nota:** Los Pods no consultan directamente una IP de CoreDNS elegida manualmente. Normalmente utilizan la `ClusterIP` del Service `kube-dns`.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get service kube-dns -n kube-system
-  ```
-
   > **Salida esperada:** Se muestra un Service `ClusterIP` con los puertos DNS 53/UDP y 53/TCP.
   {: .lab-note .output .compact}
 
@@ -168,12 +127,6 @@ Antes de diagnosticar una falla necesitas conocer el estado normal del entorno. 
 
   > **Nota:** Un Service necesita backends disponibles. EndpointSlice relaciona el Service con las direcciones de los Pods que pueden recibir tráfico.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get endpointslice \
-    -n kube-system \
-    -l kubernetes.io/service-name=kube-dns
-  ```
 
   > **Salida esperada:** Se muestran una o más direcciones correspondientes a CoreDNS.
   {: .lab-note .output .compact}
@@ -200,10 +153,6 @@ Crearás una aplicación de prueba con dos réplicas y un cliente. Así podrás 
   > **Nota:** Mantener los recursos de diagnóstico en un namespace separado facilita la limpieza y evita mezclar políticas con otras aplicaciones.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl create namespace net-lab
-  ```
-
   > **Salida esperada:** `namespace/net-lab created`.
   {: .lab-note .output .compact}
 
@@ -212,13 +161,6 @@ Crearás una aplicación de prueba con dos réplicas y un cliente. Así podrás 
   > **Nota:** Las dos réplicas permiten observar varios backends detrás del mismo Service y comprobar la relación entre Pods y EndpointSlices.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl create deployment web \
-    --image=nginx:1.29-alpine \
-    --replicas=2 \
-    -n net-lab
-  ```
-
   > **Salida esperada:** `deployment.apps/web created`.
   {: .lab-note .output .compact}
 
@@ -226,12 +168,6 @@ Crearás una aplicación de prueba con dos réplicas y un cliente. Así podrás 
 
   > **Importante:** No continúes con pruebas de conectividad mientras los backends aún están iniciando, porque podrías interpretar un problema de readiness como una falla de red.
   {: .lab-note .important .compact}
-
-  ```bash
-  kubectl rollout status deployment/web \
-    -n net-lab \
-    --timeout=90s
-  ```
 
   > **Salida esperada:** El Deployment completa correctamente su rollout.
   {: .lab-note .output .compact}
@@ -243,14 +179,6 @@ Crearás una aplicación de prueba con dos réplicas y un cliente. Así podrás 
   > **Nota:** Un Service proporciona una dirección virtual estable aunque las IP de los Pods cambien.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl expose deployment web \
-    --name=web-svc \
-    --port=80 \
-    --target-port=80 \
-    -n net-lab
-  ```
-
   > **Salida esperada:** `service/web-svc exposed`.
   {: .lab-note .output .compact}
 
@@ -258,10 +186,6 @@ Crearás una aplicación de prueba con dos réplicas y un cliente. Así podrás 
 
   > **Nota:** Esta IP pertenece al espacio virtual de Services; no corresponde a una interfaz de red dentro de un Pod.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get service web-svc -n net-lab
-  ```
 
   > **Salida esperada:** `web-svc` muestra una `CLUSTER-IP` y el puerto `80/TCP`.
   {: .lab-note .output .compact}
@@ -271,31 +195,15 @@ Crearás una aplicación de prueba con dos réplicas y un cliente. Así podrás 
   > **Nota:** Las direcciones mostradas deben corresponder a Pods seleccionados por `web-svc`. Si no existen endpoints, kube-proxy no tiene backends válidos a los cuales dirigir tráfico.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get endpointslice \
-    -n net-lab \
-    -l kubernetes.io/service-name=web-svc \
-    -o wide
-  ```
-
   > **Salida esperada:** Se observan dos endpoints asociados a las dos réplicas de NGINX.
   {: .lab-note .output .compact}
 
 ### Tarea 2.3. Comparar tráfico directo y tráfico por Service
 
-- {% include step_label.html id="s016" %} Crea un Pod cliente que permanecerá disponible para las pruebas.
+- {% include step_label.html id="s016" %} Crea un Pod cliente que permanecerá disponible para las pruebas. Puedes usar la imagen **curl:8.16.0**
 
   > **Nota:** El cliente proporciona un punto de observación dentro de la red del clúster, que es donde deben probarse las IP de Pods y las ClusterIP.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl run net-client \
-    --image=curlimages/curl:8.16.0 \
-    --restart=Never \
-    --command \
-    -n net-lab \
-    -- sleep 3600
-  ```
 
   > **Salida esperada:** `pod/net-client created`.
   {: .lab-note .output .compact}
@@ -305,34 +213,13 @@ Crearás una aplicación de prueba con dos réplicas y un cliente. Así podrás 
   > **Nota:** `kubectl wait` evita lanzar las pruebas antes de que el contenedor pueda ejecutar comandos.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl wait \
-    --for=condition=Ready \
-    pod/net-client \
-    -n net-lab \
-    --timeout=60s
-  ```
-
   > **Salida esperada:** `pod/net-client condition met`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html id="s018" %} Obtén una IP de Pod backend y realiza una solicitud directa.
+- {% include step_label.html id="s018" %} Obtén una IP de Pod backend y realiza una solicitud directa. Puedes guardarla en la variable **POD_IP**
 
   > **Nota:** Esta prueba evita el Service y verifica principalmente la ruta Pod-to-Pod proporcionada por el CNI.
   {: .lab-note .info .compact}
-
-  ```bash
-  POD_IP=$(kubectl get pods \
-    -n net-lab \
-    -l app=web \
-    -o jsonpath='{.items[0].status.podIP}')
-  ```
-
-  ```bash
-  kubectl exec -n net-lab net-client -- \
-    curl -sS --max-time 5 "http://${POD_IP}" \
-    | head
-  ```
 
   > **Salida esperada:** Se recibe contenido HTML de NGINX.
   {: .lab-note .output .compact}
@@ -341,12 +228,6 @@ Crearás una aplicación de prueba con dos réplicas y un cliente. Así podrás 
 
   > **Nota:** Si la IP directa funciona pero la ClusterIP falla, el diagnóstico debe enfocarse en Service, EndpointSlices o el mecanismo de proxy de Services.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl exec -n net-lab net-client -- \
-    curl -sS --max-time 5 http://web-svc \
-    | head
-  ```
 
   > **Salida esperada:** Se recibe nuevamente contenido HTML de NGINX.
   {: .lab-note .output .compact}
@@ -367,28 +248,7 @@ Comprobarás cómo un Pod recibe la dirección del DNS del clúster y cómo Core
 
 {% assign tracking_task_id = "t003" %}
 
-- {% include step_label.html id="s020" %} Crea un Pod con herramientas de resolución DNS.
-
-  ```bash
-  cat > dns-client.yaml <<'EOF'
-  apiVersion: v1
-  kind: Pod
-  metadata:
-    name: dns-client
-    namespace: net-lab
-  spec:
-    containers:
-      - name: dns-client
-        image: registry.k8s.io/e2e-test-images/agnhost:2.39
-        imagePullPolicy: IfNotPresent
-        args:
-          - pause
-    restartPolicy: Always
-  EOF
-  ```
-  ```bash
-  kubectl apply -f dns-client.yaml
-  ```
+- {% include step_label.html id="s020" %} Crea un Pod con herramientas de resolución DNS. Puedes usar el nombre **dns-client.yaml** y la imagen **agnhost:2.39**
 
   > **Salida esperada:** `pod/dns-client created`.
   {: .lab-note .output .compact}
@@ -398,14 +258,6 @@ Comprobarás cómo un Pod recibe la dirección del DNS del clúster y cómo Core
   > **Nota:** Las pruebas de resolución deben realizarse únicamente después de que el contenedor esté en ejecución.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl wait \
-    --for=condition=Ready \
-    pod/dns-client \
-    -n net-lab \
-    --timeout=60s
-  ```
-
   > **Salida esperada:** `pod/dns-client condition met`.
   {: .lab-note .output .compact}
 
@@ -413,11 +265,6 @@ Comprobarás cómo un Pod recibe la dirección del DNS del clúster y cómo Core
 
   > **Importante:** El `nameserver` debe apuntar normalmente a la ClusterIP del Service `kube-dns`, no a la dirección DNS configurada directamente en el nodo.
   {: .lab-note .important .compact}
-
-  ```bash
-  kubectl exec -n net-lab dns-client -- \
-    cat /etc/resolv.conf
-  ```
 
   > **Salida esperada:** Se observa un `nameserver` del clúster y dominios de búsqueda como `net-lab.svc.cluster.local`.
   {: .lab-note .output .compact}
@@ -429,11 +276,6 @@ Comprobarás cómo un Pod recibe la dirección del DNS del clúster y cómo Core
   > **Nota:** Este nombre es una prueba estándar porque el Service `kubernetes` existe normalmente en el namespace `default`.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl exec -n net-lab dns-client -- \
-    nslookup kubernetes.default
-  ```
-
   > **Salida esperada:** La consulta devuelve una dirección IP sin errores de resolución.
   {: .lab-note .output .compact}
 
@@ -441,11 +283,6 @@ Comprobarás cómo un Pod recibe la dirección del DNS del clúster y cómo Core
 
   > **Nota:** Como el cliente se encuentra en `net-lab`, el search domain permite resolver el Service del mismo namespace utilizando únicamente su nombre corto.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl exec -n net-lab dns-client -- \
-    nslookup web-svc
-  ```
 
   > **Salida esperada:** Se devuelve la ClusterIP de `web-svc`.
   {: .lab-note .output .compact}
@@ -455,30 +292,15 @@ Comprobarás cómo un Pod recibe la dirección del DNS del clúster y cómo Core
   > **Nota:** El nombre completo evita depender de los search domains y resulta útil al diagnosticar resolución entre namespaces.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl exec -n net-lab dns-client -- \
-    nslookup web-svc.net-lab.svc.cluster.local
-  ```
-
   > **Salida esperada:** El FQDN resuelve a la misma ClusterIP de `web-svc`.
   {: .lab-note .output .compact}
 
 ### Tarea 3.3. Relacionar CoreDNS con sus endpoints
 
-- {% include step_label.html id="s026" %} Obtén la ClusterIP del Service DNS.
+- {% include step_label.html id="s026" %} Obtén la ClusterIP del Service DNS. Pueds usar la variable **DNS_IP**
 
   > **Nota:** Guardar esta IP permite compararla con el `nameserver` observado dentro del Pod.
   {: .lab-note .info .compact}
-
-  ```bash
-  DNS_IP=$(kubectl get service kube-dns \
-    -n kube-system \
-    -o jsonpath='{.spec.clusterIP}')
-  ```
-
-  ```bash
-  echo "$DNS_IP"
-  ```
 
   > **Salida esperada:** Se muestra la dirección IP del DNS del clúster.
   {: .lab-note .output .compact}
@@ -488,13 +310,6 @@ Comprobarás cómo un Pod recibe la dirección del DNS del clúster y cómo Core
   > **Nota:** Una ClusterIP puede existir aunque no haya backends. Por eso la revisión de EndpointSlices es parte esencial del troubleshooting de Services.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get endpointslice \
-    -n kube-system \
-    -l kubernetes.io/service-name=kube-dns \
-    -o wide
-  ```
-
   > **Salida esperada:** Existen endpoints listos para recibir consultas DNS.
   {: .lab-note .output .compact}
 
@@ -502,13 +317,6 @@ Comprobarás cómo un Pod recibe la dirección del DNS del clúster y cómo Core
 
   > **Nota:** Los logs permiten identificar errores de configuración, problemas de forwarding y fallos de comunicación con resolvers upstream. Un timeout hacia un DNS externo no implica necesariamente que la resolución interna de Kubernetes esté fallando.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl logs \
-    -n kube-system \
-    -l k8s-app=kube-dns \
-    --tail=30
-  ```
 
   > **Salida esperada:** CoreDNS se encuentra iniciado y procesando consultas.Pueden aparecer advertencias o timeouts hacia resolvers upstream externos; estos mensajes deben analizarse junto con las pruebas de resolución interna.
   {: .lab-note .output .compact}
@@ -534,13 +342,6 @@ Antes de recibir fallas identificarás qué evidencias permiten separar problema
   > **Nota:** Los Services seleccionan Pods mediante labels. Una diferencia mínima entre selector y label puede dejar un Service sin endpoints.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get pods \
-    -n net-lab \
-    -l app=web \
-    --show-labels
-  ```
-
   > **Salida esperada:** Los Pods muestran la etiqueta `app=web`.
   {: .lab-note .output .compact}
 
@@ -549,12 +350,6 @@ Antes de recibir fallas identificarás qué evidencias permiten separar problema
   > **Nota:** Comparar selector y labels es uno de los primeros pasos cuando una ClusterIP existe pero no entrega tráfico.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get service web-svc \
-    -n net-lab \
-    -o jsonpath='{.spec.selector}{"\n"}'
-  ```
-
   > **Salida esperada:** El selector contiene `app:web`.
   {: .lab-note .output .compact}
 
@@ -562,10 +357,6 @@ Antes de recibir fallas identificarás qué evidencias permiten separar problema
 
   > **Nota:** `kubectl describe service` reúne puertos, selector y backends en una sola vista útil para diagnóstico.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl describe service web-svc -n net-lab
-  ```
 
   > **Salida esperada:** El Service muestra endpoints asociados al puerto 80.
   {: .lab-note .output .compact}
@@ -577,10 +368,6 @@ Antes de recibir fallas identificarás qué evidencias permiten separar problema
   > **Nota:** El número `READY` debería corresponder con los nodos donde kube-proxy debe estar ejecutándose.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get daemonset kube-proxy -n kube-system
-  ```
-
   > **Salida esperada:** `DESIRED`, `CURRENT`, `READY` y `AVAILABLE` muestran valores consistentes.
   {: .lab-note .output .compact}
 
@@ -589,14 +376,6 @@ Antes de recibir fallas identificarás qué evidencias permiten separar problema
   > **Nota:** Los logs pueden revelar errores al sincronizar reglas, problemas con el kernel o el modo de proxy utilizado.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl logs \
-    -n kube-system \
-    -l k8s-app=kube-proxy \
-    --tail=30 \
-    --prefix
-  ```
-
   > **Salida esperada:** No aparecen errores persistentes de sincronización.
   {: .lab-note .output .compact}
 
@@ -604,12 +383,6 @@ Antes de recibir fallas identificarás qué evidencias permiten separar problema
 
   > **Nota:** Esta comprobación completa la línea base antes de introducir fallas controladas.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl exec -n net-lab net-client -- \
-    curl -sS --max-time 5 http://web-svc \
-    | head
-  ```
 
   > **Salida esperada:** Se recibe contenido HTML.
   {: .lab-note .output .compact}
@@ -621,12 +394,6 @@ Antes de recibir fallas identificarás qué evidencias permiten separar problema
   > **Importante:** Si falla la comunicación Pod-to-Pod por IP, investiga primero el CNI o una política de red antes de culpar al DNS.
   {: .lab-note .important .compact}
 
-  ```bash
-  kubectl exec -n net-lab net-client -- \
-    curl -sS --max-time 5 "http://${POD_IP}" \
-    | head
-  ```
-
   > **Salida esperada:** La IP directa responde.
   {: .lab-note .output .compact}
 
@@ -635,12 +402,6 @@ Antes de recibir fallas identificarás qué evidencias permiten separar problema
   > **Nota:** Si la IP directa funciona pero el nombre no, separa la prueba en dos: resolución DNS y conectividad hacia la ClusterIP.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl exec -n net-lab net-client -- \
-    curl -sS --max-time 5 http://web-svc \
-    | head
-  ```
-
   > **Salida esperada:** El Service responde.
   {: .lab-note .output .compact}
 
@@ -648,11 +409,6 @@ Antes de recibir fallas identificarás qué evidencias permiten separar problema
 
   > **Nota:** Esta prueba no necesita abrir la aplicación; sirve para aislar la capa DNS del resto de la comunicación.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl exec -n net-lab dns-client -- \
-    nslookup web-svc
-  ```
 
   > **Salida esperada:** El nombre resuelve correctamente.
   {: .lab-note .output .compact}
@@ -676,17 +432,10 @@ En este escenario el Service DNS seguirá existiendo y los Pods de CoreDNS conti
 
 {% assign tracking_task_id = "t005" %}
 
-- {% include step_label.html id="s038" %} Guarda el Service funcional antes de modificarlo.
+- {% include step_label.html id="s038" %} Guarda el Service funcional antes de modificarlo. Puedes usar este nombre para guardarlo **kube-dns-service.before.yaml**
 
   > **Nota:** Antes de modificar un recurso crítico debes conservar evidencia de su configuración funcional.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get service kube-dns \
-    -n kube-system \
-    -o yaml \
-    > kube-dns-service.before.yaml
-  ```
 
   > **Salida esperada:** Se crea `kube-dns-service.before.yaml`.
   {: .lab-note .output .compact}
@@ -696,13 +445,6 @@ En este escenario el Service DNS seguirá existiendo y los Pods de CoreDNS conti
   > **Importante:** El objetivo es provocar un Service sin backends sin detener los Pods de CoreDNS. Esto permite separar claramente la existencia del componente de su exposición mediante Service.
   {: .lab-note .important .compact}
 
-  ```bash
-  kubectl patch service kube-dns \
-    -n kube-system \
-    --type=merge \
-    -p '{"spec":{"selector":{"k8s-app":"dns-broken"}}}'
-  ```
-
   > **Salida esperada:** Kubernetes informa que el Service fue actualizado.
   {: .lab-note .output .compact}
 
@@ -710,11 +452,6 @@ En este escenario el Service DNS seguirá existiendo y los Pods de CoreDNS conti
 
   > **Nota:** En este punto debes centrarte primero en el síntoma: el Pod conserva su configuración DNS, pero el Service DNS ya no tiene backends correctos.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl exec -n net-lab dns-client -- \
-    nslookup kubernetes.default
-  ```
 
   > **Salida esperada:** La consulta falla o expira.
   {: .lab-note .output .compact}
@@ -726,13 +463,6 @@ En este escenario el Service DNS seguirá existiendo y los Pods de CoreDNS conti
   > **Nota:** Si CoreDNS está ejecutándose pero DNS falla, debes continuar hacia Service y EndpointSlices en lugar de reiniciar inmediatamente los Pods.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get pods \
-    -n kube-system \
-    -l k8s-app=kube-dns \
-    -o wide
-  ```
-
   > **Salida esperada:** Los Pods de CoreDNS permanecen `Running`.
   {: .lab-note .output .compact}
 
@@ -741,10 +471,6 @@ En este escenario el Service DNS seguirá existiendo y los Pods de CoreDNS conti
   > **Importante:** No corrijas todavía el recurso. Identifica primero el selector configurado y compáralo con las labels de CoreDNS.
   {: .lab-note .important .compact}
 
-  ```bash
-  kubectl describe service kube-dns -n kube-system
-  ```
-
   > **Salida esperada:** El selector muestra `k8s-app=dns-broken` y no aparecen backends válidos.
   {: .lab-note .output .compact}
 
@@ -752,13 +478,6 @@ En este escenario el Service DNS seguirá existiendo y los Pods de CoreDNS conti
 
   > **Nota:** La ausencia de endpoints confirma que el fallo se encuentra entre el Service y sus backends, no en el proceso CoreDNS.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get endpointslice \
-    -n kube-system \
-    -l kubernetes.io/service-name=kube-dns \
-    -o wide
-  ```
 
   > **Salida esperada:** No se muestran direcciones de CoreDNS como endpoints disponibles.
   {: .lab-note .output .compact}
@@ -770,13 +489,6 @@ En este escenario el Service DNS seguirá existiendo y los Pods de CoreDNS conti
   > **Nota:** El objetivo del troubleshooting es justificar la corrección a partir de la evidencia, no recordar de memoria el selector.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get pods \
-    -n kube-system \
-    -l k8s-app=kube-dns \
-    --show-labels
-  ```
-
   > **Salida esperada:** Los Pods muestran la label `k8s-app=kube-dns`.
   {: .lab-note .output .compact}
 
@@ -785,13 +497,6 @@ En este escenario el Service DNS seguirá existiendo y los Pods de CoreDNS conti
   > **Importante:** La corrección modifica únicamente la causa identificada; no reinicies CoreDNS ni kube-proxy si no existe evidencia que lo requiera.
   {: .lab-note .important .compact}
 
-  ```bash
-  kubectl patch service kube-dns \
-    -n kube-system \
-    --type=merge \
-    -p '{"spec":{"selector":{"k8s-app":"kube-dns"}}}'
-  ```
-
   > **Salida esperada:** Kubernetes confirma la actualización del Service.
   {: .lab-note .output .compact}
 
@@ -799,18 +504,6 @@ En este escenario el Service DNS seguirá existiendo y los Pods de CoreDNS conti
 
   > **Nota:** La recuperación no se considera completa hasta validar el síntoma original desde el mismo cliente.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get endpointslice \
-    -n kube-system \
-    -l kubernetes.io/service-name=kube-dns \
-    -o wide
-  ```
-
-  ```bash
-  kubectl exec -n net-lab dns-client -- \
-    nslookup kubernetes.default
-  ```
 
   > **Salida esperada:** Los endpoints reaparecen y `kubernetes.default` vuelve a resolver.
   {: .lab-note .output .compact}
@@ -831,17 +524,10 @@ Ahora provocarás una falla en el selector de `web-svc`. Los Pods seguirán sano
 
 {% assign tracking_task_id = "t006" %}
 
-- {% include step_label.html id="s047" %} Guarda el Service funcional antes de modificarlo.
+- {% include step_label.html id="s047" %} Guarda el Service funcional antes de modificarlo. Puedes usar el nombre **web-svc.before.yaml**
 
   > **Nota:** Conservar el estado conocido como bueno facilita comparar el selector original con el estado defectuoso.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get service web-svc \
-    -n net-lab \
-    -o yaml \
-    > web-svc.before.yaml
-  ```
 
   > **Salida esperada:** Se crea `web-svc.before.yaml`.
   {: .lab-note .output .compact}
@@ -851,13 +537,6 @@ Ahora provocarás una falla en el selector de `web-svc`. Los Pods seguirán sano
   > **Advertencia:** No modifiques los Pods `web`. El escenario requiere que los backends permanezcan sanos mientras el Service pierde su asociación con ellos.
   {: .lab-note .warning .compact}
 
-  ```bash
-  kubectl patch service web-svc \
-    -n net-lab \
-    --type=merge \
-    -p '{"spec":{"selector":{"app":"web-broken"}}}'
-  ```
-
   > **Salida esperada:** Kubernetes confirma que el Service fue actualizado.
   {: .lab-note .output .compact}
 
@@ -865,11 +544,6 @@ Ahora provocarás una falla en el selector de `web-svc`. Los Pods seguirán sano
 
   > **Nota:** Observa el síntoma sin asumir todavía la causa. Una ClusterIP sin backends puede producir timeout o rechazo según el entorno.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl exec -n net-lab net-client -- \
-    curl -sS --max-time 5 http://web-svc
-  ```
 
   > **Salida esperada:** La solicitud no obtiene la página de NGINX.
   {: .lab-note .output .compact}
@@ -881,12 +555,6 @@ Ahora provocarás una falla en el selector de `web-svc`. Los Pods seguirán sano
   > **Importante:** Si el acceso directo funciona, el CNI está transportando tráfico entre ambos Pods. Esto reduce el área de búsqueda hacia Service y backends.
   {: .lab-note .important .compact}
 
-  ```bash
-  kubectl exec -n net-lab net-client -- \
-    curl -sS --max-time 5 "http://${POD_IP}" \
-    | head
-  ```
-
   > **Salida esperada:** NGINX responde correctamente mediante la IP del Pod.
   {: .lab-note .output .compact}
 
@@ -895,19 +563,6 @@ Ahora provocarás una falla en el selector de `web-svc`. Los Pods seguirán sano
   > **Nota:** Debes buscar una diferencia entre lo que selecciona el Service y lo que realmente anuncian los Pods.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get service web-svc \
-    -n net-lab \
-    -o jsonpath='{.spec.selector}{"\n"}'
-  ```
-
-  ```bash
-  kubectl get pods \
-    -n net-lab \
-    -l app=web \
-    --show-labels
-  ```
-
   > **Salida esperada:** El Service utiliza `app=web-broken`, mientras los Pods tienen `app=web`.
   {: .lab-note .output .compact}
 
@@ -915,13 +570,6 @@ Ahora provocarás una falla en el selector de `web-svc`. Los Pods seguirán sano
 
   > **Nota:** Un Service sin endpoints confirma que kube-proxy no dispone de backends seleccionados para ese Service.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get endpointslice \
-    -n net-lab \
-    -l kubernetes.io/service-name=web-svc \
-    -o wide
-  ```
 
   > **Salida esperada:** No existen direcciones backend disponibles.
   {: .lab-note .output .compact}
@@ -933,13 +581,6 @@ Ahora provocarás una falla en el selector de `web-svc`. Los Pods seguirán sano
   > **Nota:** La corrección debe limitarse al selector identificado como defectuoso.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl patch service web-svc \
-    -n net-lab \
-    --type=merge \
-    -p '{"spec":{"selector":{"app":"web"}}}'
-  ```
-
   > **Salida esperada:** Kubernetes confirma la actualización.
   {: .lab-note .output .compact}
 
@@ -948,13 +589,6 @@ Ahora provocarás una falla en el selector de `web-svc`. Los Pods seguirán sano
   > **Nota:** Antes de probar la aplicación confirma que el plano de control reconstruyó la asociación Service → Pods.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get endpointslice \
-    -n net-lab \
-    -l kubernetes.io/service-name=web-svc \
-    -o wide
-  ```
-
   > **Salida esperada:** Las IP de los Pods `web` vuelven a aparecer.
   {: .lab-note .output .compact}
 
@@ -962,12 +596,6 @@ Ahora provocarás una falla en el selector de `web-svc`. Los Pods seguirán sano
 
   > **Nota:** Siempre valida una corrección reproduciendo exactamente la operación que originalmente falló.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl exec -n net-lab net-client -- \
-    curl -sS --max-time 5 http://web-svc \
-    | head
-  ```
 
   > **Salida esperada:** Se obtiene nuevamente la página de NGINX.
   {: .lab-note .output .compact}
@@ -993,37 +621,13 @@ En este escenario el Service, los EndpointSlices y los Pods permanecerán correc
   > **Nota:** Kubernetes define el objeto NetworkPolicy, pero su aplicación efectiva depende del plugin de red. En este laboratorio se parte de un CNI con soporte de políticas.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl api-resources | grep -E '^networkpolicies'
-  ```
-
   > **Salida esperada:** Se muestra el recurso `networkpolicies`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html id="s057" %} Crea una política que seleccione los Pods `web` y niegue todo tráfico ingress hacia ellos.
+- {% include step_label.html id="s057" %} Crea una política que seleccione los Pods `web` y niegue todo tráfico ingress hacia ellos. Puedes usar el nombre **deny-web-ingress.yaml**
 
   > **Importante:** Una NetworkPolicy con `policyTypes: [Ingress]` y sin reglas `ingress` aísla para tráfico entrante a los Pods seleccionados.
   {: .lab-note .important .compact}
-
-  ```bash
-  cat > deny-web-ingress.yaml <<'EOF_POLICY'
-  apiVersion: networking.k8s.io/v1
-  kind: NetworkPolicy
-  metadata:
-    name: deny-web-ingress
-    namespace: net-lab
-  spec:
-    podSelector:
-      matchLabels:
-        app: web
-    policyTypes:
-      - Ingress
-  EOF_POLICY
-  ```
-
-  ```bash
-  kubectl apply -f deny-web-ingress.yaml
-  ```
 
   > **Salida esperada:** `networkpolicy.networking.k8s.io/deny-web-ingress created`.
   {: .lab-note .output .compact}
@@ -1032,11 +636,6 @@ En este escenario el Service, los EndpointSlices y los Pods permanecerán correc
 
   > **Nota:** El Service y sus endpoints siguen existiendo; el nuevo síntoma se produce porque el CNI debe aplicar la política sobre el tráfico dirigido a los Pods.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl exec -n net-lab net-client -- \
-    curl -sS --max-time 5 http://web-svc
-  ```
 
   > **Salida esperada:** La solicitud expira o no logra conectarse.
   {: .lab-note .output .compact}
@@ -1048,13 +647,6 @@ En este escenario el Service, los EndpointSlices y los Pods permanecerán correc
   > **Importante:** Si los EndpointSlices continúan mostrando Pods sanos, no debes corregir el selector del Service como en el escenario anterior.
   {: .lab-note .important .compact}
 
-  ```bash
-  kubectl get endpointslice \
-    -n net-lab \
-    -l kubernetes.io/service-name=web-svc \
-    -o wide
-  ```
-
   > **Salida esperada:** Las IP de los Pods `web` siguen presentes.
   {: .lab-note .output .compact}
 
@@ -1062,11 +654,6 @@ En este escenario el Service, los EndpointSlices y los Pods permanecerán correc
 
   > **Nota:** En este escenario incluso la ruta directa al backend debe estar afectada porque la política selecciona al Pod destino.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl exec -n net-lab net-client -- \
-    curl -sS --max-time 5 "http://${POD_IP}"
-  ```
 
   > **Salida esperada:** La conexión directa tampoco obtiene respuesta.
   {: .lab-note .output .compact}
@@ -1076,10 +663,6 @@ En este escenario el Service, los EndpointSlices y los Pods permanecerán correc
   > **Nota:** Cuando Service y endpoints son correctos pero el tráfico directo al Pod falla, revisar políticas es una parte natural del flujo de diagnóstico.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get networkpolicy -n net-lab
-  ```
-
   > **Salida esperada:** Aparece `deny-web-ingress`.
   {: .lab-note .output .compact}
 
@@ -1087,10 +670,6 @@ En este escenario el Service, los EndpointSlices y los Pods permanecerán correc
 
   > **Importante:** No elimines la política hasta poder explicar por qué bloquea `net-client → web`.
   {: .lab-note .important .compact}
-
-  ```bash
-  kubectl describe networkpolicy deny-web-ingress -n net-lab
-  ```
 
   > **Salida esperada:** La política selecciona `app=web`, afecta `Ingress` y no contiene reglas que permitan fuentes.
   {: .lab-note .output .compact}
@@ -1104,47 +683,13 @@ En lugar de eliminar directamente la política, crearás una regla que permita �
   > **Nota:** Utilizar labels permite expresar la intención de la política sin depender de IPs temporales de Pods.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl label pod net-client \
-    -n net-lab \
-    access=web
-  ```
-
   > **Salida esperada:** `pod/net-client labeled`.
   {: .lab-note .output .compact}
 
-- {% include step_label.html id="s064" %} Crea una política que permita ingress desde Pods con `access=web` hacia TCP/80 de los Pods `web`.
+- {% include step_label.html id="s064" %} Crea una política que permita ingress desde Pods con `access=web` hacia TCP/80 de los Pods `web`. Puedes usar el nombre **allow-web-from-client.yaml**
 
   > **Nota:** Las políticas son aditivas. La existencia de una política deny-all no impide que otra NetworkPolicy agregue tráfico permitido para los mismos Pods.
   {: .lab-note .info .compact}
-
-  ```bash
-  cat > allow-web-from-client.yaml <<'EOF_POLICY'
-  apiVersion: networking.k8s.io/v1
-  kind: NetworkPolicy
-  metadata:
-    name: allow-web-from-client
-    namespace: net-lab
-  spec:
-    podSelector:
-      matchLabels:
-        app: web
-    policyTypes:
-      - Ingress
-    ingress:
-      - from:
-          - podSelector:
-              matchLabels:
-                access: web
-        ports:
-          - protocol: TCP
-            port: 80
-  EOF_POLICY
-  ```
-
-  ```bash
-  kubectl apply -f allow-web-from-client.yaml
-  ```
 
   > **Salida esperada:** `networkpolicy.networking.k8s.io/allow-web-from-client created`.
   {: .lab-note .output .compact}
@@ -1153,12 +698,6 @@ En lugar de eliminar directamente la política, crearás una regla que permita �
 
   > **Importante:** Esta prueba confirma que el CNI está aplicando tanto la restricción como la excepción definida mediante NetworkPolicy.
   {: .lab-note .important .compact}
-
-  ```bash
-  kubectl exec -n net-lab net-client -- \
-    curl -sS --max-time 5 http://web-svc \
-    | head
-  ```
 
   > **Salida esperada:** NGINX vuelve a responder desde `net-client`.
   {: .lab-note .output .compact}
@@ -1184,12 +723,6 @@ Cerrarás la práctica comprobando las tres capas utilizadas durante el troubles
   > **Nota:** La conectividad directa valida que el CNI permite el tráfico desde el cliente autorizado hacia el Pod `web`.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl exec -n net-lab net-client -- \
-    curl -sS --max-time 5 "http://${POD_IP}" \
-    | head
-  ```
-
   > **Salida esperada:** Se recibe contenido HTML.
   {: .lab-note .output .compact}
 
@@ -1197,12 +730,6 @@ Cerrarás la práctica comprobando las tres capas utilizadas durante el troubles
 
   > **Nota:** Esta segunda prueba agrega el Service y su mecanismo de proxy al camino de tráfico.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl exec -n net-lab net-client -- \
-    curl -sS --max-time 5 http://web-svc \
-    | head
-  ```
 
   > **Salida esperada:** El Service entrega contenido de NGINX.
   {: .lab-note .output .compact}
@@ -1212,12 +739,6 @@ Cerrarás la práctica comprobando las tres capas utilizadas durante el troubles
   > **Nota:** Una validación final debe comprobar no solo el resultado de usuario, sino también que la relación Service → backends sea coherente.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get endpointslice \
-    -n net-lab \
-    -l kubernetes.io/service-name=web-svc \
-    -o wide
-  ```
 
   > **Salida esperada:** Se muestran los endpoints de `web`.
   {: .lab-note .output .compact}
@@ -1229,11 +750,6 @@ Cerrarás la práctica comprobando las tres capas utilizadas durante el troubles
   > **Nota:** Esta prueba confirma que la corrección aplicada a `kube-dns` permanece funcional después de los demás escenarios.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl exec -n net-lab dns-client -- \
-    nslookup web-svc.net-lab.svc.cluster.local
-  ```
-
   > **Salida esperada:** El FQDN resuelve correctamente.
   {: .lab-note .output .compact}
 
@@ -1242,16 +758,6 @@ Cerrarás la práctica comprobando las tres capas utilizadas durante el troubles
   > **Nota:** Los componentes deben terminar la práctica en un estado equivalente a la línea base inicial.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl get pods -n kube-system \
-    -l k8s-app=kube-dns
-  ```
-
-  ```bash
-  kubectl get pods -n kube-system \
-    -l k8s-app=kube-proxy
-  ```
-
   > **Salida esperada:** CoreDNS y kube-proxy aparecen operativos.
   {: .lab-note .output .compact}
 
@@ -1259,10 +765,6 @@ Cerrarás la práctica comprobando las tres capas utilizadas durante el troubles
 
   > **Nota:** Esta validación final confirma que las pruebas de troubleshooting no dejaron efectos sobre la salud general del clúster.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get nodes
-  ```
 
   > **Salida esperada:** Los nodos permanecen `Ready`.
   {: .lab-note .output .compact}
@@ -1277,10 +779,6 @@ Cerrarás la práctica comprobando las tres capas utilizadas durante el troubles
   > **Nota:** Al eliminar el namespace se retiran conjuntamente los workloads y las políticas creadas para el troubleshooting.
   {: .lab-note .info .compact}
 
-  ```bash
-  kubectl delete namespace net-lab --wait=true
-  ```
-
   > **Salida esperada:** Kubernetes confirma la eliminación de `net-lab`.
   {: .lab-note .output .compact}
 
@@ -1289,12 +787,6 @@ Cerrarás la práctica comprobando las tres capas utilizadas durante el troubles
   > **Importante:** `kube-dns` pertenece a `kube-system` y no se elimina con `net-lab`; por eso debes verificar que la configuración temporal del escenario 5 quedó completamente revertida.
   {: .lab-note .important .compact}
 
-  ```bash
-  kubectl get service kube-dns \
-    -n kube-system \
-    -o jsonpath='{.spec.selector}{"\n"}'
-  ```
-
   > **Salida esperada:** El selector contiene `k8s-app:kube-dns`.
   {: .lab-note .output .compact}
 
@@ -1302,11 +794,7 @@ Cerrarás la práctica comprobando las tres capas utilizadas durante el troubles
 
   > **Nota:** La práctica finaliza únicamente cuando los componentes de infraestructura siguen funcionando normalmente.
   {: .lab-note .info .compact}
-
-  ```bash
-  kubectl get pods -n kube-system
-  ```
-
+  
   > **Salida esperada:** Los componentes esenciales se encuentran `Running` y no aparecen errores derivados de los escenarios realizados.
   {: .lab-note .output .compact}
 
