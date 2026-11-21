@@ -28,7 +28,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: jorgepas12/webpagesrepo
-          ref: d6e0eaefa9b725207e2e3268448d7ef68951355b
+          ref: 0920dbf50a4bd48bb76de85e19f14e17f94a33d0
           path: .central-webpagesrepo
           persist-credentials: false
 
